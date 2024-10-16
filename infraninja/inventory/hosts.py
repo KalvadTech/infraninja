@@ -2,8 +2,8 @@
 
 # Define your hosts here
 # Replace 'your.server.ip' with actual server IP addresses
-ubuntu_servers = [ ("your.server.ip", {"ssh_user": "user", "ssh_key": "/path/to/file"}) ]
-alpine_servers = [ ("your.server.ip", {"ssh_user": "user", "ssh_key": "/path/to/file"}) ]
+ubuntu_servers = [ ("your.server.ip", {"ssh_user": ssh_user, "ssh_key": path}) ]
+alpine_servers = [ ("your.server.ip", {"ssh_user": ssh_user, "ssh_key": path}) ]
 
 # Group hosts
 groups = {
