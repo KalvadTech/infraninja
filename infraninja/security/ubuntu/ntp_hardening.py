@@ -6,7 +6,7 @@ from pyinfra.operations import files, server
 def ntp_hardening():
     files.template(
         name="Upload NTP configuration",
-        src="../infraninja/security/templates/ntp.conf.j2",
+        src="../infraninja/security/templates/ubuntu/ntp.conf.j2",
         dest="/etc/ntp.conf",
         user="root",
         group="root",

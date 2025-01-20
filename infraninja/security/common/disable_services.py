@@ -1,7 +1,7 @@
 from pyinfra import host
 from pyinfra.api import deploy
 from pyinfra.facts.server import LinuxName
-from pyinfra.operations import openrc, systemd
+from pyinfra.operations import openrc, systemd, server
 
 # Get the OS type
 os = host.get_fact(LinuxName)
@@ -14,18 +14,45 @@ common_services = ["avahi-daemon", "cups", "bluetooth", "rpcbind", "vsftpd", "te
 def disable_useless_services_common():
     for service in common_services:
         if os == "Ubuntu":
-            service_status = host.run_shell_command(f"systemctl is-active {service}")
-            if service_status.stdout.strip() == "active":
-                systemd.service(service, running=False, enabled=False)
-                print(f"Disabled service: {service} on Ubuntu")
-            else:
-                print(f"Service {service} is not active on Ubuntu")
+            try:
+                if server.shell(
+                    name=f"Check {service} status on Ubuntu",
+                    commands=[f"systemctl is-active {service}"],
+                    _ignore_errors=True
+                ):
+                    systemd.service(
+                        name=f"Disable {service}",
+                        service=service,
+                        running=False,
+                        enabled=False,
+                        _ignore_errors=True
+                    )
+                    host.noop(f"Disabled service: {service} on Ubuntu")
+                else:
+                    host.noop(f"Skip {service} - not active on Ubuntu")
+            except Exception as e:
+                host.noop(f"Failed to handle {service} on Ubuntu: {str(e)}")
+
         elif os == "Alpine":
-            service_status = host.run_shell_command(f"rc-service {service} status")
-            if "started" in service_status.stdout:
-                openrc.service(service, running=False, enabled=False)
-                print(f"Disabled service: {service} on Alpine")
-            else:
-                print(f"Service {service} is not active on Alpine")
+            try:
+                if server.shell(
+                    name=f"Check {service} status on Alpine",
+                    commands=[f"rc-service {service} status"],
+                    _ignore_errors=True
+                ):
+                    openrc.service(
+                        name=f"Disable {service}",
+                        service=service,
+                        running=False,
+                        enabled=False,
+                        _ignore_errors=True
+                    )
+                    host.noop(f"Disabled service: {service} on Alpine")
+                else:
+                    host.noop(f"Skip {service} - not active on Alpine")
+            except Exception as e:
+                host.noop(f"Failed to handle {service} on Alpine: {str(e)}")
         else:
-            print(f"Unsupported OS: {os}, skipping service: {service}")
+            host.noop(f"Skip {service} - unsupported OS: {os}")
+
+    return True

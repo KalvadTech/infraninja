@@ -1,21 +1,25 @@
 Vagrant.configure("2") do |config|
   # Define the Ubuntu VM
   config.vm.define "ubuntu" do |ubuntu|
-    ubuntu.vm.box = "generic/ubuntu2004"  # Use an Ubuntu box compatible with VirtualBox
-    ubuntu.vm.network "private_network", type: "dhcp"  # DHCP for IP addressing
+    ubuntu.vm.box = "generic/ubuntu2204"  # Ubuntu 22.04 LTS
+    ubuntu.vm.box_version = "4.3.12"      # Specify stable version
+    ubuntu.vm.network "private_network", type: "dhcp"
     ubuntu.vm.provider "virtualbox" do |vb|
-      vb.memory = 1024  # Set the VM memory size
-      vb.cpus = 2       # Set the number of CPU cores
+      vb.memory = 1024
+      vb.cpus = 2
+      vb.name = "ubuntu_22_04_test"
     end
   end
 
   # Define the Alpine VM
   config.vm.define "alpine" do |alpine|
-    alpine.vm.box = "generic/alpine316"  # Use an Alpine box compatible with VirtualBox
-    alpine.vm.network "private_network", type: "dhcp"  # DHCP for IP addressing
+    alpine.vm.box = "generic/alpine319"  # Latest Alpine 3.19
+    alpine.vm.box_version = "4.3.12"     # Specify stable version
+    alpine.vm.network "private_network", type: "dhcp"
     alpine.vm.provider "virtualbox" do |vb|
-      vb.memory = 512   # Set the VM memory size
-      vb.cpus = 1      # Set the number of CPU cores
+      vb.memory = 512
+      vb.cpus = 1
+      vb.name = "alpine_latest_test"
     end
   end
 end

@@ -27,6 +27,7 @@ def ssh_hardening():
                 path="/etc/ssh/sshd_config",
                 text=f"^{matching_lines[0]}$",
                 replace=f"{option} {value}",
+                _ignore_errors=True,
             )
             if change.changed:
                 config_changed = True
