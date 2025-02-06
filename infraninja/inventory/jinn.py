@@ -65,7 +65,7 @@ def get_ssh_key(server_data: dict) -> str:
     if len(found_keys) > 1:
         logger.info("\nDiscovered SSH keys:")
         for i, key in enumerate(found_keys, 1):
-            logger.info(f"{i}. {key}")
+            logger.info("%d. %s", i, key)
         while True:
             choice = input("Select key to use (number) or 'cancel' to abort: ").strip()
             if choice.lower() == "cancel":
@@ -101,7 +101,7 @@ def configure_ssh_settings(server: dict) -> dict:
     try:
         config["ssh_key"] = get_ssh_key(server)
     except Exception as e:
-        logger.error(f"SSH key error for {server['hostname']}: {str(e)}")
+        logger.error("SSH key error for %s: %s", server["hostname"], str(e))
         raise
 
     # Port configuration
@@ -124,7 +124,7 @@ def fetch_ssh_config(base_url: str, api_key: str, bastionless: bool = True) -> s
         response.raise_for_status()
         return response.text
     except requests.RequestException as e:
-        raise RuntimeError(f"Failed to fetch SSH config: {str(e)}")
+        raise RuntimeError("Failed to fetch SSH config: %s" % str(e))
 
 
 def save_ssh_config(config_content: str, filename: str) -> None:
@@ -136,7 +136,7 @@ def save_ssh_config(config_content: str, filename: str) -> None:
     with open(config_path, "w") as file:
         file.write(config_content)
     print("")
-    logger.info(f"Saved SSH config to: {config_path}")
+    logger.info("Saved SSH config to: %s", config_path)
 
 
 def update_main_ssh_config():
@@ -151,7 +151,7 @@ def update_main_ssh_config():
 
     with open(MAIN_SSH_CONFIG, "a") as file:
         file.write(include_line)
-    logger.info(f"Updated main SSH config to include: {SSH_CONFIG_DIR}/*")
+    logger.info("Updated main SSH config to include: %s/*", SSH_CONFIG_DIR)
 
 
 def fetch_servers(
@@ -175,7 +175,7 @@ def fetch_servers(
         # Group selection logic
         logger.info("\nAvailable groups:")
         for i, group in enumerate(groups, 1):
-            logger.info(f"{i}. {group}")
+            logger.info("%d. %s", i, group)
 
         selected_groups = [selected_group] if selected_group else []
         if not selected_groups:
@@ -199,7 +199,7 @@ def fetch_servers(
 
         # Build host list
         hosts = []
-        server_names = []  # Add this line to track server names
+        server_names = []
 
         for server in data.get("result", []):
             try:
@@ -223,50 +223,54 @@ def fetch_servers(
                             "ssh_user": server.get("ssh_user"),
                             "ssh_key": ssh_config["ssh_key"],
                             "_ssh_proxy_command": ssh_config.get("_ssh_proxy_command"),
-                            "ssh_port": server.get("ssh_port", 22),
+                            "ssh_port": server["ssh_port"],
                             **server.get("attributes", {}),
                         },
                     )
                 )
 
             except KeyError as e:
-                logger.error(f"Skipping server due to missing key: {str(e)}")
+                logger.error("Skipping server due to missing key: %s", str(e))
                 continue
             except Exception as e:
-                logger.error(f"Skipping {server.get('hostname')}: {str(e)}")
+                logger.error("Skipping %s: %s", server.get("hostname"), str(e))
                 continue
 
         return hosts
 
     except requests.exceptions.RequestException as e:
-        logger.error(f"API request failed: {str(e)}")
+        logger.error("API request failed: %s", str(e))
         return []
     except Exception as e:
-        logger.error(f"Critical error: {str(e)}")
+        logger.error("Critical error: %s", str(e))
         return []
 
 
 def get_valid_filename(default_name: str = "bastionless_ssh_config") -> str:
     """Get a valid filename from user input."""
     while True:
-        filename = input(f"Enter filename for SSH config [default: {default_name}]: ").strip()
+        filename = input(
+            f"Enter filename for SSH config [default: {default_name}]: "
+        ).strip()
         if not filename:
             return default_name
-        
+
         # Remove any directory components for security
         filename = os.path.basename(filename)
-        
+
         # Check if filename is valid
-        if not all(c.isalnum() or c in '-_.' for c in filename):
-            logger.warning("Filename contains invalid characters. Use only letters, numbers, dots, hyphens, and underscores.")
+        if not all(c.isalnum() or c in "-_." for c in filename):
+            logger.warning(
+                "Filename contains invalid characters. Use only letters, numbers, dots, hyphens, and underscores."
+            )
             continue
-        
+
         return filename
 
 
 def clear_screen() -> None:
     """Clear the terminal screen."""
-    os.system('clear' if os.name == 'posix' else 'cls')
+    os.system("clear" if os.name == "posix" else "cls")
 
 
 # Show MOTD first
@@ -274,23 +278,23 @@ clear_screen()
 
 # Get credentials and fetch servers
 try:
-
     access_key = input("Please enter your access key: ")
     base_url = input("Please enter the Jinn API base URL: ")
 
+    # Set environment variable for base_url
+    os.environ["JINN_API_BASE_URL"] = base_url
 
     ssh_config = fetch_ssh_config(base_url, access_key, bastionless=True)
-    
+
     if ssh_config:
         filename = get_valid_filename()
         save_ssh_config(ssh_config, filename)
         update_main_ssh_config()  # Add this line to ensure the config is included
         logger.info("SSH configuration setup is complete.")
 
-    
     # Fetch and select groups
     hosts = fetch_servers(access_key, base_url)
-    
+
     # Wait and refresh before SSH key selection
 
     if not hosts:
@@ -302,4 +306,4 @@ try:
         logger.info("--> Connecting to hosts...")
 
 except Exception as e:
-    logger.error(f"An error occurred: {str(e)}")
+    logger.error("An error occurred: %s", str(e))
