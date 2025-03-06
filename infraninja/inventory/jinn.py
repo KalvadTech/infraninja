@@ -1,11 +1,15 @@
 # inventory || jinn.py
 
+import glob
 import logging
 import os
-import glob
+import sys
+from pathlib import Path
 from typing import Any, Dict, List, Tuple
 
+sys.path.append(str(Path(__file__).parent.parent))
 import requests
+from inventory.config import NinjaConfig
 
 logging.basicConfig(
     level=logging.INFO,
@@ -13,13 +17,7 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
-# Configuration constants
-INVENTORY_ENDPOINT = "/inventory/servers/"
-SSH_CONFIG_DIR = os.path.expanduser("~/.ssh/config.d")
-SSH_CONFIG_ENDPOINT = "/ssh-tools/ssh-config/?bastionless=true"
-MAIN_SSH_CONFIG = os.path.expanduser("~/.ssh/config")
-DEFAULT_SSH_CONFIG_FILENAME = "bastionless_ssh_config"
-SSH_KEY_PATH = os.path.expanduser("~/.ssh/id_rsa")
+config = NinjaConfig.from_env()
 
 
 def get_groups_from_data(data):
@@ -49,7 +47,7 @@ def fetch_ssh_config(
     Fetch the SSH config from the API using an API key for authentication and return its content.
     """
     headers = {"Authentication": api_auth_key}
-    endpoint = f"{base_api_url.rstrip('/')}{SSH_CONFIG_ENDPOINT}"
+    endpoint = f"{base_api_url.rstrip('/')}{config.ssh_config_endpoint}"
     try:
         response = requests.get(
             endpoint, headers=headers, params={"bastionless": bastionless}, timeout=10
@@ -64,8 +62,8 @@ def save_ssh_config(ssh_config_content: str, ssh_config_filename: str) -> None:
     """
     Save the SSH config content to a file in the SSH config directory.
     """
-    os.makedirs(SSH_CONFIG_DIR, exist_ok=True)
-    config_path = os.path.join(SSH_CONFIG_DIR, ssh_config_filename)
+    os.makedirs(config.ssh_config_dir, exist_ok=True)
+    config_path = os.path.join(config.ssh_config_dir, ssh_config_filename)
     with open(config_path, "w") as file:
         file.write(ssh_config_content)
     print("")
@@ -76,18 +74,18 @@ def update_main_ssh_config():
     """
     Ensure the main .ssh/config includes the SSH config directory.
     """
-    include_line = f"\nInclude {SSH_CONFIG_DIR}/*\n"
-    if os.path.exists(MAIN_SSH_CONFIG):
-        with open(MAIN_SSH_CONFIG, "r") as file:
+    include_line = f"\nInclude {config.ssh_config_dir}/*\n"
+    if os.path.exists(config.main_ssh_config):
+        with open(config.main_ssh_config, "r") as file:
             if include_line in file.read():
                 return  # Already included
 
-    with open(MAIN_SSH_CONFIG, "a") as file:
+    with open(config.main_ssh_config, "a") as file:
         file.write(include_line)
-    logger.info("Updated main SSH config to include: %s/*", SSH_CONFIG_DIR)
+    logger.info("Updated main SSH config to include: %s/*", config.ssh_config_dir)
 
 
-def get_valid_filename(default_name: str = DEFAULT_SSH_CONFIG_FILENAME) -> str:
+def get_valid_filename(default_name: str = config.default_ssh_config_filename) -> str:
     """Get a valid filename from user input."""
     while True:
         input_filename = input(
@@ -130,7 +128,7 @@ def fetch_servers(
         # API call for servers
         headers = {"Authentication": server_auth_key}
         response = requests.get(
-            f"{server_api_url.rstrip('/')}{INVENTORY_ENDPOINT}", headers=headers
+            f"{server_api_url.rstrip('/')}{config.inventory_endpoint}", headers=headers
         )
         response.raise_for_status()
         data = response.json()
@@ -344,14 +342,8 @@ try:
     else:
         SSH_KEY_PATH = select_ssh_key()
 
-    if os.environ.get("JINN_ACCESS_KEY"):
-        auth_key = os.environ.get("JINN_ACCESS_KEY")
-    else:
-        auth_key = input("Please enter your access key: ")
-    if os.environ.get("JINN_API_URL"):
-        api_url = os.environ.get("JINN_API_URL")
-    else:
-        api_url = input("Please enter the Jinn API base URL: ")
+    auth_key = config.api_key or input("Please enter your access key: ")
+    api_url = config.api_url or input("Please enter the Jinn API base URL: ")
 
     server_list, project_name = fetch_servers(auth_key, api_url)
 
