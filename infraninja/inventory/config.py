@@ -25,4 +25,5 @@ class NinjaConfig:
             api_key=os.environ.get("JINN_ACCESS_KEY"),
         )
 
+
 default_config = NinjaConfig()
