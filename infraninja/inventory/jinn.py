@@ -1,3 +1,4 @@
+
 # inventory || jinn.py
 
 import glob
@@ -59,7 +60,7 @@ def fetch_ssh_config(
         )
         response.raise_for_status()
         return response.text
-    except requests.RequestException as e:
+    except (requests.RequestException, ValueError, Exception) as e:
         raise RuntimeError(f"Failed to fetch SSH config: {e}")
 
 
@@ -105,8 +106,11 @@ def get_valid_filename(default_name: str = config.default_ssh_config_filename) -
     if not input_filename:
         return default_name
 
-    # Remove any directory components for security
-    input_filename = os.path.basename(input_filename)
+    # Check if filename contains path separators
+    if os.path.sep in input_filename:
+        logger.warning("Filename should not contain path separators.")
+        # Recursively ask for input again if invalid
+        return get_valid_filename(default_name)
 
     # Check if filename is valid
     if not all(c.isalnum() or c in "-_." for c in input_filename):
@@ -263,7 +267,10 @@ def format_host_list(
 
 
 def fetch_servers(
-    server_auth_key: str, server_api_url: str, selected_group: str = None
+    server_auth_key: str,
+    server_api_url: str,
+    selected_group: str = None,
+    ssh_key_path: str = None,
 ) -> Tuple[List[Tuple[str, Dict[str, Any]]], str]:
     """
     Fetch servers from the API and handle user selection of groups and tags.
@@ -272,6 +279,7 @@ def fetch_servers(
         server_auth_key: API authentication key
         server_api_url: Base URL for the API
         selected_group: Optional pre-selected group name
+        ssh_key_path: Path to SSH key (optional)
 
     Returns:
         Tuple of (host_list, project_name)
@@ -316,7 +324,7 @@ def fetch_servers(
         filtered_servers = process_tag_selection(tags, filtered_servers)
 
         # Format the final host list
-        hosts = format_host_list(filtered_servers, SSH_KEY_PATH)
+        hosts = format_host_list(filtered_servers, ssh_key_path)
         return hosts, detected_project_name
 
     except requests.exceptions.Timeout:
@@ -437,9 +445,10 @@ try:
     api_url = config.api_url or input("Please enter the Jinn API base URL: ")
 
     # Fetch servers
-    server_list, project_name = fetch_servers(auth_key, api_url)
-
     SSH_KEY_PATH = os.environ.get("SSH_KEY_PATH") or select_ssh_key()
+    server_list, project_name = fetch_servers(
+        auth_key, api_url, ssh_key_path=SSH_KEY_PATH
+    )
 
     try:
         config_content = fetch_ssh_config(auth_key, api_url, bastionless=True)
