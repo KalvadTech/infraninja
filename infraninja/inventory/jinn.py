@@ -1,6 +1,7 @@
 # inventory || jinn.py
 
 import glob
+import json
 import logging
 import os
 import sys
@@ -48,6 +49,7 @@ def fetch_ssh_config(
     """
     headers = {"Authentication": api_auth_key}
     endpoint = f"{base_api_url.rstrip('/')}{config.ssh_config_endpoint}"
+
     try:
         response = requests.get(
             endpoint, headers=headers, params={"bastionless": bastionless}, timeout=10
@@ -75,6 +77,7 @@ def update_main_ssh_config():
     Ensure the main .ssh/config includes the SSH config directory.
     """
     include_line = f"\nInclude {config.ssh_config_dir}/*\n"
+
     if os.path.exists(config.main_ssh_config):
         with open(config.main_ssh_config, "r") as file:
             if include_line in file.read():
@@ -86,25 +89,34 @@ def update_main_ssh_config():
 
 
 def get_valid_filename(default_name: str = config.default_ssh_config_filename) -> str:
-    """Get a valid filename from user input."""
-    while True:
-        input_filename = input(
-            f"Enter filename for SSH config [default: {default_name}]: "
-        ).strip()
-        if not input_filename:
-            return default_name
+    """
+    Get a valid filename from user input, with proper validation.
 
-        # Remove any directory components for security
-        input_filename = os.path.basename(input_filename)
+    Args:
+        default_name: Default filename to use if no input is provided
 
-        # Check if filename is valid
-        if not all(c.isalnum() or c in "-_." for c in input_filename):
-            logger.warning(
-                "Filename contains invalid characters. Use only letters, numbers, dots, hyphens, and underscores."
-            )
-            continue
+    Returns:
+        A valid filename string
+    """
+    input_filename = input(
+        f"Enter filename for SSH config [default: {default_name}]: "
+    ).strip()
 
-        return input_filename
+    if not input_filename:
+        return default_name
+
+    # Remove any directory components for security
+    input_filename = os.path.basename(input_filename)
+
+    # Check if filename is valid
+    if not all(c.isalnum() or c in "-_." for c in input_filename):
+        logger.warning(
+            "Filename contains invalid characters. Use only letters, numbers, dots, hyphens, and underscores."
+        )
+        # Recursively ask for input again if invalid
+        return get_valid_filename(default_name)
+
+    return input_filename
 
 
 def get_project_name(data: Dict) -> str:
@@ -121,56 +133,172 @@ def get_project_name(data: Dict) -> str:
     return "default"
 
 
+def get_group_selection(groups: List[str]) -> List[str]:
+    """
+    Handle the user selection of server groups.
+
+    Args:
+        groups: List of available group names
+
+    Returns:
+        List of selected group names
+    """
+    if os.environ.get("JINN_GROUPS"):
+        choice = os.environ.get("JINN_GROUPS").strip()
+    else:
+        choice = input(
+            "\nEnter group numbers (space-separated) or '*' for all groups: "
+        ).strip()
+
+    if choice in ("*", ""):
+        return groups
+
+    try:
+        # Split input and convert to integers
+        choices = [int(x) for x in choice.split()]
+        # Validate all choices
+        if all(1 <= x <= len(groups) for x in choices):
+            return [groups[i - 1] for i in choices]
+
+        logger.warning("Invalid choice. Please select valid numbers.")
+        # Recursive call if invalid
+        return get_group_selection(groups)
+    except ValueError:
+        logger.warning("Please enter valid numbers or '*'.")
+        # Recursive call if invalid
+        return get_group_selection(groups)
+
+
+def process_tag_selection(tags: List[str], filtered_servers: List[Dict]) -> List[Dict]:
+    """
+    Process user selection of tags and filter servers accordingly.
+
+    Args:
+        tags: List of available tags
+        filtered_servers: Pre-filtered list of servers
+
+    Returns:
+        List of servers filtered by selected tags
+    """
+    if not tags:
+        return filtered_servers
+
+    logger.info("\nAvailable tags:")
+    for i, tag in enumerate(tags, 1):
+        logger.info("%2d. %s", i, tag)  # Align numbers for better readability
+
+    if os.environ.get("JINN_TAGS"):
+        tag_choice = os.environ.get("JINN_TAGS").strip()
+    else:
+        tag_choice = input(
+            "\nSelect tags (space-separated), '*' or Enter for all: "
+        ).strip()
+
+    # Return all servers if no specific tags selected
+    if not tag_choice or tag_choice == "*":
+        return filtered_servers
+
+    try:
+        selected_indices = [int(i) - 1 for i in tag_choice.split()]
+        selected_tags = {tags[i] for i in selected_indices if 0 <= i < len(tags)}
+
+        # Filter servers by tags
+        return [
+            server
+            for server in filtered_servers
+            if any(tag in selected_tags for tag in server.get("tags", []))
+        ]
+    except (ValueError, IndexError):
+        logger.warning("Invalid tag selection, showing all servers")
+        return filtered_servers
+
+
+def format_host_list(
+    filtered_servers: List[Dict], ssh_key_path: str
+) -> List[Tuple[str, Dict[str, Any]]]:
+    """
+    Format a list of servers into the expected host list format for pyinfra.
+
+    Args:
+        filtered_servers: List of server dictionaries
+        ssh_key_path: Path to the SSH key to use for connections
+
+    Returns:
+        List of (hostname, attributes) tuples
+    """
+    # Make sure ssh_key_path is a string and not None
+    key_path = ssh_key_path if ssh_key_path else str(config.ssh_key_path)
+
+    return [
+        (
+            server["hostname"],
+            {
+                **server.get("attributes", {}),
+                "ssh_user": server.get("ssh_user"),
+                "is_active": server.get("is_active", False),
+                "group_name": server.get("group", {}).get("name_en"),
+                "tags": server.get("tags", []),
+                "ssh_key": key_path,
+                **{
+                    key: value
+                    for key, value in server.items()
+                    if key
+                    not in [
+                        "attributes",
+                        "ssh_user",
+                        "is_active",
+                        "group",
+                        "tags",
+                        "ssh_hostname",
+                    ]
+                },
+            },
+        )
+        for server in filtered_servers
+    ]
+
+
 def fetch_servers(
     server_auth_key: str, server_api_url: str, selected_group: str = None
 ) -> Tuple[List[Tuple[str, Dict[str, Any]]], str]:
+    """
+    Fetch servers from the API and handle user selection of groups and tags.
+
+    Args:
+        server_auth_key: API authentication key
+        server_api_url: Base URL for the API
+        selected_group: Optional pre-selected group name
+
+    Returns:
+        Tuple of (host_list, project_name)
+    """
     try:
         # API call for servers
         headers = {"Authentication": server_auth_key}
-        response = requests.get(
-            f"{server_api_url.rstrip('/')}{config.inventory_endpoint}", headers=headers
-        )
+        endpoint = f"{server_api_url.rstrip('/')}{config.inventory_endpoint}"
+
+        response = requests.get(endpoint, headers=headers, timeout=30)
         response.raise_for_status()
         data = response.json()
 
-        # Extract project name early
+        # Extract project name
         detected_project_name = get_project_name(data)
 
-        # First, display available groups sorted alphabetically
+        # Get and display available groups
         groups = get_groups_from_data(data)
         logger.info("\nAvailable groups:")
         for i, group in enumerate(groups, 1):
             logger.info("%d. %s", i, group)
 
-        # If no group is selected, prompt for selection
-        if selected_group is None:
-            while True:
-                if os.environ.get("JINN_GROUPS"):
-                    choice = os.environ.get("JINN_GROUPS").strip()
-                else:
-                    choice = input(
-                        "\nEnter group numbers (space-separated) or '*' for all groups: "
-                    ).strip()
-                if choice in ("*", ""):
-                    selected_groups = groups
-                    break
-                try:
-                    # Split input and convert to integers
-                    choices = [int(x) for x in choice.split()]
-                    # Validate all choices
-                    if all(1 <= x <= len(groups) for x in choices):
-                        selected_groups = [groups[i - 1] for i in choices]
-                        break
-                    logger.warning("Invalid choice. Please select valid numbers.")
-                except ValueError:
-                    logger.warning("Please enter valid numbers or '*'.")
-
-            logger.info("\nSelected groups: %s", ", ".join(selected_groups))
-
-        else:
+        # Determine selected groups
+        if selected_group:
             selected_groups = [selected_group]
+        else:
+            selected_groups = get_group_selection(groups)
 
-        # Filter servers by selected groups first
+        logger.info("\nSelected groups: %s", ", ".join(selected_groups))
+
+        # Filter servers by selected groups
         filtered_servers = [
             server
             for server in data.get("result", [])
@@ -178,73 +306,31 @@ def fetch_servers(
             and server.get("is_active", False)
         ]
 
-        # Tag selection with sorted display
+        # Process tag selection
         tags = get_tags_from_data(filtered_servers)
-        if tags:
-            logger.info("\nAvailable tags:")
-            for i, tag in enumerate(tags, 1):
-                logger.info("%2d. %s", i, tag)  # Align numbers for better readability
-            if os.environ.get("JINN_TAGS"):
-                tag_choice = os.environ.get("JINN_TAGS").strip()
-            else:
-                tag_choice = input(
-                    "\nSelect tags (space-separated), '*' or Enter for all: "
-                ).strip()
+        filtered_servers = process_tag_selection(tags, filtered_servers)
 
-            if tag_choice and tag_choice != "*":
-                try:
-                    selected_indices = [int(i) - 1 for i in tag_choice.split()]
-                    selected_tags = {
-                        tags[i] for i in selected_indices if 0 <= i < len(tags)
-                    }
-                    # Filter servers by tags
-                    filtered_servers = [
-                        server
-                        for server in filtered_servers
-                        if any(tag in selected_tags for tag in server.get("tags", []))
-                    ]
-                except (ValueError, IndexError):
-                    logger.warning("Invalid tag selection, showing all servers")
-
-        # Convert to host list format
-        hosts = [
-            (
-                server["hostname"],
-                {
-                    **server.get("attributes", {}),
-                    "ssh_user": server.get("ssh_user"),
-                    "is_active": server.get("is_active", False),
-                    "group_name": server.get("group", {}).get("name_en"),
-                    "tags": server.get("tags", []),
-                    "ssh_key": SSH_KEY_PATH,
-                    **{
-                        key: value
-                        for key, value in server.items()
-                        if key
-                        not in [
-                            "attributes",
-                            "ssh_user",
-                            "is_active",
-                            "group",
-                            "tags",
-                            "ssh_hostname",
-                        ]
-                    },
-                },
-            )
-            for server in filtered_servers
-        ]
-
+        # Format the final host list
+        hosts = format_host_list(filtered_servers, SSH_KEY_PATH)
         return hosts, detected_project_name
 
+    except requests.exceptions.Timeout:
+        logger.error("API request timed out")
+        return [], "default"
+    except requests.exceptions.HTTPError as e:
+        logger.error("HTTP error: %s", e)
+        return [], "default"
     except requests.exceptions.RequestException as e:
-        logger.error("An error occurred while making the request: %s", e)
+        logger.error("API request failed: %s", e)
+        return [], "default"
+    except json.JSONDecodeError as e:
+        logger.error("Failed to parse API response: %s", e)
         return [], "default"
     except KeyError as e:
-        logger.error("Error parsing response: %s", e)
+        logger.error("Missing required data in API response: %s", e)
         return [], "default"
     except Exception as e:
-        logger.error("An unexpected error occurred: %s", e)
+        logger.error("An unexpected error occurred: %s", str(e))
         return [], "default"
 
 
@@ -285,7 +371,9 @@ def find_ssh_keys() -> List[str]:
 def select_ssh_key() -> str:
     """
     Allow user to select from available SSH keys or specify a custom path.
-    Returns the full path to the selected SSH key.
+
+    Returns:
+        str: The full path to the selected SSH key.
     """
     # Find available SSH keys
     available_keys = find_ssh_keys()
@@ -316,10 +404,14 @@ def select_ssh_key() -> str:
 
     try:
         choice = int(choice_text)
+
+        # Handle valid selection
         if 1 <= choice <= len(available_keys):
             selected_key = available_keys[choice - 1]
             logger.info("Selected SSH key: %s", selected_key)
             return selected_key
+
+        # Handle custom path option
         elif choice == custom_option:
             custom_path = input("Enter the full path to your SSH private key: ")
             return (
@@ -327,40 +419,46 @@ def select_ssh_key() -> str:
                 if custom_path
                 else os.path.expanduser("~/.ssh/id_rsa")
             )
-        else:
-            logger.warning("Invalid choice, using the first key.")
-            return available_keys[0]
+
+        logger.warning("Invalid choice, using the first key.")
+        return available_keys[0]
     except ValueError:
         logger.warning("Invalid input, using the first key.")
         return available_keys[0]
 
 
-# Direct script execution
-try:
-    if os.environ.get("SSH_KEY_PATH"):
-        SSH_KEY_PATH = os.environ.get("SSH_KEY_PATH")
-    else:
-        SSH_KEY_PATH = select_ssh_key()
+SSH_KEY_PATH = None  # Define global variable at module level
 
+try:
+    # Get API credentials from config or user input
     auth_key = config.api_key or input("Please enter your access key: ")
     api_url = config.api_url or input("Please enter the Jinn API base URL: ")
 
+    # Fetch servers
     server_list, project_name = fetch_servers(auth_key, api_url)
 
-    config_content = fetch_ssh_config(auth_key, api_url, bastionless=True)
-    if config_content:
-        default_config_name = f"{project_name}_ssh_config"
-        config_filename = get_valid_filename(default_config_name)
-        save_ssh_config(config_content, config_filename)
-        update_main_ssh_config()
-        logger.info("SSH configuration setup is complete.")
+    SSH_KEY_PATH = os.environ.get("SSH_KEY_PATH") or select_ssh_key()
 
+    # Get and save SSH config if available
+    try:
+        config_content = fetch_ssh_config(auth_key, api_url, bastionless=True)
+        if config_content:
+            default_config_name = f"{project_name}_ssh_config"
+            config_filename = get_valid_filename(default_config_name)
+            save_ssh_config(config_content, config_filename)
+            update_main_ssh_config()
+            logger.info("SSH configuration setup is complete.")
+    except RuntimeError as e:
+        logger.error("Failed to set up SSH configuration: %s", e)
+
+    # Display results
     if not server_list:
         logger.error("No valid hosts found. Check the API response and try again.")
     else:
         logger.info("\nSelected servers:")
         for hostname, attrs in server_list:
             logger.info("- %s (User: %s)", hostname, attrs["ssh_user"])
-
+except KeyboardInterrupt:
+    logger.info("\nOperation cancelled by user.")
 except Exception as e:
     logger.error("An error occurred: %s", str(e))
