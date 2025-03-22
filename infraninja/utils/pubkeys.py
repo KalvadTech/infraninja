@@ -26,12 +26,11 @@ class SSHKeyManager:
     exists and uses thread safety for multi-threaded environments.
     """
 
-    # Class variables shared across all instances
     _ssh_keys: Optional[List[str]] = None
     _credentials: Optional[Dict[str, str]] = None
     _session_key: Optional[str] = None
     _base_url: Optional[str] = None
-    _lock: threading.RLock = threading.RLock()  
+    _lock: threading.RLock = threading.RLock()
     _instance: Optional["SSHKeyManager"] = None  # Singleton instance
 
     @classmethod
@@ -39,7 +38,7 @@ class SSHKeyManager:
         """Get or create the singleton instance of SSHKeyManager."""
         if cls._instance is None:
             with cls._lock:
-                if cls._instance is None:  
+                if cls._instance is None:
                     cls._instance = SSHKeyManager()
         return cls._instance
 
@@ -82,6 +81,7 @@ class SSHKeyManager:
 
         username: str = input("Enter username: ")
         password: str = getpass.getpass("Enter password: ")
+
         self._credentials = {"username": username, "password": password}
         logger.debug("Credentials obtained from user input")
         return self._credentials
@@ -123,6 +123,7 @@ class SSHKeyManager:
                 )
                 return None
             return response
+
         except requests.exceptions.Timeout:
             logger.error("API request timed out for %s", endpoint)
         except requests.exceptions.ConnectionError:

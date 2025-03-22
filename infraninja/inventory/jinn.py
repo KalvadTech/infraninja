@@ -8,9 +8,9 @@ import sys
 from pathlib import Path
 from typing import Any, Dict, List, Tuple
 
-sys.path.append(str(Path(__file__).parent.parent))
 import requests
 from inventory.config import NinjaConfig
+sys.path.append(str(Path(__file__).parent.parent))
 
 logging.basicConfig(
     level=logging.INFO,
@@ -24,6 +24,7 @@ config = NinjaConfig.from_env()
 def get_groups_from_data(data):
     """Extract unique groups from server data."""
     groups = set()
+
     for server in data.get("result", []):
         group = server.get("group", {}).get("name_en")
         if group:
@@ -34,6 +35,7 @@ def get_groups_from_data(data):
 def get_tags_from_data(servers: List[Dict]) -> List[str]:
     """Extract unique tags from server data."""
     tags = set()
+
     for server in servers:
         for tag in server.get("tags", []):
             if tag and not tag.isspace():  # Skip empty or whitespace-only tags
@@ -61,21 +63,18 @@ def fetch_ssh_config(
 
 
 def save_ssh_config(ssh_config_content: str, ssh_config_filename: str) -> None:
-    """
-    Save the SSH config content to a file in the SSH config directory.
-    """
+    """Save the SSH config content to a file in the SSH config directory."""
     os.makedirs(config.ssh_config_dir, exist_ok=True)
     config_path = os.path.join(config.ssh_config_dir, ssh_config_filename)
+
     with open(config_path, "w") as file:
         file.write(ssh_config_content)
-    print("")
-    logger.info("Saved SSH config to: %s", config_path)
+
+    logger.info("\nSaved SSH config to: %s", config_path)
 
 
 def update_main_ssh_config():
-    """
-    Ensure the main .ssh/config includes the SSH config directory.
-    """
+    """Ensure the main .ssh/config includes the SSH config directory."""
     include_line = f"\nInclude {config.ssh_config_dir}/*\n"
 
     if os.path.exists(config.main_ssh_config):
@@ -145,6 +144,7 @@ def get_group_selection(groups: List[str]) -> List[str]:
     """
     if os.environ.get("JINN_GROUPS"):
         choice = os.environ.get("JINN_GROUPS").strip()
+
     else:
         choice = input(
             "\nEnter group numbers (space-separated) or '*' for all groups: "
@@ -163,6 +163,7 @@ def get_group_selection(groups: List[str]) -> List[str]:
         logger.warning("Invalid choice. Please select valid numbers.")
         # Recursive call if invalid
         return get_group_selection(groups)
+
     except ValueError:
         logger.warning("Please enter valid numbers or '*'.")
         # Recursive call if invalid
@@ -185,10 +186,11 @@ def process_tag_selection(tags: List[str], filtered_servers: List[Dict]) -> List
 
     logger.info("\nAvailable tags:")
     for i, tag in enumerate(tags, 1):
-        logger.info("%2d. %s", i, tag)  # Align numbers for better readability
+        logger.info("%2d. %s", i, tag)
 
     if os.environ.get("JINN_TAGS"):
         tag_choice = os.environ.get("JINN_TAGS").strip()
+
     else:
         tag_choice = input(
             "\nSelect tags (space-separated), '*' or Enter for all: "
@@ -208,6 +210,7 @@ def process_tag_selection(tags: List[str], filtered_servers: List[Dict]) -> List
             for server in filtered_servers
             if any(tag in selected_tags for tag in server.get("tags", []))
         ]
+
     except (ValueError, IndexError):
         logger.warning("Invalid tag selection, showing all servers")
         return filtered_servers
@@ -293,6 +296,7 @@ def fetch_servers(
         # Determine selected groups
         if selected_group:
             selected_groups = [selected_group]
+
         else:
             selected_groups = get_group_selection(groups)
 
@@ -375,7 +379,6 @@ def select_ssh_key() -> str:
     Returns:
         str: The full path to the selected SSH key.
     """
-    # Find available SSH keys
     available_keys = find_ssh_keys()
 
     if not available_keys:
@@ -387,8 +390,8 @@ def select_ssh_key() -> str:
             else os.path.expanduser("~/.ssh/id_rsa")
         )
 
-    # Display available keys
     logger.info("\nAvailable SSH keys:")
+
     for i, key_path in enumerate(available_keys, 1):
         key_display = key_path.replace(os.path.expanduser("~"), "~")
         logger.info("%d. %s", i, key_display)
@@ -412,7 +415,7 @@ def select_ssh_key() -> str:
             return selected_key
 
         # Handle custom path option
-        elif choice == custom_option:
+        if choice == custom_option:
             custom_path = input("Enter the full path to your SSH private key: ")
             return (
                 os.path.expanduser(custom_path)
@@ -422,15 +425,13 @@ def select_ssh_key() -> str:
 
         logger.warning("Invalid choice, using the first key.")
         return available_keys[0]
+
     except ValueError:
         logger.warning("Invalid input, using the first key.")
         return available_keys[0]
 
 
-SSH_KEY_PATH = None  # Define global variable at module level
-
 try:
-    # Get API credentials from config or user input
     auth_key = config.api_key or input("Please enter your access key: ")
     api_url = config.api_url or input("Please enter the Jinn API base URL: ")
 
@@ -439,25 +440,27 @@ try:
 
     SSH_KEY_PATH = os.environ.get("SSH_KEY_PATH") or select_ssh_key()
 
-    # Get and save SSH config if available
     try:
         config_content = fetch_ssh_config(auth_key, api_url, bastionless=True)
+
         if config_content:
             default_config_name = f"{project_name}_ssh_config"
             config_filename = get_valid_filename(default_config_name)
             save_ssh_config(config_content, config_filename)
             update_main_ssh_config()
             logger.info("SSH configuration setup is complete.")
+
     except RuntimeError as e:
         logger.error("Failed to set up SSH configuration: %s", e)
 
-    # Display results
     if not server_list:
         logger.error("No valid hosts found. Check the API response and try again.")
+
     else:
         logger.info("\nSelected servers:")
         for hostname, attrs in server_list:
             logger.info("- %s (User: %s)", hostname, attrs["ssh_user"])
+
 except KeyboardInterrupt:
     logger.info("\nOperation cancelled by user.")
 except Exception as e:
