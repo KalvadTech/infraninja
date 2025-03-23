@@ -9,7 +9,8 @@ from pathlib import Path
 from typing import Any, Dict, List, Tuple
 
 import requests
-from inventory.config import NinjaConfig
+from infraninja.inventory.config import NinjaConfig
+
 sys.path.append(str(Path(__file__).parent.parent))
 
 logging.basicConfig(
