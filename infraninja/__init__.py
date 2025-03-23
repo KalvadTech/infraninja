@@ -1,5 +1,3 @@
-"""
-InfraNinja - Infrastructure automation toolkit
-"""
+"""InfraNinja - Infrastructure automation toolkit"""
 
 __version__ = "1.0.0"
