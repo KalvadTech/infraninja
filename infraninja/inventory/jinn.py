@@ -1,4 +1,3 @@
-
 # inventory || jinn.py
 
 import glob
