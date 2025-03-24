@@ -21,20 +21,26 @@ Host example
     Port 22
 """
 
+
+
 @pytest.fixture
 def mock_api_response(mock_ssh_config):
     """Return a mock API response with the SSH config."""
+
     class MockResponse:
         def __init__(self, text, status_code):
             self.text = text
             self.status_code = status_code
-            
+
+
         def raise_for_status(self):
             if self.status_code >= 400:
                 from requests.exceptions import HTTPError
+
                 raise HTTPError(f"{self.status_code} Error")
-            
+
     return MockResponse(mock_ssh_config, 200)
+
 
 @pytest.fixture
 def sample_server_data():
@@ -56,6 +62,7 @@ def sample_server_data():
                     "location": "eu-west",
                     "role": "webserver"
                 }
+
             },
             {
                 "hostname": "server2",
@@ -72,6 +79,7 @@ def sample_server_data():
                     "location": "us-east",
                     "role": "database"
                 }
+
             },
             {
                 "hostname": "server3",
@@ -79,18 +87,6 @@ def sample_server_data():
                 "is_active": False,
                 "group": {
                     "name_en": "production",
-                    "project": {
-                        "name_en": "test_project"
-                    }
-                },
-                "tags": ["cache"],
-                "attributes": {
-                    "location": "eu-central",
-                    "role": "cache"
-                }
-            }
-        ]
-    }
 
 @pytest.fixture
 def mock_config():
@@ -109,12 +105,13 @@ def temp_ssh_dir(tmp_path):
     """Create a temporary .ssh directory with some mock key files."""
     ssh_dir = tmp_path / ".ssh"
     ssh_dir.mkdir()
-    
+
     # Create mock SSH key files
     (ssh_dir / "id_rsa").write_text("mock private key")
     (ssh_dir / "id_rsa.pub").write_text("mock public key")
     (ssh_dir / "id_ed25519").write_text("mock ed25519 key")
     (ssh_dir / "config").write_text("# SSH config file")
     (ssh_dir / "known_hosts").write_text("known hosts content")
-    
+
     return ssh_dir
+
