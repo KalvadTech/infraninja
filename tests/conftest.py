@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
 # tests/conftest.py
-
 import pytest
 import sys
 from pathlib import Path
