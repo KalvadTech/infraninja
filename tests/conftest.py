@@ -9,6 +9,7 @@ from unittest.mock import Mock
 # Add the project root to the Python path
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
+
 # You can add fixtures here that will be available to all test files
 @pytest.fixture
 def mock_ssh_config():
@@ -22,7 +23,6 @@ Host example
 """
 
 
-
 @pytest.fixture
 def mock_api_response(mock_ssh_config):
     """Return a mock API response with the SSH config."""
@@ -31,7 +31,6 @@ def mock_api_response(mock_ssh_config):
         def __init__(self, text, status_code):
             self.text = text
             self.status_code = status_code
-
 
         def raise_for_status(self):
             if self.status_code >= 400:
@@ -53,33 +52,18 @@ def sample_server_data():
                 "is_active": True,
                 "group": {
                     "name_en": "production",
-                    "project": {
-                        "name_en": "test_project"
-                    }
+                    "project": {"name_en": "test_project"},
                 },
                 "tags": ["web", "api"],
-                "attributes": {
-                    "location": "eu-west",
-                    "role": "webserver"
-                }
-
+                "attributes": {"location": "eu-west", "role": "webserver"},
             },
             {
                 "hostname": "server2",
                 "ssh_user": "admin",
                 "is_active": True,
-                "group": {
-                    "name_en": "staging",
-                    "project": {
-                        "name_en": "test_project"
-                    }
-                },
+                "group": {"name_en": "staging", "project": {"name_en": "test_project"}},
                 "tags": ["db", "backup"],
-                "attributes": {
-                    "location": "us-east",
-                    "role": "database"
-                }
-
+                "attributes": {"location": "us-east", "role": "database"},
             },
             {
                 "hostname": "server3",
@@ -87,6 +71,14 @@ def sample_server_data():
                 "is_active": False,
                 "group": {
                     "name_en": "production",
+                    "project": {"name_en": "test_project"},
+                },
+                "tags": ["inactive"],
+                "attributes": {"location": "us-west", "role": "deprecated"},
+            },
+        ]
+    }
+
 
 @pytest.fixture
 def mock_config():
@@ -99,6 +91,7 @@ def mock_config():
     mock.default_ssh_config_filename = "default_ssh_config"
     mock.ssh_key_path = "/home/user/.ssh/id_rsa"
     return mock
+
 
 @pytest.fixture
 def temp_ssh_dir(tmp_path):
@@ -114,4 +107,3 @@ def temp_ssh_dir(tmp_path):
     (ssh_dir / "known_hosts").write_text("known hosts content")
 
     return ssh_dir
-
