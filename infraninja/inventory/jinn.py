@@ -41,6 +41,8 @@ def get_tags_from_data(servers: List[Dict]) -> List[str]:
         for tag in server.get("tags", []):
             if tag and not tag.isspace():  # Skip empty or whitespace-only tags
                 tags.add(tag)
+    
+    # Make sure they're sorted in alphabetical order
     return sorted(list(tags))
 
 
