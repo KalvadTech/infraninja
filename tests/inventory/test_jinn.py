@@ -2,7 +2,7 @@
 # tests/inventory/test_jinn.py
 
 import unittest
-from unittest.mock import patch, Mock, MagicMock
+from unittest.mock import patch, Mock
 import pytest
 import requests
 import sys
