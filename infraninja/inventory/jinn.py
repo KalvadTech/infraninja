@@ -2,11 +2,13 @@
 
 import json
 import logging
+import os
 import sys
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Set, Tuple
+from typing import Any, Dict, List, Optional, Set, Tuple, Union
 
 import requests
+from requests.exceptions import RequestException
 
 sys.path.append(str(Path(__file__).parent.parent))
 
@@ -17,16 +19,35 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 
+class JinnError(Exception):
+    """Base exception for Jinn-related errors."""
+
+    pass
+
+
+class JinnAPIError(JinnError):
+    """Exception raised for API-related errors."""
+
+    pass
+
+
+class JinnSSHError(JinnError):
+    """Exception raised for SSH-related errors."""
+
+    pass
+
+
 class Jinn:
     def __init__(
         self,
-        ssh_key_path: Optional[str] = None,
+        ssh_key_path: Optional[Union[str, Path]] = None,
         api_url: str = "https://jinn-api.kalvad.cloud",
         api_key: Optional[str] = None,
         groups: Optional[List[str]] = None,
         tags: Optional[List[str]] = None,
         use_bastion: bool = False,
-    ):
+        ssh_config_dir: Optional[Union[str, Path]] = None,
+    ) -> None:
         """Initialize the Jinn class with configuration.
 
         Args:
@@ -36,34 +57,47 @@ class Jinn:
             groups: Server groups to filter by
             tags: Server tags to filter by
             use_bastion: Whether to use bastion host
-        """
-        self.ssh_config_dir: Path = Path.home() / ".ssh/config.d"
-        self.main_ssh_config: Path = Path.home() / ".ssh/config"
+            ssh_config_dir: Directory for SSH config files. If None, uses ~/.ssh/config.d
 
-        # Set SSH key path
+        Raises:
+            JinnSSHError: If SSH key path does not exist
+            JinnAPIError: If API key is not set
+        """
+        # Set SSH configuration
+        self.ssh_config_dir: Path = (
+            Path(ssh_config_dir) if ssh_config_dir else Path.home() / ".ssh/config.d"
+        )
+        self.main_ssh_config: Path = Path.home() / ".ssh/config"
         self.ssh_key_path: Path = (
             Path(ssh_key_path) if ssh_key_path else Path.home() / ".ssh/id_rsa"
         )
 
+        # Create SSH config directory if it doesn't exist
+        self.ssh_config_dir.mkdir(parents=True, exist_ok=True)
+
         if not self.ssh_key_path.exists():
-            raise Exception(f"SSH key path does not exist: {self.ssh_key_path}")
+            raise JinnSSHError(f"SSH key path does not exist: {self.ssh_key_path}")
 
         # Set API configuration
         self.api_url: str = api_url.rstrip("/")
         self.api_key: Optional[str] = api_key
         if not self.api_key:
-            raise Exception("API key is not set")
+            raise JinnAPIError("API key is not set")
 
         # Set filtering options
-        self.groups: str = groups
-        self.tags: Optional[str] = tags
+        self.groups: Optional[List[str]] = groups
+        self.tags: Optional[List[str]] = tags
         self.use_bastion: bool = use_bastion
         self.project_name: Optional[str] = None
+        self.servers: List[Tuple[str, Dict[str, Any]]] = []
+
         # Set SSH config endpoint based on bastion usage
-        if self.use_bastion:
-            self.ssh_config_endpoint: str = "/ssh-tools/ssh-config/"
-        else:
-            self.ssh_config_endpoint: str = "/ssh-tools/ssh-config/?bastionless=true"
+        self.ssh_config_endpoint: str = "/ssh-tools/ssh-config/"
+
+        # Load initial configuration
+        self.get_project_name()
+        self.load_servers()
+        self.refresh_ssh_config()
 
     def _str_to_bool(self, value: Optional[str]) -> bool:
         """Convert string value to boolean.
@@ -96,26 +130,51 @@ class Jinn:
         return sorted(list(groups))
 
     def get_project_name(self) -> str:
-        headers = {"Authentication": self.api_key}
-        endpoint = f"{self.api_url.rstrip('/')}/inventory/project/"
+        """Get the project name from the API.
 
-        response = requests.get(endpoint, headers=headers)
-        response.raise_for_status()
-        self.project_name = response.json().get("name_en")
-        return self.project_name
+        Returns:
+            str: The project name
+
+        Raises:
+            JinnAPIError: If the API request fails
+        """
+        try:
+            headers = {"Authentication": self.api_key}
+            endpoint = f"{self.api_url.rstrip('/')}/inventory/project/"
+
+            response = requests.get(endpoint, headers=headers)
+            response.raise_for_status()
+            self.project_name = response.json().get("name_en")
+            return self.project_name
+        except RequestException as e:
+            raise JinnAPIError(f"Failed to get project name: {str(e)}")
 
     def get_groups(self, save: bool = False) -> List[str]:
-        headers = {"Authentication": self.api_key}
-        endpoint = f"{self.api_url.rstrip('/')}/inventory/groups/"
+        """Get available groups from the API.
 
-        response = requests.get(endpoint, headers=headers)
-        response.raise_for_status()
-        groups = []
-        for group in response.json().get("result"):
-            groups.append(group.get("name_en"))
-        if save:
-            self.groups = groups
-        return groups
+        Args:
+            save: Whether to save the groups to the instance
+
+        Returns:
+            List[str]: List of group names
+
+        Raises:
+            JinnAPIError: If the API request fails
+        """
+        try:
+            headers = {"Authentication": self.api_key}
+            endpoint = f"{self.api_url.rstrip('/')}/inventory/groups/"
+
+            response = requests.get(endpoint, headers=headers)
+            response.raise_for_status()
+            groups = [
+                group.get("name_en") for group in response.json().get("result", [])
+            ]
+            if save:
+                self.groups = groups
+            return groups
+        except RequestException as e:
+            raise JinnAPIError(f"Failed to get groups: {str(e)}")
 
     def format_host_list(
         self, filtered_servers: List[Dict[str, Any]]
@@ -124,18 +183,17 @@ class Jinn:
 
         Args:
             filtered_servers: List of server dictionaries
-            ssh_key_path: Path to the SSH key to use for connections
 
         Returns:
             List of (hostname, attributes) tuples
         """
-
         return [
             (
                 server["hostname"],
                 {
                     **server.get("attributes", {}),
                     "ssh_user": server.get("ssh_user"),
+                    "ssh_hostname": server.get("ssh_hostname"),
                     "is_active": server.get("is_active", False),
                     "group_name": server.get("group", {}).get("name_en"),
                     "tags": server.get("tags", []),
@@ -158,15 +216,40 @@ class Jinn:
             for server in filtered_servers
         ]
 
-    def get_servers(
-        self,
-        timeout: int = 30,
-    ) -> List[Tuple[str, Dict[str, Any]]]:
-        """Fetch servers from the API and handle user selection.
-            timeout: Request timeout in seconds
+    def _filter_server(self, server: Dict[str, Any]) -> bool:
+        """Filter a server based on groups and tags.
+
+        Args:
+            server: Server data dictionary
 
         Returns:
-            Tuple of (host_list, project_name)
+            bool: True if server matches filters, False otherwise
+        """
+        if not server.get("is_active"):
+            return False
+
+        server_group = server.get("group", {}).get("name_en")
+        server_tags = set(server.get("tags", []))
+
+        if self.groups and server_group not in self.groups:
+            return False
+
+        if self.tags:
+            return any(tag in server_tags for tag in self.tags)
+
+        return True
+
+    def load_servers(
+        self,
+        timeout: int = 30,
+    ) -> None:
+        """Fetch servers from the API and handle user selection.
+
+        Args:
+            timeout: Request timeout in seconds
+
+        Raises:
+            JinnAPIError: If the API request fails or no servers are found
         """
         try:
             headers = {"Authentication": self.api_key}
@@ -176,40 +259,152 @@ class Jinn:
             response.raise_for_status()
             raw_inventory = response.json()
             servers = raw_inventory.get("result", [])
-            filtered_servers = []
 
-            for server in servers:
-                if server.get("is_active"):
-                    server_group = server.get("group", {}).get("name_en")
-                    if self.groups:
-                        if server_group not in self.groups:
-                            continue
-                    if self.tags:
-                        if any(tag in self.tags for tag in server.get("tags", [])):
-                            filtered_servers.append(server)
-                    else:
-                        filtered_servers.append(server)
+            # Filter servers
+            filtered_servers = [s for s in servers if self._filter_server(s)]
 
-            if len(filtered_servers) == 0:
-                raise Exception("No servers found")
+            if not filtered_servers:
+                raise JinnAPIError("No servers found matching the specified criteria")
 
-            return self.format_host_list(filtered_servers)
+            self.servers = self.format_host_list(filtered_servers)
 
         except requests.Timeout:
-            logger.error("API request timed out")
-            return [], "default"
+            raise JinnAPIError("API request timed out")
         except requests.HTTPError as e:
-            logger.error("HTTP error: %s", e)
-            return [], "default"
+            raise JinnAPIError(f"HTTP error: {str(e)}")
         except requests.RequestException as e:
-            logger.error("API request failed: %s", e)
-            return [], "default"
+            raise JinnAPIError(f"API request failed: {str(e)}")
         except json.JSONDecodeError as e:
-            logger.error("Failed to parse API response: %s", e)
-            return [], "default"
+            raise JinnAPIError(f"Failed to parse API response: {str(e)}")
         except KeyError as e:
-            logger.error("Missing required data in API response: %s", e)
-            return [], "default"
+            raise JinnAPIError(f"Missing required data in API response: {str(e)}")
         except Exception as e:
-            logger.error("An unexpected error occurred: %s", str(e))
-            return [], "default"
+            raise JinnAPIError(f"An unexpected error occurred: {str(e)}")
+
+    def get_servers(self) -> List[Tuple[str, Dict[str, Any]]]:
+        """Get the list of servers.
+
+        Returns:
+            List[Tuple[str, Dict[str, Any]]]: List of (hostname, attributes) tuples
+        """
+        return self.servers
+
+    def get_ssh_config(self) -> str:
+        """Fetch SSH configuration from the API.
+
+        Returns:
+            str: SSH configuration content
+
+        Raises:
+            JinnAPIError: If the API request fails
+        """
+        try:
+            headers = {"Authentication": self.api_key}
+            response = requests.get(
+                f"{self.api_url}{self.ssh_config_endpoint}",
+                headers=headers,
+                params={"bastionless": not self.use_bastion},
+                timeout=30,
+            )
+            response.raise_for_status()
+            return response.text
+
+        except RequestException as e:
+            raise JinnAPIError(f"Failed to fetch SSH config: {str(e)}")
+
+    def save_ssh_config(self, config_content: str) -> None:
+        """Save SSH configuration to a file.
+
+        Args:
+            config_content: SSH configuration content to save
+
+        Raises:
+            JinnSSHError: If saving the config fails
+        """
+        try:
+            config_file = self.ssh_config_dir / f"jinn_{self.project_name}_config"
+            config_file.write_text(config_content)
+            os.chmod(config_file, 0o600)  # Set secure permissions
+        except Exception as e:
+            raise JinnSSHError(f"Failed to save SSH config: {str(e)}")
+
+    def update_main_ssh_config(self) -> None:
+        """Update the main SSH config file to include Jinn configs.
+
+        Raises:
+            JinnSSHError: If updating the config fails
+        """
+        try:
+            # Read existing config
+            if self.main_ssh_config.exists():
+                existing_config = self.main_ssh_config.read_text()
+            else:
+                existing_config = ""
+
+            # Add include directive if not present
+            include_directive = f"Include {self.ssh_config_dir}/*\n"
+            if include_directive not in existing_config:
+                with open(self.main_ssh_config, "a") as f:
+                    f.write(f"\n{include_directive}")
+                os.chmod(self.main_ssh_config, 0o600)  # Set secure permissions
+        except Exception as e:
+            raise JinnSSHError(f"Failed to update main SSH config: {str(e)}")
+
+    def refresh_ssh_config(self) -> None:
+        """Fetch and save new SSH configuration.
+
+        Raises:
+            JinnAPIError: If fetching the config fails
+            JinnSSHError: If saving the config fails
+        """
+        config_content = self.get_ssh_config()
+        self.save_ssh_config(config_content)
+        self.update_main_ssh_config()
+
+    def get_server_by_hostname(self, hostname: str) -> Optional[Dict[str, Any]]:
+        """Get server details by hostname.
+
+        Args:
+            hostname: Server hostname to look up
+
+        Returns:
+            Optional[Dict[str, Any]]: Server details if found, None otherwise
+        """
+        for server_hostname, attributes in self.servers:
+            if server_hostname == hostname:
+                return attributes
+        return None
+
+    def get_servers_by_group(self, group: str) -> List[Tuple[str, Dict[str, Any]]]:
+        """Get all servers in a specific group.
+
+        Args:
+            group: Group name to filter by
+
+        Returns:
+            List[Tuple[str, Dict[str, Any]]]: List of (hostname, attributes) tuples
+        """
+        original_groups = self.groups
+        self.groups = [group]
+        try:
+            self.load_servers()
+            return self.servers
+        finally:
+            self.groups = original_groups
+
+    def get_servers_by_tag(self, tag: str) -> List[Tuple[str, Dict[str, Any]]]:
+        """Get all servers with a specific tag.
+
+        Args:
+            tag: Tag to filter by
+
+        Returns:
+            List[Tuple[str, Dict[str, Any]]]: List of (hostname, attributes) tuples
+        """
+        original_tags = self.tags
+        self.tags = [tag]
+        try:
+            self.load_servers()
+            return self.servers
+        finally:
+            self.tags = original_tags
