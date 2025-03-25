@@ -55,10 +55,10 @@ class SSHKeyManager:
                 # Try to find an existing Jinn instance from inv.py
                 try:
                     sys.path.insert(0, str(Path(__file__).parent.parent.parent))
-                    import inventory
+                    import deploy.jinn as jinn
 
-                    if hasattr(inventory, "jinn") and isinstance(inventory.jinn, Jinn):
-                        SSHKeyManager._base_url = inventory.jinn.api_url
+                    if hasattr(jinn, "jinn") and isinstance(jinn.jinn, Jinn):
+                        SSHKeyManager._base_url = jinn.jinn.api_url
                     else:
                         raise ImportError("No Jinn instance found in inv.py")
                 except (ImportError, AttributeError):
@@ -77,10 +77,10 @@ class SSHKeyManager:
             # Try to find an existing Jinn instance from inv.py
             try:
                 sys.path.insert(0, str(Path(__file__).parent.parent.parent))
-                import inventory
+                import deploy.jinn as jinn
 
-                if hasattr(inventory, "jinn") and isinstance(inventory.jinn, Jinn):
-                    self._base_url = inventory.jinn.api_url
+                if hasattr(jinn, "jinn") and isinstance(jinn.jinn, Jinn):
+                    self._base_url = jinn.jinn.api_url
                 else:
                     raise ImportError("No Jinn instance found")
             except (ImportError, AttributeError):
