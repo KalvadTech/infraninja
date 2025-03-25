@@ -50,7 +50,7 @@ class TestDataExtractionFunctions:
         """Test that get_tags_from_data properly extracts unique tags."""
         # Extract the servers from the sample data
         servers = sample_server_data["result"]
-    
+
         tags = get_tags_from_data(servers)
         # Should extract all tags in alphabetical order
         assert tags == ["api", "backup", "db", "inactive", "web"]
