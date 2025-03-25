@@ -1,8 +1,9 @@
 import getpass
 import json
 import logging
-import os
 import threading
+import sys
+from pathlib import Path
 from typing import Any, Dict, List, Optional
 
 import requests
@@ -10,6 +11,7 @@ from pyinfra import host
 from pyinfra.api import deploy
 from pyinfra.facts.server import User, Users
 from pyinfra.operations import server
+from infraninja.inventory.jinn import Jinn
 
 logging.basicConfig(
     level=logging.INFO,
@@ -21,7 +23,6 @@ logger = logging.getLogger(__name__)
 class SSHKeyManager:
     """
     Manages SSH key operations including fetching from API and deploying to hosts.
-
     This class follows the singleton pattern to ensure only one instance
     exists and uses thread safety for multi-threaded environments.
     """
@@ -45,27 +46,47 @@ class SSHKeyManager:
     def __init__(self) -> None:
         """
         Initialize the SSHKeyManager.
-
-        Checks and sets the base URL from environment variables.
+        Checks and sets the base URL with the following priority:
+        1. Explicitly defined instance of Jinn
+        2. Default value from Jinn class
         """
         with self._lock:
             if SSHKeyManager._base_url is None:
-                SSHKeyManager._base_url = os.getenv("JINN_API_URL")
-                if not SSHKeyManager._base_url:
-                    logger.error("Error: JINN_API_URL environment variable not set")
+                # Try to find an existing Jinn instance from inv.py
+                try:
+                    sys.path.insert(0, str(Path(__file__).parent.parent.parent))
+                    import inventory
+
+                    if hasattr(inventory, "jinn") and isinstance(inventory.jinn, Jinn):
+                        SSHKeyManager._base_url = inventory.jinn.api_url
+                    else:
+                        raise ImportError("No Jinn instance found in inv.py")
+                except (ImportError, AttributeError):
+                    # Use the default API URL from Jinn class
+                    jinn_default_url = Jinn.__init__.__defaults__[1]
+                    SSHKeyManager._base_url = jinn_default_url
 
     def _get_base_url(self) -> Optional[str]:
         """
-        Get API base URL from environment.
+        Get API base URL:
 
         Returns:
             Optional[str]: The base URL or None if not set
         """
         if not self._base_url:
-            self._base_url = os.getenv("JINN_API_URL")
-            if not self._base_url:
-                logger.error("Error: JINN_API_URL environment variable not set")
-                return None
+            # Try to find an existing Jinn instance from inv.py
+            try:
+                sys.path.insert(0, str(Path(__file__).parent.parent.parent))
+                import inventory
+
+                if hasattr(inventory, "jinn") and isinstance(inventory.jinn, Jinn):
+                    self._base_url = inventory.jinn.api_url
+                else:
+                    raise ImportError("No Jinn instance found")
+            except (ImportError, AttributeError):
+                # Use the default API URL from Jinn class
+                jinn_default_url = Jinn.__init__.__defaults__[1]
+                self._base_url = jinn_default_url
         return self._base_url
 
     def _get_credentials(self) -> Dict[str, str]:
