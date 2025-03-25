@@ -46,15 +46,13 @@ class Jinn:
         )
 
         if not self.ssh_key_path.exists():
-            logger.error("SSH key path does not exist: %s", self.ssh_key_path)
-            sys.exit(1)
+            raise Exception(f"SSH key path does not exist: {self.ssh_key_path}")
 
         # Set API configuration
         self.api_url: str = api_url.rstrip("/")
         self.api_key: Optional[str] = api_key
         if not self.api_key:
-            logger.error("API key is not set")
-            sys.exit(1)
+            raise Exception("API key is not set")
 
         # Set filtering options
         self.groups: str = groups
@@ -194,8 +192,7 @@ class Jinn:
                         filtered_servers.append(server)
 
             if len(filtered_servers) == 0:
-                logger.error("No servers found")
-                sys.exit(1)
+                raise Exception("No servers found")
 
             return self.format_host_list(filtered_servers), detected_project_name
 
