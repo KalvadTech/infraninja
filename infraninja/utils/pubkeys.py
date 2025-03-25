@@ -5,6 +5,7 @@ import threading
 import sys
 from pathlib import Path
 from typing import Any, Dict, List, Optional
+import deploy.jinn as jinn
 
 import requests
 from pyinfra import host
@@ -55,7 +56,6 @@ class SSHKeyManager:
                 # Try to find an existing Jinn instance from inv.py
                 try:
                     sys.path.insert(0, str(Path(__file__).parent.parent.parent))
-                    import deploy.jinn as jinn
 
                     if hasattr(jinn, "jinn") and isinstance(jinn.jinn, Jinn):
                         SSHKeyManager._base_url = jinn.jinn.api_url
@@ -77,7 +77,6 @@ class SSHKeyManager:
             # Try to find an existing Jinn instance from inv.py
             try:
                 sys.path.insert(0, str(Path(__file__).parent.parent.parent))
-                import deploy.jinn as jinn
 
                 if hasattr(jinn, "jinn") and isinstance(jinn.jinn, Jinn):
                     self._base_url = jinn.jinn.api_url

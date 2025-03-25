@@ -184,3 +184,5 @@ pyrightconfig.json
 .vagrant
 .infraninja
 .vscode/settings.json
+deploy/jinn.py
+
