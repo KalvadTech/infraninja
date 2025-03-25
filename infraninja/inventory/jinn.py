@@ -139,7 +139,7 @@ class Jinn:
                     "is_active": server.get("is_active", False),
                     "group_name": server.get("group", {}).get("name_en"),
                     "tags": server.get("tags", []),
-                    "ssh_key": self.ssh_key_path,
+                    "ssh_key": str(self.ssh_key_path),
                     **{
                         key: value
                         for key, value in server.items()
@@ -161,7 +161,7 @@ class Jinn:
     def get_servers(
         self,
         timeout: int = 30,
-    ) -> Tuple[List[Tuple[str, Dict[str, Any]]], str]:
+    ) -> List[Tuple[str, Dict[str, Any]]]:
         """Fetch servers from the API and handle user selection.
             timeout: Request timeout in seconds
 
@@ -175,7 +175,6 @@ class Jinn:
             response = requests.get(endpoint, headers=headers, timeout=timeout)
             response.raise_for_status()
             raw_inventory = response.json()
-            detected_project_name = self.get_project_name()
             servers = raw_inventory.get("result", [])
             filtered_servers = []
 
@@ -194,7 +193,7 @@ class Jinn:
             if len(filtered_servers) == 0:
                 raise Exception("No servers found")
 
-            return self.format_host_list(filtered_servers), detected_project_name
+            return self.format_host_list(filtered_servers)
 
         except requests.Timeout:
             logger.error("API request timed out")
