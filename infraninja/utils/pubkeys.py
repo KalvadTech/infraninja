@@ -3,9 +3,11 @@ import json
 import logging
 import threading
 import sys
+import importlib
+import inspect
+import os
 from pathlib import Path
 from typing import Any, Dict, List, Optional
-import deploy.jinn as jinn
 
 import requests
 from pyinfra import host
@@ -48,23 +50,120 @@ class SSHKeyManager:
         """
         Initialize the SSHKeyManager.
         Checks and sets the base URL with the following priority:
-        1. Explicitly defined instance of Jinn
+        1. Dynamically find any Jinn instance in the project
         2. Default value from Jinn class
         """
         with self._lock:
             if SSHKeyManager._base_url is None:
-                # Try to find an existing Jinn instance from inv.py
+                # Try to find an existing Jinn instance in any module
                 try:
                     sys.path.insert(0, str(Path(__file__).parent.parent.parent))
-
-                    if hasattr(jinn, "jinn") and isinstance(jinn.jinn, Jinn):
-                        SSHKeyManager._base_url = jinn.jinn.api_url
+                    
+                    # Search for Jinn instances in project files
+                    jinn_instance = self._find_jinn_in_project()
+                    
+                    if jinn_instance:
+                        SSHKeyManager._base_url = jinn_instance.api_url
                     else:
-                        raise ImportError("No Jinn instance found in inv.py")
-                except (ImportError, AttributeError):
+                        raise ImportError("No Jinn instance found in the project")
+                except (ImportError, AttributeError) as e:
+                    logger.debug("Could not find Jinn instance: %s", e)
                     # Use the default API URL from Jinn class
                     jinn_default_url = Jinn.__init__.__defaults__[1]
                     SSHKeyManager._base_url = jinn_default_url
+
+    def _find_jinn_in_project(self) -> Optional[Jinn]:
+        """
+        Search through project files to find a Jinn instance.
+        
+        Returns:
+            Optional[Jinn]: A Jinn instance if found, None otherwise
+        """
+        project_root = Path(__file__).parent.parent.parent
+        
+        common_paths = [
+            project_root / "deploy" / "jinn.py",
+            project_root / "inventory" / "jinn.py",
+            project_root / "config" / "jinn.py",
+            project_root / "infraninja" / "inventory" / "jinn_instance.py"
+        ]
+        
+        for path in common_paths:
+            if path.exists():
+                jinn_instance = self._extract_jinn_from_file(path)
+                if jinn_instance:
+                    logger.debug(f"Found Jinn instance in common path: {path}")
+                    return jinn_instance
+        
+        # If not found in common locations, search all Python files
+        for py_file in self._find_python_files(project_root):
+            jinn_instance = self._extract_jinn_from_file(py_file)
+            if jinn_instance:
+                logger.debug(f"Found Jinn instance in: {py_file}")
+                return jinn_instance
+        
+        return None
+    
+    @staticmethod
+    def _find_python_files(start_path: Path) -> List[Path]:
+        """
+        Find all Python files in a directory tree.
+
+        Args:
+            start_path: Root directory to start searching from
+
+        Returns:
+            List[Path]: List of Python file paths
+        """
+        python_files = []
+
+        for root, _, files in os.walk(start_path):
+            if any(part.startswith('.') or part == '__pycache__' or part == 'venv' 
+                  for part in Path(root).parts):
+                continue
+
+            for file in files:
+                if file.endswith('.py'):
+                    python_files.append(Path(root) / file)
+
+        return python_files
+    
+    @staticmethod
+    def _extract_jinn_from_file(file_path: Path) -> Optional[Jinn]:
+        """
+        Try to extract a Jinn instance from a Python file.
+        
+        Args:
+            file_path: Path to the Python file
+            
+        Returns:
+            Optional[Jinn]: A Jinn instance if found, None otherwise
+        """
+        try:
+            # Dynamically import the module
+            module_path = str(file_path.relative_to(Path(__file__).parent.parent.parent.parent))
+            module_name = module_path.replace('/', '.').replace('\\', '.').replace('.py', '')
+            
+            # Skip if module name is invalid
+            if not all(part.isidentifier() for part in module_name.split('.')):
+                return None
+                
+            spec = importlib.util.spec_from_file_location(module_name, file_path)
+            if not spec or not spec.loader:
+                return None
+                
+            module = importlib.util.module_from_spec(spec)
+            spec.loader.exec_module(module)
+            
+            # Look for Jinn instances in the module
+            for _, obj in inspect.getmembers(module):
+                if isinstance(obj, Jinn) and hasattr(obj, 'api_url') and obj.api_url:
+                    return obj
+                    
+        except (ImportError, AttributeError, ValueError, SyntaxError):
+            pass
+            
+        return None
 
     def _get_base_url(self) -> Optional[str]:
         """
@@ -74,18 +173,20 @@ class SSHKeyManager:
             Optional[str]: The base URL or None if not set
         """
         if not self._base_url:
-            # Try to find an existing Jinn instance from inv.py
             try:
                 sys.path.insert(0, str(Path(__file__).parent.parent.parent))
-
-                if hasattr(jinn, "jinn") and isinstance(jinn.jinn, Jinn):
-                    self._base_url = jinn.jinn.api_url
+                
+                jinn_instance = self._find_jinn_in_project()
+                
+                if jinn_instance:
+                    self._base_url = jinn_instance.api_url
                 else:
                     raise ImportError("No Jinn instance found")
+                
             except (ImportError, AttributeError):
-                # Use the default API URL from Jinn class
                 jinn_default_url = Jinn.__init__.__defaults__[1]
                 self._base_url = jinn_default_url
+                
         return self._base_url
 
     def _get_credentials(self) -> Dict[str, str]:

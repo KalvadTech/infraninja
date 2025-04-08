@@ -65,11 +65,13 @@ class Jinn:
         """
         # Set SSH configuration
         self.ssh_config_dir: Path = (
-            Path(ssh_config_dir) if ssh_config_dir else Path.home() / ".ssh/config.d"
+            Path(ssh_config_dir).expanduser() if ssh_config_dir 
+            else Path.home() / ".ssh/config.d"
         )
         self.main_ssh_config: Path = Path.home() / ".ssh/config"
         self.ssh_key_path: Path = (
-            Path(ssh_key_path) if ssh_key_path else Path.home() / ".ssh/id_rsa"
+            Path(ssh_key_path).expanduser() if ssh_key_path 
+            else Path.home() / ".ssh/id_rsa"
         )
 
         # Create SSH config directory if it doesn't exist
