@@ -1,5 +1,4 @@
-import pyinfra
-from pyinfra.api import deploy
+from pyinfra.api.deploy import deploy
 from infraninja.utils.pubkeys import SSHKeyManager
 
 
@@ -14,6 +13,4 @@ def test_deploy():
     key_manager.add_ssh_keys()
 
 
-pyinfra.api.deploy(
-    test_deploy(),
-)
+test_deploy()

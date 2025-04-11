@@ -5,8 +5,8 @@ import threading
 from typing import Any, Dict, List, Optional
 
 import requests
-from pyinfra import host
-from pyinfra.api import deploy
+from pyinfra.context import host
+from pyinfra.api.deploy import deploy
 from pyinfra.facts.server import User, Users
 from pyinfra.operations import server
 from infraninja.inventory.jinn import Jinn
@@ -40,7 +40,7 @@ class SSHKeyManager:
                     cls._instance = SSHKeyManager()
         return cls._instance
 
-    def __init__(self, api_url: str = None, api_key: str = None) -> None:
+    def __init__(self, api_url: Optional[str] = None, api_key: Optional[str] = None) -> None:
         """
         Initialize the SSHKeyManager with API URL and API key.
 
@@ -50,10 +50,11 @@ class SSHKeyManager:
         """
         with self._lock:
             # Set default API URL if none provided
-            self.api_url: str = api_url
+            self.api_url: Optional[str] = api_url
             if not self.api_url:
                 # Use the default API URL from Jinn class
-                self.api_url = Jinn.__init__.__defaults__[1]
+                jinn_instance = Jinn()
+                self.api_url = jinn_instance.api_url
             
             # Store the API key
             self.api_key: Optional[str] = api_key
@@ -309,12 +310,12 @@ class SSHKeyManager:
             return True
 
 
-def add_ssh_keys() -> bool:
+def add_ssh_keys() -> Any:
     """
     Backward compatibility function that uses the singleton instance.
 
     Returns:
-        bool: True if keys were added successfully, False otherwise.
+        Any: Returns the OperationMeta object from the decorated add_ssh_keys method.
     """
     manager: SSHKeyManager = SSHKeyManager.get_instance()
     return manager.add_ssh_keys()
