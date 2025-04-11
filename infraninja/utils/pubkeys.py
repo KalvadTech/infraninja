@@ -2,11 +2,6 @@ import getpass
 import json
 import logging
 import threading
-import sys
-import importlib
-import inspect
-import os
-from pathlib import Path
 from typing import Any, Dict, List, Optional
 
 import requests
@@ -33,7 +28,6 @@ class SSHKeyManager:
     _ssh_keys: Optional[List[str]] = None
     _credentials: Optional[Dict[str, str]] = None
     _session_key: Optional[str] = None
-    _base_url: Optional[str] = None
     _lock: threading.RLock = threading.RLock()
     _instance: Optional["SSHKeyManager"] = None  # Singleton instance
 
@@ -46,154 +40,23 @@ class SSHKeyManager:
                     cls._instance = SSHKeyManager()
         return cls._instance
 
-    def __init__(self) -> None:
+    def __init__(self, api_url: str = None, api_key: str = None) -> None:
         """
-        Initialize the SSHKeyManager.
-        Checks and sets the base URL with the following priority:
-        1. Dynamically find any Jinn instance in the project
-        2. Default value from Jinn class
+        Initialize the SSHKeyManager with API URL and API key.
+
+        Args:
+            api_url: The API URL to use, defaults to Jinn's default URL if not provided
+            api_key: The API key to use for authentication
         """
         with self._lock:
-            if SSHKeyManager._base_url is None:
-                # Try to find an existing Jinn instance in any module
-                try:
-                    sys.path.insert(0, str(Path(__file__).parent.parent.parent))
-
-                    # Search for Jinn instances in project files
-                    jinn_instance = self._find_jinn_in_project()
-
-                    if jinn_instance:
-                        SSHKeyManager._base_url = jinn_instance.api_url
-                    else:
-                        raise ImportError("No Jinn instance found in the project")
-                except (ImportError, AttributeError) as e:
-                    logger.debug("Could not find Jinn instance: %s", e)
-                    # Use the default API URL from Jinn class
-                    jinn_default_url = Jinn.__init__.__defaults__[1]
-                    SSHKeyManager._base_url = jinn_default_url
-
-    def _find_jinn_in_project(self) -> Optional[Jinn]:
-        """
-        Search through project files to find a Jinn instance.
-
-        Returns:
-            Optional[Jinn]: A Jinn instance if found, None otherwise
-        """
-        project_root = Path(__file__).parent.parent.parent
-
-        common_paths = [
-            project_root / "deploy" / "jinn.py",
-            project_root / "inventory" / "jinn.py",
-            project_root / "config" / "jinn.py",
-            project_root / "infraninja" / "inventory" / "jinn_instance.py",
-        ]
-
-        for path in common_paths:
-            if path.exists():
-                jinn_instance = self._extract_jinn_from_file(path)
-                if jinn_instance:
-                    logger.debug(f"Found Jinn instance in common path: {path}")
-                    return jinn_instance
-
-        # If not found in common locations, search all Python files
-        for py_file in self._find_python_files(project_root):
-            jinn_instance = self._extract_jinn_from_file(py_file)
-            if jinn_instance:
-                logger.debug(f"Found Jinn instance in: {py_file}")
-                return jinn_instance
-
-        return None
-
-    @staticmethod
-    def _find_python_files(start_path: Path) -> List[Path]:
-        """
-        Find all Python files in a directory tree.
-
-        Args:
-            start_path: Root directory to start searching from
-
-        Returns:
-            List[Path]: List of Python file paths
-        """
-        python_files = []
-
-        for root, _, files in os.walk(start_path):
-            if any(
-                part.startswith(".") or part == "__pycache__" or part == "venv"
-                for part in Path(root).parts
-            ):
-                continue
-
-            for file in files:
-                if file.endswith(".py"):
-                    python_files.append(Path(root) / file)
-
-        return python_files
-
-    @staticmethod
-    def _extract_jinn_from_file(file_path: Path) -> Optional[Jinn]:
-        """
-        Try to extract a Jinn instance from a Python file.
-
-        Args:
-            file_path: Path to the Python file
-
-        Returns:
-            Optional[Jinn]: A Jinn instance if found, None otherwise
-        """
-        try:
-            # Dynamically import the module
-            module_path = str(
-                file_path.relative_to(Path(__file__).parent.parent.parent.parent)
-            )
-            module_name = (
-                module_path.replace("/", ".").replace("\\", ".").replace(".py", "")
-            )
-
-            # Skip if module name is invalid
-            if not all(part.isidentifier() for part in module_name.split(".")):
-                return None
-
-            spec = importlib.util.spec_from_file_location(module_name, file_path)
-            if not spec or not spec.loader:
-                return None
-
-            module = importlib.util.module_from_spec(spec)
-            spec.loader.exec_module(module)
-
-            # Look for Jinn instances in the module
-            for _, obj in inspect.getmembers(module):
-                if isinstance(obj, Jinn) and hasattr(obj, "api_url") and obj.api_url:
-                    return obj
-
-        except (ImportError, AttributeError, ValueError, SyntaxError):
-            pass
-
-        return None
-
-    def _get_base_url(self) -> Optional[str]:
-        """
-        Get API base URL:
-
-        Returns:
-            Optional[str]: The base URL or None if not set
-        """
-        if not self._base_url:
-            try:
-                sys.path.insert(0, str(Path(__file__).parent.parent.parent))
-
-                jinn_instance = self._find_jinn_in_project()
-
-                if jinn_instance:
-                    self._base_url = jinn_instance.api_url
-                else:
-                    raise ImportError("No Jinn instance found")
-
-            except (ImportError, AttributeError):
-                jinn_default_url = Jinn.__init__.__defaults__[1]
-                self._base_url = jinn_default_url
-
-        return self._base_url
+            # Set default API URL if none provided
+            self.api_url: str = api_url
+            if not self.api_url:
+                # Use the default API URL from Jinn class
+                self.api_url = Jinn.__init__.__defaults__[1]
+            
+            # Store the API key
+            self.api_key: Optional[str] = api_key
 
     def _get_credentials(self) -> Dict[str, str]:
         """
@@ -270,18 +133,28 @@ class SSHKeyManager:
         if self._session_key:
             return True
 
-        base_url = self._get_base_url()
-        if not base_url:
+        if not self.api_url:
+            logger.error("Cannot login: No API URL configured")
             return False
 
-        credentials = self._get_credentials()
-        login_endpoint = f"{base_url}/login/"
+        login_endpoint = f"{self.api_url}/login/"
         headers = {"Content-Type": "application/json", "Accept": "application/json"}
-
+        
+        # Always get username and password credentials - either from API key or user input
+        if self.api_key:
+            logger.debug("Using API key as authentication token")
+            # When using API key, we'll use a different authentication approach,
+            # not trying to use API key as credentials
+            credentials = self._get_credentials()
+        else:
+            # Get username and password from user input
+            credentials = self._get_credentials()
+        
         try:
+            # Make the POST request to /login/ with username and password in the body
             response = requests.post(
                 login_endpoint,
-                json=credentials,
+                json={"username": credentials["username"], "password": credentials["password"]},
                 headers=headers,
                 timeout=30,
             )
@@ -332,12 +205,11 @@ class SSHKeyManager:
             logger.error("Failed to authenticate with API")
             return None
 
-        base_url = self._get_base_url()
-        if not base_url:
+        if not self.api_url:
             logger.error("Cannot fetch SSH keys: No API URL configured")
             return None
 
-        endpoint = f"{base_url}/ssh-tools/ssh-keylist/"
+        endpoint = f"{self.api_url}/ssh-tools/ssh-keylist/"
         response = self._make_auth_request(endpoint)
         if not response:
             logger.error("Failed to retrieve SSH keys from API")
