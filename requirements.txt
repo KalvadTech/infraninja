@@ -1,3 +1,2 @@
-pyinfra
-
-git+https://github.com/KalvadTech/infraninja.git
+build==1.2.2
+pyinfra==3.2
