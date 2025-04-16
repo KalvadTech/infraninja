@@ -9,6 +9,7 @@ from pyinfra.context import host
 from pyinfra.api.deploy import deploy
 from pyinfra.facts.server import User, Users
 from pyinfra.operations import server
+from pyinfra.api.exceptions import DeployError, PyinfraError
 from infraninja.inventory.jinn import Jinn
 
 logging.basicConfig(
@@ -16,6 +17,11 @@ logging.basicConfig(
     format="%(message)s",
 )
 logger = logging.getLogger(__name__)
+
+
+class SSHKeyManagerError(Exception):
+    """Custom exception for SSHKeyManager errors."""
+    pass
 
 
 class SSHKeyManager:
@@ -92,10 +98,12 @@ class SSHKeyManager:
 
         Returns:
             Optional[requests.Response]: API response if successful, None otherwise
+            
+        Raises:
+            SSHKeyManagerError: If no session key is available
         """
         if not self._session_key:
-            logger.error("Cannot make authenticated request: No session key available")
-            return None
+            raise SSHKeyManagerError("Cannot make authenticated request: No session key available")
 
         headers = {
             "Authorization": f"Bearer {self._session_key}",
@@ -109,21 +117,17 @@ class SSHKeyManager:
                 method, endpoint, headers=headers, cookies=cookies, timeout=30, **kwargs
             )
             if response.status_code != 200:
-                logger.error(
-                    "API request failed with status code %s: %s",
-                    response.status_code,
-                    response.text[:100],
+                raise SSHKeyManagerError(
+                    f"API request failed with status code {response.status_code}: {response.text[:100]}"
                 )
-                return None
             return response
 
         except requests.exceptions.Timeout:
-            logger.error("API request timed out for %s", endpoint)
+            raise SSHKeyManagerError(f"API request timed out for {endpoint}")
         except requests.exceptions.ConnectionError:
-            logger.error("Connection error when accessing %s", endpoint)
+            raise SSHKeyManagerError(f"Connection error when accessing {endpoint}")
         except requests.exceptions.RequestException as e:
-            logger.error("API request failed: %s", str(e))
-        return None
+            raise SSHKeyManagerError(f"API request failed: {str(e)}")
 
     def _login(self) -> bool:
         """
@@ -137,8 +141,7 @@ class SSHKeyManager:
             return True
 
         if not self.api_url:
-            logger.error("Cannot login: No API URL configured")
-            return False
+            raise SSHKeyManagerError("Cannot login: No API URL configured")
 
         login_endpoint = f"{self.api_url}/login/"
         headers = {"Content-Type": "application/json", "Accept": "application/json"}
@@ -164,32 +167,26 @@ class SSHKeyManager:
             )
 
             if response.status_code != 200:
-                logger.error(
-                    "Login failed with status code %s: %s",
-                    response.status_code,
-                    response.text[:100],  # Limit response text in logs
+                raise SSHKeyManagerError(
+                    f"Login failed with status code {response.status_code}: {response.text[:100]}"
                 )
-                return False
 
             response_data = response.json()
             self._session_key = response_data.get("session_key")
 
             if not self._session_key:
-                logger.error("Login succeeded but no session key in response")
-                return False
+                raise SSHKeyManagerError("Login succeeded but no session key in response")
 
             return True
 
         except requests.exceptions.Timeout:
-            logger.error("Login request timed out")
+            raise SSHKeyManagerError("Login request timed out")
         except requests.exceptions.ConnectionError:
-            logger.error("Connection error when attempting to login")
+            raise SSHKeyManagerError("Connection error when attempting to login")
         except json.JSONDecodeError:
-            logger.error("Received invalid JSON in login response")
+            raise SSHKeyManagerError("Received invalid JSON in login response")
         except requests.exceptions.RequestException as e:
-            logger.error("Login request failed: %s", str(e))
-
-        return False
+            raise SSHKeyManagerError(f"Login request failed: {str(e)}")
 
     def fetch_ssh_keys(self, force_refresh: bool = False) -> Optional[List[str]]:
         """
@@ -206,26 +203,22 @@ class SSHKeyManager:
             return self._ssh_keys
 
         if not self._login():
-            logger.error("Failed to authenticate with API")
-            return None
+            raise SSHKeyManagerError("Failed to authenticate with API")
 
         if not self.api_url:
-            logger.error("Cannot fetch SSH keys: No API URL configured")
-            return None
+            raise SSHKeyManagerError("Cannot fetch SSH keys: No API URL configured")
 
         endpoint = f"{self.api_url}/ssh-tools/ssh-keylist/"
         response = self._make_auth_request(endpoint)
         if not response:
-            logger.error("Failed to retrieve SSH keys from API")
-            return None
+            raise SSHKeyManagerError("Failed to retrieve SSH keys from API")
 
         # Parse the response
         try:
             ssh_data = response.json()
 
             if "result" not in ssh_data:
-                logger.error("SSH key API response missing 'result' field")
-                return None
+                raise SSHKeyManagerError("SSH key API response missing 'result' field")
 
             self._ssh_keys = [
                 key_data["key"] for key_data in ssh_data["result"] if "key" in key_data
@@ -237,14 +230,11 @@ class SSHKeyManager:
             return self._ssh_keys
 
         except KeyError as e:
-            logger.error("Missing expected field in SSH keys response: %s", e)
-            return None
+            raise SSHKeyManagerError(f"Missing expected field in SSH keys response: {e}")
         except json.JSONDecodeError as e:
-            logger.error("Failed to parse SSH keys response as JSON: %s", e)
-            return None
+            raise SSHKeyManagerError(f"Failed to parse SSH keys response as JSON: {e}")
         except Exception as e:
-            logger.error("Unexpected error parsing SSH keys response: %s", e)
-            return None
+            raise SSHKeyManagerError(f"Unexpected error parsing SSH keys response: {e}")
 
     @deploy("Add SSH keys to authorized_keys")
     def add_ssh_keys(self, force_refresh: bool = False) -> bool:
@@ -256,25 +246,25 @@ class SSHKeyManager:
 
         Returns:
             bool: True if keys were added successfully, False otherwise
+            
+        Raises:
+            SSHKeyManagerError: If keys cannot be fetched or there's an error during deployment
         """
-        # Get the SSH keys
-        keys = self.fetch_ssh_keys(force_refresh)
-        if not keys:
-            logger.error("No SSH keys available to deploy")
-            return False
-
         try:
+            # Get the SSH keys - may raise SSHKeyManagerError from fetch_ssh_keys
+            keys = self.fetch_ssh_keys(force_refresh)
+            if not keys:
+                raise SSHKeyManagerError("No SSH keys available to deploy")
+            
             # Get current user information
             current_user = host.get_fact(User)
             if not current_user:
-                logger.error("Failed to determine current user")
-                return False
+                raise PyinfraError("Failed to determine current user")
 
             # Get user details
             users = host.get_fact(Users)
             if not users or current_user not in users:
-                logger.error("Failed to retrieve details for user: %s", current_user)
-                return False
+                raise PyinfraError(f"Failed to retrieve details for user: {current_user}")
 
             user_details = users[current_user]
 
@@ -292,11 +282,9 @@ class SSHKeyManager:
             return True
 
         except KeyError as e:
-            logger.error("Missing user information: %s", e)
-            return False
+            raise SSHKeyManagerError(f"Missing user information: {e}")
         except Exception as e:
-            logger.error("Error setting up SSH keys: %s", str(e))
-            return False
+            raise SSHKeyManagerError(f"Error setting up SSH keys: {str(e)}")
 
     def clear_cache(self) -> bool:
         """
@@ -304,13 +292,19 @@ class SSHKeyManager:
 
         Returns:
             bool: True if cache was cleared successfully.
+            
+        Raises:
+            SSHKeyManagerError: If there is an error while clearing the cache
         """
-        with self._lock:
-            SSHKeyManager._credentials = None
-            SSHKeyManager._ssh_keys = None
-            SSHKeyManager._session_key = None
-            logger.debug("Cache cleared")
-            return True
+        try:
+            with self._lock:
+                SSHKeyManager._credentials = None
+                SSHKeyManager._ssh_keys = None
+                SSHKeyManager._session_key = None
+                logger.debug("Cache cleared")
+                return True
+        except Exception as e:
+            raise SSHKeyManagerError(f"Error clearing cache: {str(e)}")
 
 
 def add_ssh_keys() -> Any:
