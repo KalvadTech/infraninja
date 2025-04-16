@@ -40,7 +40,9 @@ class SSHKeyManager:
                     cls._instance = SSHKeyManager()
         return cls._instance
 
-    def __init__(self, api_url: Optional[str] = None, api_key: Optional[str] = None) -> None:
+    def __init__(
+        self, api_url: Optional[str] = None, api_key: Optional[str] = None
+    ) -> None:
         """
         Initialize the SSHKeyManager with API URL and API key.
 
@@ -55,7 +57,7 @@ class SSHKeyManager:
                 # Use the default API URL from Jinn class
                 jinn_instance = Jinn()
                 self.api_url = jinn_instance.api_url
-            
+
             # Store the API key
             self.api_key: Optional[str] = api_key
 
@@ -110,7 +112,7 @@ class SSHKeyManager:
                 logger.error(
                     "API request failed with status code %s: %s",
                     response.status_code,
-                    response.text[:100],  # Limit response text in logs
+                    response.text[:100],
                 )
                 return None
             return response
@@ -140,22 +142,23 @@ class SSHKeyManager:
 
         login_endpoint = f"{self.api_url}/login/"
         headers = {"Content-Type": "application/json", "Accept": "application/json"}
-        
+
         # Always get username and password credentials - either from API key or user input
         if self.api_key:
             logger.debug("Using API key as authentication token")
-            # When using API key, we'll use a different authentication approach,
-            # not trying to use API key as credentials
+
             credentials = self._get_credentials()
         else:
-            # Get username and password from user input
             credentials = self._get_credentials()
-        
+
         try:
             # Make the POST request to /login/ with username and password in the body
             response = requests.post(
                 login_endpoint,
-                json={"username": credentials["username"], "password": credentials["password"]},
+                json={
+                    "username": credentials["username"],
+                    "password": credentials["password"],
+                },
                 headers=headers,
                 timeout=30,
             )
