@@ -70,6 +70,11 @@ You can test your deployments locally using PyInfra:
 pyinfra @local deploy_netdata.py
 ```
 
+You can create a build:
+```bash
+python -m build
+```
+
 ## 📝 License
 
 This project is licensed under the **MIT License**. 📝 Feel free to use it, modify it, and become an infrastructure ninja yourself! 🥷
