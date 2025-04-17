@@ -9,7 +9,7 @@ from pyinfra.context import host
 from pyinfra.api.deploy import deploy
 from pyinfra.facts.server import User, Users
 from pyinfra.operations import server
-from pyinfra.api.exceptions import DeployError, PyinfraError
+from pyinfra.api.exceptions import PyinfraError
 from infraninja.inventory.jinn import Jinn
 
 logging.basicConfig(
@@ -21,6 +21,7 @@ logger = logging.getLogger(__name__)
 
 class SSHKeyManagerError(Exception):
     """Custom exception for SSHKeyManager errors."""
+
     pass
 
 
@@ -98,12 +99,14 @@ class SSHKeyManager:
 
         Returns:
             Optional[requests.Response]: API response if successful, None otherwise
-            
+
         Raises:
             SSHKeyManagerError: If no session key is available
         """
         if not self._session_key:
-            raise SSHKeyManagerError("Cannot make authenticated request: No session key available")
+            raise SSHKeyManagerError(
+                "Cannot make authenticated request: No session key available"
+            )
 
         headers = {
             "Authorization": f"Bearer {self._session_key}",
@@ -175,7 +178,9 @@ class SSHKeyManager:
             self._session_key = response_data.get("session_key")
 
             if not self._session_key:
-                raise SSHKeyManagerError("Login succeeded but no session key in response")
+                raise SSHKeyManagerError(
+                    "Login succeeded but no session key in response"
+                )
 
             return True
 
@@ -230,7 +235,9 @@ class SSHKeyManager:
             return self._ssh_keys
 
         except KeyError as e:
-            raise SSHKeyManagerError(f"Missing expected field in SSH keys response: {e}")
+            raise SSHKeyManagerError(
+                f"Missing expected field in SSH keys response: {e}"
+            )
         except json.JSONDecodeError as e:
             raise SSHKeyManagerError(f"Failed to parse SSH keys response as JSON: {e}")
         except Exception as e:
@@ -246,7 +253,7 @@ class SSHKeyManager:
 
         Returns:
             bool: True if keys were added successfully, False otherwise
-            
+
         Raises:
             SSHKeyManagerError: If keys cannot be fetched or there's an error during deployment
         """
@@ -255,7 +262,7 @@ class SSHKeyManager:
             keys = self.fetch_ssh_keys(force_refresh)
             if not keys:
                 raise SSHKeyManagerError("No SSH keys available to deploy")
-            
+
             # Get current user information
             current_user = host.get_fact(User)
             if not current_user:
@@ -264,7 +271,9 @@ class SSHKeyManager:
             # Get user details
             users = host.get_fact(Users)
             if not users or current_user not in users:
-                raise PyinfraError(f"Failed to retrieve details for user: {current_user}")
+                raise PyinfraError(
+                    f"Failed to retrieve details for user: {current_user}"
+                )
 
             user_details = users[current_user]
 
@@ -292,7 +301,7 @@ class SSHKeyManager:
 
         Returns:
             bool: True if cache was cleared successfully.
-            
+
         Raises:
             SSHKeyManagerError: If there is an error while clearing the cache
         """
