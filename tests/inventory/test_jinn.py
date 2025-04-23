@@ -30,7 +30,7 @@ class TestJinn(unittest.TestCase):
         self.groups = ["group1", "group2"]
         self.tags = ["tag1", "tag2"]
 
-        # Updated sample server data to include three servers for testing
+        # Updated sample server data to include bastion_host in attributes
         self.sample_server_data = {
             "result": [
                 {
@@ -40,11 +40,13 @@ class TestJinn(unittest.TestCase):
                     "is_active": True,
                     "group": {"name_en": "group1"},
                     "tags": ["tag1", "web"],
-                    "attributes": {"role": "webserver", "environment": "prod"},
-                    "bastion": {
-                        "hostname": "bastion.example.com",
-                        "user": "bastion_user",
-                        "port": 22,
+                    "attributes": {
+                        "role": "webserver",
+                        "environment": "prod",
+                        "ssh_hostname": "server1.example.com",
+                        "bastion_host": "bastion.example.com",
+                        "bastion_user": "bastion_user",
+                        "bastion_port": 22
                     },
                 },
                 {
@@ -54,7 +56,11 @@ class TestJinn(unittest.TestCase):
                     "is_active": True,
                     "group": {"name_en": "group2"},
                     "tags": ["tag2", "db"],
-                    "attributes": {"role": "database", "environment": "prod"},
+                    "attributes": {
+                        "role": "database",
+                        "environment": "prod",
+                        "ssh_hostname": "server2.example.com"
+                    },
                 },
                 {
                     "hostname": "server3",
@@ -63,7 +69,11 @@ class TestJinn(unittest.TestCase):
                     "is_active": False,
                     "group": {"name_en": "group3"},
                     "tags": ["tag3"],
-                    "attributes": {"role": "backup", "environment": "staging"},
+                    "attributes": {
+                        "role": "backup",
+                        "environment": "staging",
+                        "ssh_hostname": "server3.example.com"
+                    },
                 },
             ]
         }
@@ -244,7 +254,7 @@ Host server2
 
         # Test with sample data
         groups = jinn.get_groups_from_data(self.sample_server_data)
-        self.assertEqual(groups, ["group1", "group2", "group3"])  # Fixed
+        self.assertEqual(groups, ["group1", "group2", "group3"])  
 
         # Test with empty data
         empty_data = {"result": []}
@@ -326,10 +336,10 @@ Host server2
         hostname, attributes = host_list[0]
         self.assertEqual(hostname, "server1")
         self.assertEqual(attributes["ssh_user"], "admin")
-        self.assertEqual(attributes["ssh_hostname"], "server1.example.com")  # Fixed
-        self.assertEqual(attributes["bastion_host"], "bastion.example.com")
-        self.assertEqual(attributes["bastion_user"], "bastion_user")
-        self.assertEqual(attributes["bastion_port"], 22)
+        self.assertEqual(attributes.get("ssh_hostname"), "server1.example.com")  
+        self.assertEqual(attributes.get("bastion_host"), "bastion.example.com")
+        self.assertEqual(attributes.get("bastion_user"), "bastion_user")
+        self.assertEqual(attributes.get("bastion_port"), 22)
         self.assertTrue(attributes["is_active"])
         self.assertEqual(attributes["group_name"], "group1")
         self.assertEqual(attributes["tags"], ["tag1", "web"])
@@ -340,7 +350,7 @@ Host server2
         hostname, attributes = host_list[1]
         self.assertEqual(hostname, "server2")
         self.assertEqual(attributes["ssh_user"], "admin")
-        self.assertEqual(attributes["ssh_hostname"], "server2.example.com")  # Fixed
+        self.assertEqual(attributes.get("ssh_hostname"), "server2.example.com")  
         self.assertIsNone(attributes.get("bastion_host"))
         self.assertIsNone(attributes.get("bastion_user"))
         self.assertIsNone(attributes.get("bastion_port"))
@@ -352,7 +362,7 @@ Host server2
         server1 = self.sample_server_data["result"][
             0
         ]  # Active server in group1 with tag1
-        server3 = self.sample_server_data["result"][2]  # Inactive server
+        server3 = self.sample_server_data["result"][2] 
 
         # Server should pass with no filters if active
         self.assertTrue(jinn._filter_server(server1))
@@ -594,7 +604,7 @@ Host server2
         self.assertIsNotNone(server1)
 
         if server1 is not None:
-            self.assertEqual(server1["ssh_hostname"], "server1.example.com")  # Fixed
+            self.assertEqual(server1.get("ssh_hostname"), "server1.example.com")
 
         # Test finding a non-existent server
         server_nonexistent = jinn.get_server_by_hostname("nonexistent")
