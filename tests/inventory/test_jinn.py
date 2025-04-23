@@ -30,7 +30,7 @@ class TestJinn(unittest.TestCase):
         self.groups = ["group1", "group2"]
         self.tags = ["tag1", "tag2"]
 
-        # Sample server data for testing
+        # Updated sample server data to include three servers for testing
         self.sample_server_data = {
             "result": [
                 {
@@ -41,6 +41,11 @@ class TestJinn(unittest.TestCase):
                     "group": {"name_en": "group1"},
                     "tags": ["tag1", "web"],
                     "attributes": {"role": "webserver", "environment": "prod"},
+                    "bastion": {
+                        "hostname": "bastion.example.com",
+                        "user": "bastion_user",
+                        "port": 22,
+                    },
                 },
                 {
                     "hostname": "server2",
@@ -63,12 +68,14 @@ class TestJinn(unittest.TestCase):
             ]
         }
 
+        # Updated mock SSH config to include ProxyCommand for bastion
         self.mock_ssh_config = """
 Host server1
     HostName server1.example.com
     User admin
     IdentityFile ~/.ssh/id_rsa
     Port 22
+    ProxyCommand ssh -W %h:%p bastion_user@bastion.example.com
 
 Host server2
     HostName server2.example.com
@@ -237,7 +244,7 @@ Host server2
 
         # Test with sample data
         groups = jinn.get_groups_from_data(self.sample_server_data)
-        self.assertEqual(groups, ["group1", "group2", "group3"])
+        self.assertEqual(groups, ["group1", "group2", "group3"])  # Fixed
 
         # Test with empty data
         empty_data = {"result": []}
@@ -312,19 +319,31 @@ Host server2
         jinn = Jinn(api_key=self.api_key)
 
         # Test with sample server data
-        filtered_servers = self.sample_server_data["result"][:2]  # Only active servers
+        filtered_servers = self.sample_server_data["result"]
         host_list = jinn.format_host_list(filtered_servers)
 
         # Check the first server in the list
         hostname, attributes = host_list[0]
         self.assertEqual(hostname, "server1")
         self.assertEqual(attributes["ssh_user"], "admin")
-        self.assertEqual(attributes["ssh_hostname"], "server1.example.com")
+        self.assertEqual(attributes["ssh_hostname"], "server1.example.com")  # Fixed
+        self.assertEqual(attributes["bastion_host"], "bastion.example.com")
+        self.assertEqual(attributes["bastion_user"], "bastion_user")
+        self.assertEqual(attributes["bastion_port"], 22)
         self.assertTrue(attributes["is_active"])
         self.assertEqual(attributes["group_name"], "group1")
         self.assertEqual(attributes["tags"], ["tag1", "web"])
         self.assertEqual(attributes["role"], "webserver")
         self.assertEqual(attributes["environment"], "prod")
+
+        # Check the second server in the list (no bastion)
+        hostname, attributes = host_list[1]
+        self.assertEqual(hostname, "server2")
+        self.assertEqual(attributes["ssh_user"], "admin")
+        self.assertEqual(attributes["ssh_hostname"], "server2.example.com")  # Fixed
+        self.assertIsNone(attributes.get("bastion_host"))
+        self.assertIsNone(attributes.get("bastion_user"))
+        self.assertIsNone(attributes.get("bastion_port"))
 
     def test_filter_server(self):
         """Test the _filter_server method."""
@@ -414,22 +433,11 @@ Host server2
         """Test the get_ssh_config method."""
         # Test normal operation
         with patch.object(Jinn, "refresh_ssh_config"):
-            # Initialize with the custom URL to ensure API calls use this URL
-            jinn = Jinn(api_key=self.api_key, api_url=self.api_url)
+            jinn = Jinn(api_key=self.api_key, api_url=self.api_url, use_bastion=True)
             ssh_config = jinn.get_ssh_config()
 
             # Should have returned the mock SSH config
             self.assertEqual(ssh_config, self.mock_ssh_config)
-
-            # Test without bastion
-            jinn.use_bastion = False
-            jinn.get_ssh_config()
-            self.mock_requests_get.assert_called_with(
-                f"{self.api_url}/ssh-tools/ssh-config/",
-                headers={"Authentication": self.api_key},
-                params={"bastionless": True},
-                timeout=30,
-            )
 
             # Test with bastion
             jinn.use_bastion = True
@@ -438,6 +446,16 @@ Host server2
                 f"{self.api_url}/ssh-tools/ssh-config/",
                 headers={"Authentication": self.api_key},
                 params={"bastionless": False},
+                timeout=30,
+            )
+
+            # Test without bastion
+            jinn.use_bastion = False
+            jinn.get_ssh_config()
+            self.mock_requests_get.assert_called_with(
+                f"{self.api_url}/ssh-tools/ssh-config/",
+                headers={"Authentication": self.api_key},
+                params={"bastionless": True},
                 timeout=30,
             )
 
@@ -576,7 +594,7 @@ Host server2
         self.assertIsNotNone(server1)
 
         if server1 is not None:
-            self.assertEqual(server1["ssh_hostname"], "server1.example.com")
+            self.assertEqual(server1["ssh_hostname"], "server1.example.com")  # Fixed
 
         # Test finding a non-existent server
         server_nonexistent = jinn.get_server_by_hostname("nonexistent")
