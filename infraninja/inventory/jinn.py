@@ -192,33 +192,32 @@ class Jinn:
             List of (hostname, attributes) tuples
         """
         return [
-            (
-                server["hostname"],
-                {
-                    **server.get("attributes", {}),
-                    "ssh_user": server.get("ssh_user"),
-                    "ssh_hostname": server.get("ssh_hostname"),
-                    "is_active": server.get("is_active", False),
-                    "group_name": server.get("group", {}).get("name_en"),
-                    "tags": server.get("tags", []),
-                    "ssh_key": str(self.ssh_key_path),
-                    **{
-                        key: value
-                        for key, value in server.items()
-                        if key
-                        not in [
-                            "attributes",
-                            "ssh_user",
-                            "is_active",
-                            "group",
-                            "tags",
-                            "ssh_hostname",
-                        ]
-                    },
+        (
+            server["hostname"],
+            {
+                **server.get("attributes", {}),
+                "ssh_user": server.get("ssh_user"),
+                "is_active": server.get("is_active", False),
+                "group_name": server.get("group", {}).get("name_en"),
+                "tags": server.get("tags", []),
+                "ssh_key": str(self.ssh_key_path),
+                **{
+                    key: value
+                    for key, value in server.items()
+                    if key
+                    not in [
+                        "attributes",
+                        "ssh_user",
+                        "is_active",
+                        "group",
+                        "tags",
+                        "ssh_hostname",
+                    ]
                 },
-            )
-            for server in filtered_servers
-        ]
+            },
+        )
+        for server in filtered_servers
+    ]
 
     def _filter_server(self, server: Dict[str, Any]) -> bool:
         """Filter a server based on groups and tags.
