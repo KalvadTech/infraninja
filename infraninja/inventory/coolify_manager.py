@@ -59,7 +59,6 @@ class CoolifyManager:
         self.jinn_api_key = jinn_api_key
         self.logger = logging.getLogger(__name__)
 
-
     def get_coolify_headers(self) -> Dict[str, str]:
         """Return the headers needed for Coolify API requests."""
         return {
@@ -121,8 +120,8 @@ class CoolifyManager:
         user: str,
         private_key_uuid: str,
         description: Optional[str] = None,
-        is_build_server: bool = False,
-        instant_validate: bool = False,
+        is_build_server: bool = True,
+        instant_validate: bool = True,
     ) -> Dict[str, Any]:
         """
         Add a server to Coolify.
@@ -161,7 +160,9 @@ class CoolifyManager:
             self.logger.error(
                 f"Failed to add server to Coolify: {response.status_code} - {response.text}"
             )
-            raise CoolifyAPIError(f"Failed to add server to Coolify: {response.status_code}")
+            raise CoolifyAPIError(
+                f"Failed to add server to Coolify: {response.status_code} - {response.text}"
+            )
 
         return response.json()
 
