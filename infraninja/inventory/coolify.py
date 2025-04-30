@@ -20,16 +20,19 @@ logger = logging.getLogger(__name__)
 
 class CoolifyError(Exception):
     """Base exception for Coolify-related errors."""
+
     pass
 
 
 class CoolifyAPIError(CoolifyError):
     """Exception raised for API-related errors."""
+
     pass
 
 
 class CoolifySSHError(CoolifyError):
     """Exception raised for SSH-related errors."""
+
     pass
 
 
@@ -87,7 +90,9 @@ class Coolify:
         # Load initial configuration
         self.load_servers()
 
-    def _make_api_request(self, endpoint: str, method: str = "GET", data: Optional[Dict] = None) -> Dict:
+    def _make_api_request(
+        self, endpoint: str, method: str = "GET", data: Optional[Dict] = None
+    ) -> Dict:
         """Make a request to the Coolify API.
 
         Args:
@@ -106,38 +111,42 @@ class Coolify:
                 "Authorization": f"Bearer {self.api_key}",
                 "Content-Type": "application/json",
             }
-            
+
             url = f"{self.api_url}/{endpoint.lstrip('/')}"
             logger.info(f"Making API request to: {url}")
-            
+
             if method.upper() == "GET":
                 response = requests.get(url, headers=headers, timeout=30)
             elif method.upper() == "POST":
                 response = requests.post(url, headers=headers, json=data, timeout=30)
             else:
                 raise CoolifyAPIError(f"Unsupported HTTP method: {method}")
-            
+
             # Log response status
             logger.info(f"API response status: {response.status_code}")
-            
+
             # If response is not successful, log and raise an error
             if response.status_code >= 400:
-                logger.error(f"API request failed with status {response.status_code}: {response.text}")
+                logger.error(
+                    f"API request failed with status {response.status_code}: {response.text}"
+                )
                 response.raise_for_status()
-                
+
             # Try to parse JSON response
             try:
                 return response.json()
             except json.JSONDecodeError as e:
                 logger.error(f"Failed to parse response as JSON: {e}")
-                logger.error(f"Response text: {response.text[:1000]}...")  # Log first 1000 chars
+                logger.error(
+                    f"Response text: {response.text[:1000]}..."
+                )  # Log first 1000 chars
                 raise CoolifyAPIError(f"Failed to parse API response: {str(e)}")
-                
+
         except RequestException as e:
             logger.error(f"Request exception: {str(e)}")
             raise CoolifyAPIError(f"API request failed: {str(e)}")
         except Exception as e:
-            logger.error(f"Unexpected error in API request: {str(e)}")
+            logger.exception(f"Unexpected error in API request: {str(e)}")
             raise CoolifyAPIError(f"API request failed: {str(e)}")
 
     def _filter_server(self, server: Dict[str, Any]) -> bool:
@@ -152,11 +161,11 @@ class Coolify:
         # If no tags are specified, include all servers
         if not self.tags:
             return True
-            
+
         # For now, assume Coolify doesn't have tags in the same format
         # Instead, we'll use the name field for basic matching
         server_name = server.get("name", "").lower()
-        
+
         # Check if any tag is in the server name
         return any(tag.lower() in server_name for tag in self.tags)
 
@@ -172,10 +181,12 @@ class Coolify:
         try:
             # Get list of servers from Coolify
             response = self._make_api_request("api/v1/servers")
-            
+
             # The response might be a dict or a list, handle both cases
-            servers = response if isinstance(response, list) else response.get('data', [])
-            
+            servers = (
+                response if isinstance(response, list) else response.get("data", [])
+            )
+
             filtered_servers = []
             for server in servers:
                 if self._filter_server(server):
@@ -209,30 +220,33 @@ class Coolify:
         for server in filtered_servers:
             server_name = server.get("name", "")
             settings = server.get("settings", {})
-            
+
             # Skip servers that are not reachable or usable
             if settings:
                 is_reachable = settings.get("is_reachable", False)
                 is_usable = settings.get("is_usable", False)
                 if not is_reachable or not is_usable:
-                    logger.warning(f"Skipping server {server_name} as it is not reachable or usable")
+                    logger.warning(
+                        f"Skipping server {server_name} as it is not reachable or usable"
+                    )
                     continue
-            
+
             # Create server entry for PyInfra
-            result.append((
-                server_name,
-                {
-                    "hostname": server.get("ip"),
-                    "ssh_user": server.get("user", "root"),
-                    "ssh_port": server.get("port", 22),
-                    "ssh_key": str(self.ssh_key_path),
-                    "is_active": True,  # Assume active if returned from API
-                    "uuid": server.get("uuid", ""),
-                    "server_id": server.get("id", ""),
-                    "description": server.get("description", ""),
-                    # Add any other relevant fields
-                }
-            ))
+            result.append(
+                (
+                    server_name,
+                    {
+                        "hostname": server.get("ip"),
+                        "ssh_user": server.get("user", "root"),
+                        "ssh_port": server.get("port", 22),
+                        "ssh_key": str(self.ssh_key_path),
+                        "is_active": True,
+                        "uuid": server.get("uuid", ""),
+                        "server_id": server.get("id", ""),
+                        "description": server.get("description", ""),
+                    },
+                )
+            )
         return result
 
     def get_servers(self) -> List[Tuple[str, Dict[str, Any]]]:
