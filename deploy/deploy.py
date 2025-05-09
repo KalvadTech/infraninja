@@ -1,16 +1,10 @@
 from pyinfra.api.deploy import deploy
-from infraninja.utils.pubkeys import SSHKeyManager
-
+from infraninja.security.common.update_packages import system_update as task1
 
 @deploy("Test Security Setup")
 def test_deploy():
-    # Create an instance of SSHKeyManager with the API credentials
-    key_manager = SSHKeyManager(
-        api_url="URLHERE", 
-        api_key="APIKEYHERE"
-    )
+    task1(_sudo=True)
     
-    key_manager.add_ssh_keys()
 
 
 test_deploy()

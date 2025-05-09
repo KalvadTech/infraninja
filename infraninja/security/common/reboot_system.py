@@ -3,11 +3,10 @@ from pyinfra.operations import server
 from pyinfra.facts.server import Command
 
 
-
 def check_reboot_required(host):
     """
     Check if a system reboot is required by examining various indicators.
-    
+
     On Linux systems:
     - Checks for /var/run/reboot-required and /var/run/reboot-required.pkgs
     - On Alpine Linux, compares installed kernel with running kernel
@@ -61,24 +60,26 @@ def check_reboot_required(host):
 
     echo "no_reboot_required"
     """
-    
+
     stdout = host.get_fact(Command, command)
-    
+
     # Ensure stdout is a list for consistent handling
     if isinstance(stdout, str):
         stdout = stdout.splitlines()
 
     if stdout and stdout[0].strip() == "reboot_required":
         return True
-    
+
     return False
 
 
 @deploy("Reboot the system")
-def reboot_system(need_reboot=None, delay=10, force_reboot=False, skip_reboot_check=False):
+def reboot_system(
+    need_reboot=None, delay=10, force_reboot=False, skip_reboot_check=False
+):
     """
     Reboot a system if necessary.
-    
+
     Args:
         need_reboot: If True, always reboot. If False, never reboot.
                     If None, check if reboot is required.
@@ -88,11 +89,11 @@ def reboot_system(need_reboot=None, delay=10, force_reboot=False, skip_reboot_ch
     """
     if force_reboot:
         need_reboot = True
-    
+
     if need_reboot is None and not skip_reboot_check:
         # Check if reboot is required
         need_reboot = check_reboot_required(host)
-    
+
     if need_reboot is True:
         server.reboot(
             name="Reboot the system",
