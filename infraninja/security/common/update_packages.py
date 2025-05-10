@@ -1,6 +1,6 @@
 from pyinfra import host
 from pyinfra.api import deploy
-from pyinfra.facts.server import LinuxDistribution
+from pyinfra.facts.server import LinuxDistribution, Which 
 from pyinfra.operations import (
     apk,
     apt,
@@ -54,7 +54,7 @@ def system_update():
         or "rhel" in id_like
     ):
         # Try to determine if system has dnf or needs to use yum
-        if host.get_fact("server.Which", command="dnf"):
+        if host.get_fact(Which, command="dnf"):  # Use the Which class
             dnf.update(name=f"Update {distro_name} packages")
         else:
             yum.update(name=f"Update {distro_name} packages")
@@ -73,8 +73,7 @@ def system_update():
 
     # FreeBSD
     elif "freebsd" in distro_name:
-        pkg.update(name="Update FreeBSD package database")
-        pkg.upgrade(name="Upgrade FreeBSD packages")
+        pkg.packages(name="Update and upgrade FreeBSD packages", present=True)
 
     # Void Linux
     elif "void" in distro_name:
