@@ -46,7 +46,7 @@ class TestJinn(unittest.TestCase):
                         "ssh_hostname": "server1.example.com",
                         "bastion_host": "bastion.example.com",
                         "bastion_user": "bastion_user",
-                        "bastion_port": 22
+                        "bastion_port": 22,
                     },
                 },
                 {
@@ -59,7 +59,7 @@ class TestJinn(unittest.TestCase):
                     "attributes": {
                         "role": "database",
                         "environment": "prod",
-                        "ssh_hostname": "server2.example.com"
+                        "ssh_hostname": "server2.example.com",
                     },
                 },
                 {
@@ -72,7 +72,7 @@ class TestJinn(unittest.TestCase):
                     "attributes": {
                         "role": "backup",
                         "environment": "staging",
-                        "ssh_hostname": "server3.example.com"
+                        "ssh_hostname": "server3.example.com",
                     },
                 },
             ]
@@ -260,7 +260,7 @@ Host server2
 
         # Test with sample data
         groups = jinn.get_groups_from_data(self.sample_server_data)
-        self.assertEqual(groups, ["group1", "group2", "group3"])  
+        self.assertEqual(groups, ["group1", "group2", "group3"])
 
         # Test with empty data
         empty_data = {"result": []}
@@ -342,7 +342,7 @@ Host server2
         hostname, attributes = host_list[0]
         self.assertEqual(hostname, "server1")
         self.assertEqual(attributes["ssh_user"], "admin")
-        self.assertEqual(attributes.get("ssh_hostname"), "server1.example.com")  
+        self.assertEqual(attributes.get("ssh_hostname"), "server1.example.com")
         self.assertEqual(attributes.get("bastion_host"), "bastion.example.com")
         self.assertEqual(attributes.get("bastion_user"), "bastion_user")
         self.assertEqual(attributes.get("bastion_port"), 22)
@@ -356,7 +356,7 @@ Host server2
         hostname, attributes = host_list[1]
         self.assertEqual(hostname, "server2")
         self.assertEqual(attributes["ssh_user"], "admin")
-        self.assertEqual(attributes.get("ssh_hostname"), "server2.example.com")  
+        self.assertEqual(attributes.get("ssh_hostname"), "server2.example.com")
         self.assertIsNone(attributes.get("bastion_host"))
         self.assertIsNone(attributes.get("bastion_user"))
         self.assertIsNone(attributes.get("bastion_port"))
@@ -368,7 +368,7 @@ Host server2
         server1 = self.sample_server_data["result"][
             0
         ]  # Active server in group1 with tag1
-        server3 = self.sample_server_data["result"][2] 
+        server3 = self.sample_server_data["result"][2]
 
         # Server should pass with no filters if active
         self.assertTrue(jinn._filter_server(server1))
