@@ -1,6 +1,8 @@
-from pyinfra.api import deploy, host
+from pyinfra.api.deploy import deploy
 from pyinfra.operations import server
 from pyinfra.facts.server import Command
+from pyinfra.context import host
+
 
 
 def check_reboot_required(host):
@@ -28,7 +30,7 @@ def check_reboot_required(host):
         fi
 
         # Check for standard Linux reboot required files
-        if [ -f /var/run/reboot-required ] || [ -f /var/run/reboot-required.pkgs ]; then
+        if [ -f /var/run/reboot-required ] || [ -f /var/run/reboot-required.pkgs ] || [ -f /var/run/reboot-needed ]; then
             echo "reboot_required"
             exit 0
         fi

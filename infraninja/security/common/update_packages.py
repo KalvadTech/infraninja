@@ -1,15 +1,15 @@
-from pyinfra import host
-from pyinfra.api import deploy
+from pyinfra.context import host
+from pyinfra.api.deploy import deploy
 from pyinfra.facts.server import LinuxDistribution, Which 
 from pyinfra.operations import (
     apk,
     apt,
     dnf,
     pacman,
-    pkg,
     yum,
     zypper,
     xbps,
+    server,
 )
 
 
@@ -64,7 +64,10 @@ def system_update():
         any(d in distro_name for d in ["arch", "manjaro", "endeavouros"])
         or "arch" in id_like
     ):
-        pacman.update(name=f"Update {distro_name} package database")
+        
+        # TODO: check if theres an aur helper, use that instead, if not use pacman
+
+        pacman.update(name=f"Update {distro_name} package database") 
         pacman.upgrade(name=f"Upgrade {distro_name} packages")
 
     # openSUSE
@@ -73,8 +76,10 @@ def system_update():
 
     # FreeBSD
     elif "freebsd" in distro_name:
-        pkg.packages(name="Update and upgrade FreeBSD packages", present=True)
-
+        server.shell(
+            name="Update FreeBSD packages",
+            commands=["pkg update", "freebsd-update cron", "freebsd-update install", "pkg upgrade -y", ], # all this necessary?
+        )
     # Void Linux
     elif "void" in distro_name:
         xbps.update(name="Update Void Linux package database")
