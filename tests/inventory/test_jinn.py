@@ -174,9 +174,13 @@ Host server2
     def test_init_with_defaults(self):
         """Test initialization with default parameters."""
         # Skip the refresh_ssh_config call during initialization
-        with patch.object(Jinn, "refresh_ssh_config"), patch(
-            "pathlib.Path.expanduser", return_value=Path("/home/test/.ssh/id_rsa")
-        ), patch.object(Path, "home", return_value=Path("/home/test")):
+        with (
+            patch.object(Jinn, "refresh_ssh_config"),
+            patch(
+                "pathlib.Path.expanduser", return_value=Path("/home/test/.ssh/id_rsa")
+            ),
+            patch.object(Path, "home", return_value=Path("/home/test")),
+        ):
             jinn = Jinn(api_key=self.api_key)
 
             # Check that the SSH key path was set correctly
@@ -200,9 +204,11 @@ Host server2
             return self_path
 
         # Skip the refresh_ssh_config call during initialization
-        with patch.object(Jinn, "refresh_ssh_config"), patch.object(
-            Path, "expanduser", mock_expanduser
-        ), patch.object(Path, "home", return_value=Path("/home/test")):
+        with (
+            patch.object(Jinn, "refresh_ssh_config"),
+            patch.object(Path, "expanduser", mock_expanduser),
+            patch.object(Path, "home", return_value=Path("/home/test")),
+        ):
             jinn = Jinn(
                 ssh_key_path="~/custom_key",
                 api_url=self.api_url,
@@ -389,8 +395,9 @@ Host server2
 
     def test_load_servers(self):
         """Test the load_servers method."""
-        with patch.object(Jinn, "refresh_ssh_config"), patch.object(
-            Path, "home", return_value=Path("/home/test")
+        with (
+            patch.object(Jinn, "refresh_ssh_config"),
+            patch.object(Path, "home", return_value=Path("/home/test")),
         ):
             # Test normal operation
             jinn = Jinn(api_key=self.api_key)
@@ -422,8 +429,9 @@ Host server2
                 with self.assertRaises(JinnAPIError):
                     # Create a fresh jinn object and then test load_servers
                     # This avoids the initialization errors that were causing test failures
-                    with patch.object(Jinn, "get_project_name"), patch.object(
-                        Jinn, "load_servers"
+                    with (
+                        patch.object(Jinn, "get_project_name"),
+                        patch.object(Jinn, "load_servers"),
                     ):
                         test_jinn = Jinn(api_key=self.api_key)
                     # Now test the load_servers method with the error
@@ -507,9 +515,11 @@ Host server2
             return not str(path_obj).endswith("/config")
 
         # Patch the Path.exists method and other necessary methods
-        with patch.object(Jinn, "refresh_ssh_config"), patch(
-            "pathlib.Path.exists", mock_exists
-        ), patch.object(Path, "home", return_value=Path("/home/test")):
+        with (
+            patch.object(Jinn, "refresh_ssh_config"),
+            patch("pathlib.Path.exists", mock_exists),
+            patch.object(Path, "home", return_value=Path("/home/test")),
+        ):
             jinn = Jinn(api_key=self.api_key)
 
             # Reset mocks for this specific test
@@ -538,8 +548,9 @@ Host server2
             "Host *\n    StrictHostKeyChecking yes\n"
         )
 
-        with patch.object(Jinn, "refresh_ssh_config"), patch(
-            "pathlib.Path.exists", return_value=True
+        with (
+            patch.object(Jinn, "refresh_ssh_config"),
+            patch("pathlib.Path.exists", return_value=True),
         ):
             jinn = Jinn(api_key=self.api_key)
 
@@ -581,11 +592,11 @@ Host server2
         jinn = Jinn(api_key=self.api_key)
 
         # Mock the individual methods to check they're called
-        with patch.object(jinn, "get_ssh_config") as mock_get_ssh_config, patch.object(
-            jinn, "save_ssh_config"
-        ) as mock_save_ssh_config, patch.object(
-            jinn, "update_main_ssh_config"
-        ) as mock_update_main_ssh_config:
+        with (
+            patch.object(jinn, "get_ssh_config") as mock_get_ssh_config,
+            patch.object(jinn, "save_ssh_config") as mock_save_ssh_config,
+            patch.object(jinn, "update_main_ssh_config") as mock_update_main_ssh_config,
+        ):
             mock_get_ssh_config.return_value = self.mock_ssh_config
 
             jinn.refresh_ssh_config()
