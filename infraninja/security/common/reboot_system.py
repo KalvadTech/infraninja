@@ -4,7 +4,6 @@ from pyinfra.facts.server import Command
 from pyinfra.context import host
 
 
-
 def check_reboot_required(host):
     """
     Check if a system reboot is required by examining various indicators.
