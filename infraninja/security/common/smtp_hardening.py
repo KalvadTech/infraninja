@@ -1,5 +1,5 @@
 from importlib.resources import files as resource_files
-from pyinfra.api import deploy
+from pyinfra.api.deploy import deploy
 from pyinfra.operations import files, server
 
 

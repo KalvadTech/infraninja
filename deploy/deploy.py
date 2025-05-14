@@ -1,9 +1,16 @@
 from pyinfra.api.deploy import deploy
 from infraninja.security.common.update_packages import system_update as task1
+from infraninja.security.common.ssh_hardening import SSHHardener
+
 
 @deploy("Test Security Setup")
 def test_deploy():
-    task1(_sudo=True)
+    config={
+        "PermitRootLogin": "prohibit-password",
+    }
+
+    ssh_hardener = SSHHardener(config)
+    ssh_hardener.deploy(_sudo=True)
     
 
 
