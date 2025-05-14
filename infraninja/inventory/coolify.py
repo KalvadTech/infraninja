@@ -219,6 +219,7 @@ class Coolify:
         result = []
         for server in filtered_servers:
             server_name = server.get("name", "")
+            ip_address = server.get("ip")
             settings = server.get("settings", {})
 
             # Skip servers that are not reachable or usable
@@ -230,13 +231,19 @@ class Coolify:
                         f"Skipping server {server_name} as it is not reachable or usable"
                     )
                     continue
+            
+            # Skip localhost entries
+            if server_name.lower() == "localhost" or \
+               ip_address == "127.0.0.1" or \
+               ip_address == "::1":
+                continue
 
             # Create server entry for PyInfra
             result.append(
                 (
                     server_name,
                     {
-                        "hostname": server.get("ip"),
+                        "hostname": ip_address,
                         "ssh_user": server.get("user", "root"),
                         "ssh_port": server.get("port", 22),
                         "ssh_key": str(self.ssh_key_path),
