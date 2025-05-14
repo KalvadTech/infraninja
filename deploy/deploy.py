@@ -1,6 +1,6 @@
 from pyinfra.api.deploy import deploy
-from infraninja.security.common.update_packages import system_update as task1
 from infraninja.security.common.ssh_hardening import SSHHardener
+from infraninja.security.common.disable_services import ServiceDisabler
 
 
 @deploy("Test Security Setup")
@@ -11,7 +11,9 @@ def test_deploy():
 
     ssh_hardener = SSHHardener(config)
     ssh_hardener.deploy(_sudo=True)
-    
+
+    service_disabler = ServiceDisabler()
+    service_disabler.deploy(_sudo=True)
 
 
 test_deploy()
