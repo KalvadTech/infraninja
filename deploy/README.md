@@ -27,6 +27,7 @@ This project contains configuration and deployment scripts for managing virtual 
 1. **Install Vagrant**: Download and install Vagrant from the official [Vagrant website](https://www.vagrantup.com/downloads).
 2. **Install VirtualBox**: Required as the VM provider for testing.
 3. **Install Python & Dependencies**:
+
    ```bash
    pip install -r requirements.txt
    ```
@@ -44,17 +45,20 @@ The following environment variables are used:
 ### Initializing the Test Environment
 
 1. **Set Up Environment Variables**:
+
    ```bash
    export JINN_API_URL="https://your-api-url"
    export JINN_ACCESS_KEY="your-access-key"
    ```
 
 2. **Start the Virtual Machines**:
+
    ```bash
    vagrant up
    ```
 
 3. **Access the VMs**:
+
    ```bash
    vagrant ssh ubuntu   # For Ubuntu VM
    vagrant ssh alpine   # For Alpine VM
@@ -65,15 +69,19 @@ The following environment variables are used:
 To execute the test deployment:
 
 1. **Run the Basic Test**:
+
    ```bash
    pyinfra @vagrant/ubuntu test_deploy.py
    ```
+
    or
+
    ```bash
    pyinfra @vagrant/alpine test_deploy.py
    ```
 
 2. **With Dynamic Inventory**:
+
    ```bash
    pyinfra inventory.py test_deploy.py
    ```
@@ -83,6 +91,7 @@ To execute the test deployment:
 You can extend `test_deploy.py` to include additional security functions:
 
 1. **Basic Function Addition**:
+
    ```python
    from pyinfra.api import deploy
    from infraninja.security.common.ssh_hardening import ssh_hardening
@@ -96,6 +105,7 @@ You can extend `test_deploy.py` to include additional security functions:
    ```
 
 2. **OS-Specific Deployments**:
+
    ```python
    from pyinfra import host
    from pyinfra.facts.server import LinuxName
@@ -113,13 +123,13 @@ You can extend `test_deploy.py` to include additional security functions:
    ```
 
 3. **With Sudo Privileges**:
+
    ```python
    @deploy("Test Security Setup")
    def test_deploy():
        ssh_hardening(_sudo=True)
        kernel_hardening(_sudo=True)
    ```
-
 
 ### Expected Behavior
 
@@ -143,5 +153,5 @@ You can extend `test_deploy.py` to include additional security functions:
   - Use `vagrant destroy` and `vagrant up` to rebuild VMs if needed
   - Check VirtualBox/VMware settings if VMs fail to start
 
-For more detailed information about available security modules and configurations, 
+For more detailed information about available security modules and configurations,
 please refer to the main [InfraNinja README](../README.md).
