@@ -7,9 +7,9 @@ from pyinfra.operations import files, openrc, server, systemd
 os = host.get_fact(LinuxName)
 
 
-@deploy("nftables Setup for Alpine Linux")
+@deploy("nftables Setup Linux")
 def nftables_setup_alpine():
-    template_path = resource_files("infraninja.security.templates.common").joinpath(
+    template_path = resource_files("infraninja.security.templates").joinpath(
         "nftables_rules.nft.j2"
     )
 
@@ -34,6 +34,7 @@ def nftables_setup_alpine():
         commands="nft -f /etc/nftables/ruleset.nft",
     )
 
+# TODO: make this more generic for other distros
 
 # Enable nftables to restore rules on reboot based on OS
 if os == "Ubuntu":
