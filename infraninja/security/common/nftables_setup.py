@@ -1,6 +1,6 @@
 from importlib.resources import files as resource_files
-from pyinfra import host
-from pyinfra.api import deploy
+from pyinfra.context import host
+from pyinfra.api.deploy import deploy
 from pyinfra.facts.server import LinuxName
 from pyinfra.operations import files, openrc, server, systemd
 
