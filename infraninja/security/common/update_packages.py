@@ -1,6 +1,7 @@
 from pyinfra.context import host
 from pyinfra.api.deploy import deploy
 from pyinfra.facts.server import LinuxDistribution, Which
+from pyinfra.operations.freebsd import pkg
 from pyinfra.operations import (
     apk,
     apt,
@@ -9,9 +10,7 @@ from pyinfra.operations import (
     yum,
     zypper,
     xbps,
-    server,
 )
-
 
 @deploy("Common System Updates")
 def system_update():
@@ -75,15 +74,9 @@ def system_update():
 
     # FreeBSD
     elif "freebsd" in distro_name:
-        server.shell(
-            name="Update FreeBSD packages",
-            commands=[
-                "pkg update",
-                "freebsd-update cron",
-                "freebsd-update install",
-                "pkg upgrade -y",
-            ],  # all this necessary?
-        )
+        pkg.update(name="Update FreeBSD package database")
+        pkg.upgrade(name="Upgrade FreeBSD packages")
+
     # Void Linux
     elif "void" in distro_name:
         xbps.update(name="Update Void Linux package database")

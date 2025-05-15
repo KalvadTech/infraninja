@@ -44,7 +44,8 @@ def check_reboot_required(host):
 
         # Check for pending updates on systems using dnf (Fedora/RHEL)
         if command -v dnf >/dev/null 2>&1; then
-            if [ "$(dnf needs-restarting -r 2>/dev/null | wc -l)" -gt 0 ]; then
+            dnf needs-restarting -r >/dev/null 2>&1
+            if [ $? -eq 1 ]; then
                 echo "reboot_required"
                 exit 0
             fi
@@ -76,7 +77,7 @@ def check_reboot_required(host):
 
 @deploy("Reboot the system")
 def reboot_system(
-    need_reboot=None, delay=10, force_reboot=False, skip_reboot_check=False
+    need_reboot=None, force_reboot=False, skip_reboot_check=False
 ):
     """
     Reboot a system if necessary.
@@ -84,7 +85,6 @@ def reboot_system(
     Args:
         need_reboot: If True, always reboot. If False, never reboot.
                     If None, check if reboot is required.
-        delay: Time in seconds to wait before rebooting.
         force_reboot: If True, override need_reboot and always reboot.
         skip_reboot_check: If True, skip the reboot check and use need_reboot value directly.
     """
@@ -98,5 +98,6 @@ def reboot_system(
     if need_reboot is True:
         server.reboot(
             name="Reboot the system",
-            delay=delay,
+            delay=90,
+            interval=10,
         )
