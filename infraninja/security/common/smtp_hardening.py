@@ -1,10 +1,17 @@
 from importlib.resources import files as resource_files
-from pyinfra.api import deploy
+from pyinfra.api.deploy import deploy
 from pyinfra.operations import files, server
+from pyinfra.context import host
+from pyinfra.facts.server import Command
 
 
 @deploy("SMTP Hardening")
 def smtp_hardening():
+    # Check if postfix is installed using host facts and Command
+    postfix_exists = host.get_fact(Command, command="command -v postfix")
+    if not postfix_exists:
+        return
+
     # Get template path using importlib.resources
     template_path = resource_files("infraninja.security.templates").joinpath(
         "postfix_main.cf.j2"
