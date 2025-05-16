@@ -1,12 +1,8 @@
 from importlib.resources import files as resource_files
 from pyinfra.context import host
 from pyinfra.api.deploy import deploy
-from pyinfra.facts.server import LinuxName
 from pyinfra.operations import files, server
 from pyinfra.facts.server import Command
-
-os = host.get_fact(LinuxName)
-
 
 @deploy("nftables Setup Linux")
 def nftables_setup():
