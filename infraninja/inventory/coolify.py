@@ -3,7 +3,6 @@
 import json
 import logging
 import sys
-import os
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple, Union
 
@@ -90,9 +89,6 @@ class Coolify:
 
         # Load initial configuration
         self.load_servers()
-
-        # Generate and update SSH configuration
-        self.refresh_ssh_config()
 
     def _make_api_request(
         self, endpoint: str, method: str = "GET", data: Optional[Dict] = None
@@ -244,120 +240,26 @@ class Coolify:
             ):
                 continue
 
-            # Create server entry for PyInfra
+            # Use IP address as the server name for direct connection
+            ssh_user = server.get("user", "root")
+
             result.append(
                 (
-                    server_name,
+                    ip_address,
                     {
-                        "hostname": ip_address,
-                        "ssh_user": server.get("user", "root"),
+                        "ssh_user": ssh_user,
                         "ssh_port": server.get("port", 22),
                         "ssh_key": str(self.ssh_key_path),
                         "is_active": True,
                         "uuid": server.get("uuid", ""),
                         "server_id": server.get("id", ""),
-                        "description": server.get("description", ""),
+                        "description": f"{server_name} ({ip_address})",
+                        "groups": ["servers", "cool"],  # Add default groups
+                        "name": server_name,  # Keep original name as a reference
                     },
                 )
             )
         return result
-
-    def _generate_ssh_config(self) -> str:
-        """Generate SSH configuration based on the servers list.
-
-        Returns:
-            str: SSH configuration content
-        """
-        config_content = "# Coolify SSH Config - Auto-generated\n\n"
-
-        for server_name, attributes in self.servers:
-            hostname = attributes.get("hostname")
-            ssh_user = attributes.get("ssh_user")
-            ssh_port = attributes.get("ssh_port", 22)
-
-            if hostname and ssh_user:
-                config_content += f"Host {server_name}\n"
-                config_content += f"    HostName {hostname}\n"
-                config_content += f"    User {ssh_user}\n"
-                config_content += f"    Port {ssh_port}\n"
-                config_content += f"    IdentityFile {self.ssh_key_path}\n"
-
-        return config_content
-
-    def _save_ssh_config(self, config_content: str) -> None:
-        """Save SSH configuration to a file.
-
-        Args:
-            config_content: SSH configuration content to save
-
-        Raises:
-            CoolifySSHError: If saving the config fails
-        """
-        try:
-            ssh_config_file = self.ssh_config_dir / "coolify.conf"
-
-            # Ensure the directory exists
-            self.ssh_config_dir.mkdir(parents=True, exist_ok=True)
-
-            # Write config to file
-            with open(ssh_config_file, "w") as f:
-                f.write(config_content)
-
-            logger.info(f"SSH config saved to {ssh_config_file}")
-        except Exception as e:
-            logger.error(f"Failed to save SSH config: {str(e)}")
-            raise CoolifySSHError(f"Failed to save SSH config: {str(e)}")
-
-    def _update_main_ssh_config(self) -> None:
-        """Update the main SSH config file to include Coolify configs.
-
-        Raises:
-            CoolifySSHError: If updating the config fails
-        """
-        try:
-            # Use a wildcard include pattern as requested
-            include_line = f"Include {self.ssh_config_dir}/*"
-
-            # Check if the main SSH config file exists
-            if not self.main_ssh_config.exists():
-                # Create the file with the include line
-                with open(self.main_ssh_config, "w") as f:
-                    f.write(f"{include_line}\n")
-
-                # Set appropriate permissions
-                os.chmod(self.main_ssh_config, 0o600)
-                logger.info("Created main SSH config file with include directive")
-                return
-
-            # Read current config
-            with open(self.main_ssh_config, "r") as f:
-                config_content = f.read()
-
-            # Check if any include directive for the config directory already exists
-            include_pattern = f"Include {self.ssh_config_dir}"
-
-            if include_pattern not in config_content:
-                # Add the include directive at the beginning
-                with open(self.main_ssh_config, "w") as f:
-                    f.write(f"{include_line}\n{config_content}")
-                logger.info("Updated main SSH config with include directive")
-            else:
-                logger.info("Include directive already exists in main SSH config")
-
-        except Exception as e:
-            logger.error(f"Failed to update main SSH config: {str(e)}")
-            raise CoolifySSHError(f"Failed to update main SSH config: {str(e)}")
-
-    def refresh_ssh_config(self) -> None:
-        """Generate and save new SSH configuration.
-
-        Raises:
-            CoolifySSHError: If saving the config fails
-        """
-        config_content = self._generate_ssh_config()
-        self._save_ssh_config(config_content)
-        self._update_main_ssh_config()
-        logger.info("SSH configuration refreshed successfully")
 
     def get_server_by_name(self, name: str) -> Optional[Dict[str, Any]]:
         """Get server details by name.
