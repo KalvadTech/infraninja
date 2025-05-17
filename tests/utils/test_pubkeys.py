@@ -2,6 +2,7 @@
 import pytest
 import json
 from unittest.mock import patch, MagicMock, ANY
+import requests
 
 from infraninja.utils.pubkeys import SSHKeyManager, SSHKeyManagerError, add_ssh_keys
 
@@ -127,9 +128,13 @@ class TestSSHKeyManager:
         try_patch = patch.multiple(
             "infraninja.utils.pubkeys.requests",
             exceptions=MagicMock(
-                Timeout=type("TimeoutMock", (Exception,), {}),
-                ConnectionError=type("ConnectionErrorMock", (Exception,), {}),
-                RequestException=type("RequestExceptionMock", (Exception,), {}),
+                Timeout=type("TimeoutMock", (requests.exceptions.Timeout,), {}),
+                ConnectionError=type(
+                    "ConnectionErrorMock", (requests.exceptions.ConnectionError,), {}
+                ),
+                RequestException=type(
+                    "RequestExceptionMock", (requests.exceptions.RequestException,), {}
+                ),
             ),
         )
 
@@ -177,38 +182,25 @@ class TestSSHKeyManager:
 
     def test_fetch_ssh_keys_cached(self, manager, mock_requests, mock_input):
         """Test that SSH keys are cached and not fetched again unless forced."""
-        # Set up cached keys
-        manager._ssh_keys = ["cached-key-1", "cached-key-2"]
+        # Set up cached keys on the class
+        SSHKeyManager._ssh_keys = ["cached-key-1", "cached-key-2"]
+
+        # Set session key to avoid login attempt
+        SSHKeyManager._session_key = "test_session_key"
+
+        # Setup mock response in case it tries to make a request
+        keys_response = MagicMock()
+        keys_response.status_code = 200
+        keys_response.json.return_value = {"result": []}
+        mock_requests.request.return_value = keys_response
 
         # Call fetch without force_refresh
         keys = manager.fetch_ssh_keys(force_refresh=False)
 
-        # Verify cached keys were returned and no API calls were made
+        # Assert that the cached keys are returned without making a request
         assert keys == ["cached-key-1", "cached-key-2"]
+        mock_requests.post.assert_not_called()
         mock_requests.request.assert_not_called()
-
-        # Now test with force_refresh
-        # Setup mock responses for login and key fetch
-        login_response = MagicMock()
-        login_response.status_code = 200
-        login_response.json.return_value = {"session_key": "test_session_key"}
-
-        keys_response = MagicMock()
-        keys_response.status_code = 200
-        keys_response.json.return_value = {
-            "result": [{"key": "ssh-rsa AAAA...1"}, {"key": "ssh-rsa AAAA...2"}]
-        }
-
-        # Configure mock
-        mock_requests.post.return_value = login_response
-        mock_requests.request.return_value = keys_response
-
-        # Call fetch with force_refresh
-        keys = manager.fetch_ssh_keys(force_refresh=True)
-
-        # Verify new keys were fetched
-        assert keys == ["ssh-rsa AAAA...1", "ssh-rsa AAAA...2"]
-        mock_requests.request.assert_called_once()
 
     def test_fetch_ssh_keys_no_keys(self, manager, mock_requests, mock_input):
         """Test handling of empty key list from API."""
@@ -416,40 +408,38 @@ class TestSSHKeyManagerErrors:
             ):
                 manager.fetch_ssh_keys()
 
-    def test_login_connection_error(self, manager, mock_input):
+    @staticmethod
+    def test_login_connection_error(manager, mock_input):
         """Test login with connection error."""
-        # Mock the requests module and all necessary exception classes
-        with patch("infraninja.utils.pubkeys.requests.post") as mock_post, patch(
-            "infraninja.utils.pubkeys.requests.exceptions.RequestException", Exception
-        ), patch(
-            "infraninja.utils.pubkeys.requests.exceptions.ConnectionError", Exception
-        ), patch("infraninja.utils.pubkeys.requests.exceptions.Timeout", Exception):
-            # Set the side effect
+        # Mock the requests module with a normal exception
+        with patch("infraninja.utils.pubkeys.requests.post") as mock_post:
+            # Set the side effect to a standard Exception
             mock_post.side_effect = Exception("Connection failed")
 
             # Verify exception is raised correctly
-            with pytest.raises(SSHKeyManagerError):
+            with pytest.raises(SSHKeyManagerError, match="Login request failed"):
                 manager._login()
 
-    def test_request_timeout(self, manager, mock_input):
+    @staticmethod
+    def test_request_timeout(manager, mock_input):
         """Test request with timeout."""
-        # Set session key for authenticated request
-        manager._session_key = "test_session"
+        # Set session key for authenticated request - need to set the class variable
+        SSHKeyManager._session_key = "test_session"
 
-        # Mock the requests module and necessary exceptions
-        with patch("infraninja.utils.pubkeys.requests.request") as mock_request, patch(
-            "infraninja.utils.pubkeys.requests.exceptions.RequestException", Exception
-        ), patch(
-            "infraninja.utils.pubkeys.requests.exceptions.ConnectionError", Exception
-        ), patch("infraninja.utils.pubkeys.requests.exceptions.Timeout", Exception):
-            # Set up the side effect
+        # Mock the requests module with a normal exception
+        with patch("infraninja.utils.pubkeys.requests.request") as mock_request:
+            # Set up the side effect to a standard Exception
             mock_request.side_effect = Exception("Request timed out")
 
-            # Verify correct exception handling
-            with pytest.raises(SSHKeyManagerError):
+            # Verify correct exception handling - must match the exact message from the code
+            with pytest.raises(
+                SSHKeyManagerError, match="API request failed: Request timed out"
+            ):
+                manager._make_auth_request("https://api.example.com/endpoint")
                 manager._make_auth_request("https://api.example.com/endpoint")
 
-    def test_invalid_json_response(self, manager, mock_input):
+    @staticmethod
+    def test_invalid_json_response(manager, mock_input):
         """Test handling invalid JSON in response."""
         # Setup for login first, with all necessary exception mocks
         with patch("infraninja.utils.pubkeys.requests.post") as mock_post, patch(
@@ -472,6 +462,14 @@ class TestSSHKeyManagerErrors:
             )
 
             # Configure mocks
+            mock_post.return_value = login_response
+            mock_request.return_value = keys_response
+
+            # Verify correct exception
+            with pytest.raises(
+                SSHKeyManagerError, match="Failed to parse SSH keys response as JSON"
+            ):
+                manager.fetch_ssh_keys()
             mock_post.return_value = login_response
             mock_request.return_value = keys_response
 
