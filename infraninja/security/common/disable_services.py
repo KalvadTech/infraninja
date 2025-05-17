@@ -11,6 +11,10 @@ class ServiceDisabler:
 
     Args:
         services (list): List of services to disable. Default is a set of common services.
+
+    Usage:
+        service_disabler = ServiceDisabler(services=["service1", "service2"])
+        service_disabler.deploy()
     """
 
     DEFAULT_SERVICES = [
