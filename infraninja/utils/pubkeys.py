@@ -32,23 +32,26 @@ class SSHKeyManager:
     exists and uses thread safety for multi-threaded environments.
     """
 
+    # Make class variables shared across all instances
     _ssh_keys: Optional[List[str]] = None
     _credentials: Optional[Dict[str, str]] = None
     _session_key: Optional[str] = None
     _lock: threading.RLock = threading.RLock()
-    _instance: Optional["SSHKeyManager"] = None  # Singleton instance
+    _instance: Optional["SSHKeyManager"] = None
 
     @classmethod
-    def get_instance(cls) -> "SSHKeyManager":
+    def get_instance(cls, *args, **kwargs) -> "SSHKeyManager":
         """Get or create the singleton instance of SSHKeyManager."""
         if cls._instance is None:
             with cls._lock:
                 if cls._instance is None:
-                    cls._instance = SSHKeyManager()
+                    cls._instance = cls(*args, **kwargs)
         return cls._instance
 
     def __init__(
-        self, api_url: Optional[str] = None, api_key: Optional[str] = None
+        self,
+        api_url: Optional[str] = None,
+        api_key: Optional[str] = None,
     ) -> None:
         """
         Initialize the SSHKeyManager with API URL and API key.
@@ -62,32 +65,55 @@ class SSHKeyManager:
             self.api_url: Optional[str] = api_url
             if not self.api_url:
                 # Use the default API URL from Jinn class
-                jinn_instance = Jinn()
-                self.api_url = jinn_instance.api_url
+                try:
+                    jinn_instance = Jinn()
+                    self.api_url = jinn_instance.api_url
+                    logger.debug(f"Got API URL from Jinn: {self.api_url}")
+                except Exception as e:
+                    logger.warning(f"Failed to get API URL from Jinn: {str(e)}")
+                    self.api_url = None
+
+            # Ensure URL has a scheme
+            if self.api_url:
+                if not self.api_url.startswith(("http://", "https://")):
+                    self.api_url = f"https://{self.api_url}"
+                    logger.debug(f"Added https:// scheme to API URL: {self.api_url}")
+
+                # Basic URL validation
+                if "URLHERE" in self.api_url:
+                    logger.error(f"URL contains placeholder 'URLHERE': {self.api_url}")
+                    raise SSHKeyManagerError(
+                        f"Invalid API URL with placeholder: {self.api_url}. Please provide a valid URL."
+                    )
 
             # Store the API key
             self.api_key: Optional[str] = api_key
 
-    def _get_credentials(self) -> Dict[str, str]:
+    @staticmethod
+    def _get_credentials() -> Dict[str, str]:
         """
         Get user credentials either from cache or user input.
 
         Returns:
             Dict[str, str]: A dictionary with username and password
         """
-        if self._credentials:
+        # Use class-level cached credentials across all instances
+        if SSHKeyManager._credentials:
             logger.debug("Using cached credentials")
-            return self._credentials
+            return SSHKeyManager._credentials
 
+        # Only prompt once for credentials
         username: str = input("Enter username: ")
         password: str = getpass.getpass("Enter password: ")
 
-        self._credentials = {"username": username, "password": password}
+        # Store credentials at class level to share across all instances
+        SSHKeyManager._credentials = {"username": username, "password": password}
         logger.debug("Credentials obtained from user input")
-        return self._credentials
+        return SSHKeyManager._credentials
 
+    @staticmethod
     def _make_auth_request(
-        self, endpoint: str, method: str = "get", **kwargs: Any
+        endpoint: str, method: str = "get", **kwargs: Any
     ) -> Optional[requests.Response]:
         """
         Make authenticated request to API.
@@ -103,17 +129,17 @@ class SSHKeyManager:
         Raises:
             SSHKeyManagerError: If no session key is available
         """
-        if not self._session_key:
+        if not SSHKeyManager._session_key:
             raise SSHKeyManagerError(
                 "Cannot make authenticated request: No session key available"
             )
 
         headers = {
-            "Authorization": f"Bearer {self._session_key}",
+            "Authorization": f"Bearer {SSHKeyManager._session_key}",
             "Content-Type": "application/json",
             "Accept": "application/json",
         }
-        cookies = {"sessionid": self._session_key}
+        cookies = {"sessionid": SSHKeyManager._session_key}
 
         try:
             response = requests.request(
@@ -139,8 +165,8 @@ class SSHKeyManager:
         Returns:
             bool: True if authentication succeeded, False otherwise
         """
-        # Return early if already authenticated
-        if self._session_key:
+        # Return early if already authenticated using class variable
+        if SSHKeyManager._session_key:
             return True
 
         if not self.api_url:
@@ -149,13 +175,8 @@ class SSHKeyManager:
         login_endpoint = f"{self.api_url}/login/"
         headers = {"Content-Type": "application/json", "Accept": "application/json"}
 
-        # Always get username and password credentials - either from API key or user input
-        if self.api_key:
-            logger.debug("Using API key as authentication token")
-
-            credentials = self._get_credentials()
-        else:
-            credentials = self._get_credentials()
+        # Get credentials just once and store them at class level
+        credentials = self._get_credentials()
 
         try:
             # Make the POST request to /login/ with username and password in the body
@@ -175,9 +196,10 @@ class SSHKeyManager:
                 )
 
             response_data = response.json()
-            self._session_key = response_data.get("session_key")
+            # Store session key at class level
+            SSHKeyManager._session_key = response_data.get("session_key")
 
-            if not self._session_key:
+            if not SSHKeyManager._session_key:
                 raise SSHKeyManagerError(
                     "Login succeeded but no session key in response"
                 )
@@ -204,8 +226,8 @@ class SSHKeyManager:
             Optional[List[str]]: List of SSH public keys or None if fetch fails
         """
         # Return cached keys if available and not forcing refresh
-        if self._ssh_keys and not force_refresh:
-            return self._ssh_keys
+        if SSHKeyManager._ssh_keys and not force_refresh:
+            return SSHKeyManager._ssh_keys
 
         if not self._login():
             raise SSHKeyManagerError("Failed to authenticate with API")
@@ -225,14 +247,14 @@ class SSHKeyManager:
             if "result" not in ssh_data:
                 raise SSHKeyManagerError("SSH key API response missing 'result' field")
 
-            self._ssh_keys = [
+            SSHKeyManager._ssh_keys = [
                 key_data["key"] for key_data in ssh_data["result"] if "key" in key_data
             ]
 
-            if not self._ssh_keys:
+            if not SSHKeyManager._ssh_keys:
                 logger.warning("No SSH keys found in API response")
 
-            return self._ssh_keys
+            return SSHKeyManager._ssh_keys
 
         except KeyError as e:
             raise SSHKeyManagerError(
@@ -316,12 +338,19 @@ class SSHKeyManager:
             raise SSHKeyManagerError(f"Error clearing cache: {str(e)}")
 
 
-def add_ssh_keys() -> Any:
+# Moving the @deploy decorator to the method inside the class
+
+
+# Global function for backward compatibility
+def add_ssh_keys(force_refresh: bool = False, **kwargs) -> Any:
     """
     Backward compatibility function that uses the singleton instance.
+
+    Args:
+        force_refresh: If True, force a refresh of SSH keys from API
 
     Returns:
         Any: Returns the OperationMeta object from the decorated add_ssh_keys method.
     """
-    manager: SSHKeyManager = SSHKeyManager.get_instance()
-    return manager.add_ssh_keys()
+    manager: SSHKeyManager = SSHKeyManager.get_instance(**kwargs)
+    return manager.add_ssh_keys(force_refresh)
