@@ -4,6 +4,7 @@ from pyinfra.api.deploy import deploy
 from pyinfra.operations import files, server
 from pyinfra.facts.server import Command
 
+
 @deploy("nftables Setup Linux")
 def nftables_setup():
     template_path = resource_files("infraninja.security.templates").joinpath(

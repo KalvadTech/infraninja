@@ -76,9 +76,7 @@ def check_reboot_required(host):
 
 
 @deploy("Reboot the system")
-def reboot_system(
-    need_reboot=None, force_reboot=False, skip_reboot_check=False
-):
+def reboot_system(need_reboot=None, force_reboot=False, skip_reboot_check=False):
     """
     Reboot a system if necessary.
 
