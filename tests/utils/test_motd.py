@@ -69,8 +69,8 @@ class TestMOTD:
         with patch("infraninja.utils.motd.resource_files", return_value=mock_path):
             yield mock_path
 
+    @staticmethod
     def test_motd_creation(
-        self,
         mock_host,
         mock_files_op,
         mock_deploy_decorator,
@@ -105,8 +105,8 @@ class TestMOTD:
             last_login="Jan 01 12:34:56 2025",
         )
 
+    @staticmethod
     def test_motd_without_last_login(
-        self,
         mock_host,
         mock_files_op,
         mock_deploy_decorator,
@@ -131,8 +131,8 @@ class TestMOTD:
             last_login=None,
         )
 
+    @staticmethod
     def test_motd_error_handling(
-        self,
         mock_host,
         mock_files_op,
         mock_deploy_decorator,
