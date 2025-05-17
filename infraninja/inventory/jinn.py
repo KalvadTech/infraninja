@@ -325,9 +325,22 @@ class Jinn:
             JinnSSHError: If saving the config fails
         """
         try:
+            # Clean the content to remove any potential include loops
+            cleaned_content = []
+            for line in config_content.splitlines():
+                # Skip any Include directives that might create loops
+                if line.strip().startswith("Include") and (
+                    ".ssh/config" in line or self.ssh_config_dir.name in line
+                ):
+                    logger.warning(f"Skipping potential include loop: {line}")
+                    continue
+                cleaned_content.append(line)
+
+            # Write the cleaned config
             config_file = self.ssh_config_dir / f"jinn_{self.project_name}_config"
-            config_file.write_text(config_content)
+            config_file.write_text("\n".join(cleaned_content))
             os.chmod(config_file, 0o600)  # Set secure permissions
+
         except Exception as e:
             raise JinnSSHError(f"Failed to save SSH config: {str(e)}")
 
@@ -346,10 +359,26 @@ class Jinn:
 
             # Add include directive if not present
             include_directive = f"Include {self.ssh_config_dir}/*\n"
-            if include_directive not in existing_config:
-                with open(self.main_ssh_config, "a") as f:
-                    f.write(f"\n{include_directive}")
-                os.chmod(self.main_ssh_config, 0o600)  # Set secure permissions
+
+            if self.main_ssh_config.exists():
+                filtered_lines = []
+                for line in existing_config.splitlines():
+                    if not line.strip().startswith(f"Include {self.ssh_config_dir}/"):
+                        filtered_lines.append(line)
+
+                # Write the cleaned config with a single include directive
+                with open(self.main_ssh_config, "w") as f:
+                    f.write("\n".join(filtered_lines))
+                    if filtered_lines and filtered_lines[-1].strip():
+                        f.write("\n\n")  # Add space if content exists
+                    f.write(include_directive)
+            else:
+                # Create the file with just the include directive
+                with open(self.main_ssh_config, "w") as f:
+                    f.write(include_directive)
+
+            os.chmod(self.main_ssh_config, 0o600)  # Set secure permissions
+
         except Exception as e:
             raise JinnSSHError(f"Failed to update main SSH config: {str(e)}")
 
