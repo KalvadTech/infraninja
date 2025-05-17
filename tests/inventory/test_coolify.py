@@ -328,7 +328,6 @@ class TestCoolify(unittest.TestCase):
 
         mock_make_request.assert_called_once_with("api/v1/servers")
 
-
     @patch("infraninja.inventory.coolify.Coolify._make_api_request")
     def test_load_servers_api_error(self, mock_make_request):
         """Test server loading with an API error."""
@@ -338,7 +337,6 @@ class TestCoolify(unittest.TestCase):
 
         with self.assertRaises(CoolifyAPIError):
             Coolify(api_key=self.api_key, api_url=self.api_url)
-
 
     @patch("infraninja.inventory.coolify.Coolify._make_api_request")
     def test_load_servers_no_servers_found(self, mock_make_request):
@@ -393,7 +391,6 @@ class TestCoolify(unittest.TestCase):
 
         non_existent_attrs = coolify.get_server_by_name("non-existent-server")
         self.assertIsNone(non_existent_attrs)
-
 
     @patch("infraninja.inventory.coolify.Coolify.load_servers")
     def test_get_servers_by_tag(self, mock_load_servers_method_for_test):
