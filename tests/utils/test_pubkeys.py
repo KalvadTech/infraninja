@@ -391,7 +391,8 @@ class TestSSHKeyManagerErrors:
         manager.api_url = "https://api.example.com"
         return manager
 
-    def test_fetch_no_api_url(self, manager, mock_input):
+    @staticmethod
+    def test_fetch_no_api_url(manager, mock_input):
         """Test fetching SSH keys with no API URL configured."""
         # Set API URL to None
         manager.api_url = None
