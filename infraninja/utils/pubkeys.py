@@ -30,6 +30,16 @@ class SSHKeyManager:
     Manages SSH key operations including fetching from API and deploying to hosts.
     This class follows the singleton pattern to ensure only one instance
     exists and uses thread safety for multi-threaded environments.
+
+    Usage:
+        # Example usage of SSHKeyManager
+
+        # Initialize the SSHKeyManager with API credentials
+        key_manager = SSHKeyManager(
+            api_url="https://example.com/api",
+            api_key="your_api_key_here"
+        )
+
     """
 
     # Make class variables shared across all instances
@@ -151,11 +161,7 @@ class SSHKeyManager:
                 )
             return response
 
-        except requests.exceptions.Timeout:
-            raise SSHKeyManagerError(f"API request timed out for {endpoint}")
-        except requests.exceptions.ConnectionError:
-            raise SSHKeyManagerError(f"Connection error when accessing {endpoint}")
-        except requests.exceptions.RequestException as e:
+        except Exception as e:
             raise SSHKeyManagerError(f"API request failed: {str(e)}")
 
     def _login(self) -> bool:
@@ -206,13 +212,9 @@ class SSHKeyManager:
 
             return True
 
-        except requests.exceptions.Timeout:
-            raise SSHKeyManagerError("Login request timed out")
-        except requests.exceptions.ConnectionError:
-            raise SSHKeyManagerError("Connection error when attempting to login")
         except json.JSONDecodeError:
             raise SSHKeyManagerError("Received invalid JSON in login response")
-        except requests.exceptions.RequestException as e:
+        except Exception as e:
             raise SSHKeyManagerError(f"Login request failed: {str(e)}")
 
     def fetch_ssh_keys(self, force_refresh: bool = False) -> Optional[List[str]]:
@@ -352,5 +354,7 @@ def add_ssh_keys(force_refresh: bool = False, **kwargs) -> Any:
     Returns:
         Any: Returns the OperationMeta object from the decorated add_ssh_keys method.
     """
+    manager: SSHKeyManager = SSHKeyManager.get_instance(**kwargs)
+    return manager.add_ssh_keys(force_refresh)
     manager: SSHKeyManager = SSHKeyManager.get_instance(**kwargs)
     return manager.add_ssh_keys(force_refresh)
