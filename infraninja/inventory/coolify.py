@@ -262,7 +262,7 @@ class Coolify:
             )
         return result
 
-    def generate_ssh_config(self) -> str:
+    def _generate_ssh_config(self) -> str:
         """Generate SSH configuration based on the servers list.
 
         Returns:
@@ -284,7 +284,7 @@ class Coolify:
 
         return config_content
 
-    def save_ssh_config(self, config_content: str) -> None:
+    def _save_ssh_config(self, config_content: str) -> None:
         """Save SSH configuration to a file.
 
         Args:
@@ -308,7 +308,7 @@ class Coolify:
             logger.error(f"Failed to save SSH config: {str(e)}")
             raise CoolifySSHError(f"Failed to save SSH config: {str(e)}")
 
-    def update_main_ssh_config(self) -> None:
+    def _update_main_ssh_config(self) -> None:
         """Update the main SSH config file to include Coolify configs.
 
         Raises:
@@ -354,9 +354,9 @@ class Coolify:
         Raises:
             CoolifySSHError: If saving the config fails
         """
-        config_content = self.generate_ssh_config()
-        self.save_ssh_config(config_content)
-        self.update_main_ssh_config()
+        config_content = self._generate_ssh_config()
+        self._save_ssh_config(config_content)
+        self._update_main_ssh_config()
         logger.info("SSH configuration refreshed successfully")
 
     def get_server_by_name(self, name: str) -> Optional[Dict[str, Any]]:
