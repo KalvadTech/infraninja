@@ -175,10 +175,6 @@ class TestCoolify(unittest.TestCase):
         self.mock_api_response.json.return_value = self.sample_server_data_raw
         self.mock_api_response.raise_for_status.side_effect = None
 
-        # Use self.api_url from setUp for consistency if Coolify's default is different
-        # However, Coolify's default is "https://coolify.example.com/api"
-        # For this test, we are testing default init, so we let Coolify use its own default api_url.
-        # The mock_requests_get in setUp is general and will catch this.
         coolify = Coolify(api_key=self.api_key)
 
         self.assertEqual(coolify.ssh_key_path, self.mock_home_path / ".ssh/id_rsa")
@@ -332,7 +328,6 @@ class TestCoolify(unittest.TestCase):
 
         mock_make_request.assert_called_once_with("api/v1/servers")
 
-        # self.patcher_coolify_load_servers.start() # Not strictly needed as tests are isolated
 
     @patch("infraninja.inventory.coolify.Coolify._make_api_request")
     def test_load_servers_api_error(self, mock_make_request):
@@ -344,7 +339,6 @@ class TestCoolify(unittest.TestCase):
         with self.assertRaises(CoolifyAPIError):
             Coolify(api_key=self.api_key, api_url=self.api_url)
 
-        # self.patcher_coolify_load_servers.start()
 
     @patch("infraninja.inventory.coolify.Coolify._make_api_request")
     def test_load_servers_no_servers_found(self, mock_make_request):
@@ -357,8 +351,6 @@ class TestCoolify(unittest.TestCase):
 
         self.assertEqual(len(coolify.servers), 0)
         mock_make_request.assert_called_once_with("api/v1/servers")
-
-        # self.patcher_coolify_load_servers.start()
 
     def test_get_servers(self):
         """Test the get_servers method."""
@@ -383,8 +375,6 @@ class TestCoolify(unittest.TestCase):
         self.assertEqual(len(servers), 3)
         self.assertEqual(servers, self.expected_formatted_servers_no_tags[:3])
 
-        # self.patcher_coolify_load_servers.start()
-
     def test_get_server_by_name(self):
         """Test get_server_by_name method."""
         self.patcher_coolify_load_servers.stop()
@@ -404,7 +394,6 @@ class TestCoolify(unittest.TestCase):
         non_existent_attrs = coolify.get_server_by_name("non-existent-server")
         self.assertIsNone(non_existent_attrs)
 
-        # self.patcher_coolify_load_servers.start()
 
     @patch("infraninja.inventory.coolify.Coolify.load_servers")
     def test_get_servers_by_tag(self, mock_load_servers_method_for_test):

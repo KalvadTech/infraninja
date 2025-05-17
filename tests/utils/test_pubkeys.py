@@ -83,7 +83,8 @@ class TestSSHKeyManager:
         manager.api_url = "https://api.example.com"
         return manager
 
-    def test_singleton_pattern(self, mock_jinn):
+    @staticmethod
+    def test_singleton_pattern(mock_jinn):
         """Test that SSHKeyManager follows the singleton pattern."""
         # Clear any existing instance
         SSHKeyManager._instance = None
@@ -95,7 +96,8 @@ class TestSSHKeyManager:
         assert manager1 is manager2
         assert id(manager1) == id(manager2)
 
-    def test_login_success(self, manager, mock_requests, mock_input):
+    @staticmethod
+    def test_login_success(manager, mock_requests, mock_input):
         """Test successful login flow."""
         # Setup mock response
         mock_response = MagicMock()
@@ -116,7 +118,8 @@ class TestSSHKeyManager:
             timeout=30,
         )
 
-    def test_login_failure(self, manager, mock_requests, mock_input):
+    @staticmethod
+    def test_login_failure(manager, mock_requests, mock_input):
         """Test login failure handling."""
         # Setup mock response for failed login
         mock_response = MagicMock()
@@ -149,7 +152,8 @@ class TestSSHKeyManager:
         # Verify session key wasn't set
         assert manager._session_key is None
 
-    def test_fetch_ssh_keys_success(self, manager, mock_requests, mock_input):
+    @staticmethod
+    def test_fetch_ssh_keys_success(manager, mock_requests, mock_input):
         """Test successful SSH key fetching."""
         # Setup mock responses for login and key fetch
         login_response = MagicMock()
@@ -180,7 +184,8 @@ class TestSSHKeyManager:
             timeout=30,
         )
 
-    def test_fetch_ssh_keys_cached(self, manager, mock_requests, mock_input):
+    @staticmethod
+    def test_fetch_ssh_keys_cached(manager, mock_requests, mock_input):
         """Test that SSH keys are cached and not fetched again unless forced."""
         # Set up cached keys on the class
         SSHKeyManager._ssh_keys = ["cached-key-1", "cached-key-2"]
@@ -202,7 +207,8 @@ class TestSSHKeyManager:
         mock_requests.post.assert_not_called()
         mock_requests.request.assert_not_called()
 
-    def test_fetch_ssh_keys_no_keys(self, manager, mock_requests, mock_input):
+    @staticmethod
+    def test_fetch_ssh_keys_no_keys(manager, mock_requests, mock_input):
         """Test handling of empty key list from API."""
         # Setup mock responses
         login_response = MagicMock()
@@ -224,8 +230,8 @@ class TestSSHKeyManager:
         assert keys == []
         assert manager._ssh_keys == []
 
+    @staticmethod
     def test_add_ssh_keys_success(
-        self,
         manager,
         mock_requests,
         mock_input,
@@ -263,8 +269,8 @@ class TestSSHKeyManager:
             delete_keys=False,
         )
 
+    @staticmethod
     def test_add_ssh_keys_no_keys(
-        self,
         manager,
         mock_requests,
         mock_input,
@@ -294,7 +300,8 @@ class TestSSHKeyManager:
         # Verify server.user_authorized_keys wasn't called
         mock_server.user_authorized_keys.assert_not_called()
 
-    def test_clear_cache(self, manager):
+    @staticmethod
+    def test_clear_cache(manager):
         """Test clearing the cache."""
         # Instead of testing the actual implementation, we'll just verify
         # the method can be called and returns True
@@ -309,8 +316,8 @@ class TestSSHKeyManager:
             assert result is True
             mock_clear_cache.assert_called_once()
 
+    @staticmethod
     def test_add_ssh_keys_function(
-        self,
         mock_requests,
         mock_input,
         mock_host,
