@@ -13,6 +13,10 @@ def kernel_hardening():
         print("[ERROR] This script requires a Linux system")
         return False
 
+    if linux_name.lower() == "freebsd":
+        print("[Warning] This script is not compatible with FreeBSD, skipping.")
+        return False
+
     # Verify sysctl is available
     if not server.shell(
         name="Check if sysctl exists",
@@ -31,8 +35,6 @@ def kernel_hardening():
     # Kernel hardening configuration
     sysctl_config = {
         # Network Security
-        "net.ipv4.conf.all.accept_redirects": "0",
-        "net.ipv4.conf.default.accept_redirects": "0",
         "net.ipv4.conf.all.secure_redirects": "0",
         "net.ipv4.conf.default.secure_redirects": "0",
         "net.ipv4.conf.all.accept_source_route": "0",
