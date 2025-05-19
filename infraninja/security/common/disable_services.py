@@ -43,8 +43,6 @@ class ServiceDisabler:
         host.noop(f"Disabling services on: {distro_name} (ID: {distro_id})")
 
         for service in self.services:
-            # Use server.service operation which automatically detects the appropriate init system
-            # Disable service regardless of distro
             server.service(
                 name=f"Disable {service}",
                 service=service,

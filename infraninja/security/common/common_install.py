@@ -1,6 +1,6 @@
 from pyinfra.context import host
 from pyinfra.api.deploy import deploy
-from pyinfra.facts.server import LinuxDistribution, Which
+from pyinfra.facts.server import LinuxDistribution
 from pyinfra.operations import server
 
 
@@ -109,9 +109,10 @@ class CommonPackageInstaller:
     def deploy(self):
         """
         Install common security packages across different Linux distributions.
-        """
 
-        # TODO: Implement a way to know if a distro is not supported by server.packages
+        Raises:
+            OperationError: if no packages are defined for the detected distribution.
+        """
 
         distro = host.get_fact(LinuxDistribution)
         distro_name = distro.get("name", "")
