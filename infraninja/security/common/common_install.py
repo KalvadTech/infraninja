@@ -103,6 +103,21 @@ class CommonPackageInstaller:
             "void": ["fail2ban"],
             "freebsd": ["py39-fail2ban"],
         },
+        "security_tools": {
+            "debian": [
+                "rkhunter",
+                "chkrootkit",
+                "lynis",
+                "clamav",
+                "clamav-daemon",
+            ],
+            "alpine": ["rkhunter", "chkrootkit", "lynis", "clamav"],
+            "rhel": ["rkhunter", "chkrootkit", "lynis", "clamav"],
+            "arch": ["rkhunter", "chkrootkit", "lynis", "clamav"],
+            "suse": ["rkhunter", "chkrootkit", "lynis", "clamav"],
+            "void": ["rkhunter", "chkrootkit", "lynis", "clamav"],
+            "freebsd": ["rkhunter", "chkrootkit", "lynis", "clamav"],
+        },
     }
 
     def __init__(self, packages=None):
