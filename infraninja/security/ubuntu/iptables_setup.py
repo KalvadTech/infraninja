@@ -1,10 +1,17 @@
 from importlib.resources import files as resource_files
 from pyinfra.api import deploy
 from pyinfra.operations import files, iptables, server, systemd
+from pyinfra.facts.server import Command, LinuxDistribution
+from pyinfra.context import host
 
 
 @deploy("iptables Setup for Ubuntu")
 def iptables_setup():
+    # facts
+    iptables_exists = host.get_fact(Command, command="command -v iptables")
+    if not iptables_exists:
+        return "Skip iptables setup - iptables command not found"
+
     # Ensure chains exist before flushing
     iptables.chain(
         name="Ensure INPUT chain exists",
@@ -121,10 +128,9 @@ def iptables_setup():
         present=True,
     )
 
-    # Enable iptables-persistent to restore rules on reboot
-    systemd.service(
-        name="Enable iptables-persistent to restore rules on reboot",
-        service="netfilter-persistent",
+    server.service(
+        name="Ensure iptables service is enabled and started",
+        service="iptables",
         running=True,
         enabled=True,
     )

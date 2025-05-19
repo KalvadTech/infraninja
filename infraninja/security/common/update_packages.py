@@ -12,6 +12,7 @@ from pyinfra.operations import (
     xbps,
 )
 
+
 @deploy("Common System Updates")
 def system_update():
     """

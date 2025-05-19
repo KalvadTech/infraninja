@@ -1,16 +1,7 @@
 from pyinfra.context import host
 from pyinfra.api.deploy import deploy
 from pyinfra.facts.server import LinuxDistribution, Which
-from pyinfra.operations import (
-    apk,
-    apt,
-    dnf,
-    pacman,
-    yum,
-    zypper,
-    xbps,
-    pkg,
-)
+from pyinfra.operations import server
 
 
 class CommonPackageInstaller:
@@ -114,125 +105,31 @@ class CommonPackageInstaller:
         """
         self.packages = packages or self.DEFAULT_PACKAGES.copy()
 
-    @staticmethod
-    def _get_distro_family():
-        """
-        Determine the Linux distribution family for package selection.
-
-        Returns:
-            str: The distribution family ('debian', 'alpine', 'rhel', etc.)
-        """
-        # Get detailed distribution information
-        distro = host.get_fact(LinuxDistribution)
-        distro_name = distro.get("name", "")
-        distro_id = distro.get("release_meta", {}).get("ID", "").lower()
-        id_like = distro.get("release_meta", {}).get("ID_LIKE", "").lower()
-
-        # Normalize distro names
-        distro_name = distro_name.lower() if distro_name else ""
-
-        # Determine the distribution family
-        if any(
-            dist in distro_name for dist in ["ubuntu", "debian", "mint", "linuxmint"]
-        ) or any(dist in id_like for dist in ["debian", "ubuntu"]):
-            return "debian"
-        elif "alpine" in distro_name:
-            return "alpine"
-        elif (
-            any(
-                dist in distro_name
-                for dist in ["fedora", "rhel", "centos", "rocky", "alma"]
-            )
-            or "rhel" in id_like
-        ):
-            return "rhel"
-        elif (
-            any(dist in distro_name for dist in ["arch", "manjaro", "endeavouros"])
-            or "arch" in id_like
-        ):
-            return "arch"
-        elif any(dist in distro_name for dist in ["opensuse", "suse"]):
-            return "suse"
-        elif "void" in distro_name:
-            return "void"
-        elif "freebsd" in distro_name:
-            return "freebsd"
-        else:
-            host.noop(f"Warning: Unsupported OS: {distro_name} (ID: {distro_id})")
-            return None
-
     @deploy("Install Common Security Packages")
     def deploy(self):
         """
         Install common security packages across different Linux distributions.
         """
-        distro_family = self._get_distro_family()
-        if not distro_family:
-            raise ValueError(
-                f"Unsupported OS: {host.get_fact(LinuxDistribution).get('name', 'Unknown')}"
-            )
 
-        host.noop(f"Installing common security packages for {distro_family} family")
+        # TODO: Implement a way to know if a distro is not supported by server.packages
+
+        distro = host.get_fact(LinuxDistribution)
+        distro_name = distro.get("name", "")
+        if distro_name:
+            distro_name = distro_name.lower()
+        distro_id = distro.get("release_meta", {}).get("ID", "")
+        if distro_id:
+            distro_id = distro_id.lower()
+
+        host.noop(f"Installing Packages on: {distro_name} (ID: {distro_id})")
 
         # Store all packages to install for this distro
         packages_to_install = []
 
-        # Collect all packages for this distro family
-        for package_type, distro_packages in self.packages.items():
-            if distro_family in distro_packages:
-                pkg_list = distro_packages[distro_family]
-                host.noop(f"Adding {package_type} packages: {', '.join(pkg_list)}")
-                packages_to_install.extend(pkg_list)
-
-        if not packages_to_install:
-            host.noop("No packages to install for this distribution")
-            return False
-
-        # Install packages based on distro family
-        if distro_family == "debian":
-            apt.update()
-            apt.packages(
-                name="Install common security packages",
-                packages=packages_to_install,
-            )
-        elif distro_family == "alpine":
-            apk.update()
-            apk.packages(
-                name="Install common security packages",
-                packages=packages_to_install,
-            )
-        elif distro_family == "rhel":
-            if host.get_fact(Which, command="dnf"):
-                dnf.packages(
-                    name="Install common security packages",
-                    packages=packages_to_install,
-                )
-            else:
-                yum.packages(
-                    name="Install common security packages",
-                    packages=packages_to_install,
-                )
-        elif distro_family == "arch":
-            pacman.update()
-            pacman.packages(
-                name="Install common security packages",
-                packages=packages_to_install,
-            )
-        elif distro_family == "suse":
-            zypper.packages(
-                name="Install common security packages",
-                packages=packages_to_install,
-            )
-        elif distro_family == "void":
-            xbps.packages(
-                name="Install common security packages",
-                packages=packages_to_install,
-                present=True,
-            )
-        elif distro_family == "freebsd":
-            pkg.packages(
-                name="Install common security packages",
-                packages=packages_to_install,
-            )
+        server.packages(
+            name="Install common security packages",
+            packages=packages_to_install,
+            present=True,
+        )
 
         return True
