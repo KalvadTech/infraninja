@@ -85,7 +85,7 @@ def test_ssh_hardener_init_systems(test_case):
 
         # Create the hardener instance
         hardener = SSHHardener()
-        
+
         # Patch the deploy decorator to make it a no-op and call the method
         with patch("pyinfra.api.deploy", lambda *args, **kwargs: lambda func: func):
             # This calls the function directly without decoration
@@ -128,7 +128,7 @@ def test_ssh_hardener_custom_config():
 
         # Create the hardener with custom config
         hardener = SSHHardener(ssh_config=custom_config)
-        
+
         # Patch the deploy decorator to make it a no-op and call the method
         with patch("pyinfra.api.deploy", lambda *args, **kwargs: lambda func: func):
             # This calls the function directly without decoration
@@ -186,7 +186,7 @@ def test_ssh_hardener_no_changes():
 
         # Create the hardener instance
         hardener = SSHHardener()
-        
+
         # Patch the deploy decorator to make it a no-op and call the method
         with patch("pyinfra.api.deploy", lambda *args, **kwargs: lambda func: func):
             # This calls the function directly without decoration

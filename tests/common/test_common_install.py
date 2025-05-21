@@ -115,7 +115,7 @@ def test_common_package_installer(test_case):
 
         # Create the CommonPackageInstaller instance
         installer = CommonPackageInstaller()
-        
+
         # Patch the deploy decorator to make it a no-op and call the method
         with patch("pyinfra.api.deploy", lambda *args, **kwargs: lambda func: func):
             # This calls the function directly without decoration
@@ -126,10 +126,10 @@ def test_common_package_installer(test_case):
 
         # Verify server.packages was called
         assert mock_server.packages.called
-        
+
         # Get the arguments passed to server.packages
         args, kwargs = mock_server.packages.call_args
-        
+
         # Verify the packages kwarg exists
         assert "packages" in kwargs, "Expected 'packages' in kwargs"
         assert len(kwargs["packages"]) > 0, "Expected non-empty package list"
@@ -180,7 +180,7 @@ def test_common_package_installer_custom_packages():
 
         # Create the CommonPackageInstaller instance with custom packages
         installer = CommonPackageInstaller(packages=custom_packages)
-        
+
         # Patch the deploy decorator to make it a no-op and call the method
         with patch("pyinfra.api.deploy", lambda *args, **kwargs: lambda func: func):
             # This calls the function directly without decoration

@@ -17,7 +17,9 @@ class TestChkrootkitSetup:
     @pytest.fixture
     def mock_server(self):
         """Fixture to mock pyinfra server operations."""
-        with patch("infraninja.security.common.chkrootkit_setup.crontab") as mock_server:
+        with patch(
+            "infraninja.security.common.chkrootkit_setup.crontab"
+        ) as mock_server:
             yield mock_server
 
     @pytest.fixture
@@ -28,13 +30,24 @@ class TestChkrootkitSetup:
         mock_logrotate_path = MagicMock(spec=Path)
 
         # Configure mock path for the template directory
-        mock_path.joinpath.side_effect = lambda path: mock_script_path if path == "chkrootkit_scan_script.j2" else mock_logrotate_path
+        mock_path.joinpath.side_effect = (
+            lambda path: mock_script_path
+            if path == "chkrootkit_scan_script.j2"
+            else mock_logrotate_path
+        )
 
         # Set string representations for the paths
-        mock_script_path.__str__.return_value = "/mock/path/to/templates/ubuntu/chkrootkit_scan_script.j2"
-        mock_logrotate_path.__str__.return_value = "/mock/path/to/templates/ubuntu/chkrootkit_logrotate.j2"
+        mock_script_path.__str__.return_value = (
+            "/mock/path/to/templates/ubuntu/chkrootkit_scan_script.j2"
+        )
+        mock_logrotate_path.__str__.return_value = (
+            "/mock/path/to/templates/ubuntu/chkrootkit_logrotate.j2"
+        )
 
-        with patch("infraninja.security.common.chkrootkit_setup.resource_files", return_value=mock_path):
+        with patch(
+            "infraninja.security.common.chkrootkit_setup.resource_files",
+            return_value=mock_path,
+        ):
             yield mock_path
 
     @pytest.fixture
@@ -53,6 +66,7 @@ class TestChkrootkitSetup:
             lambda *args, **kwargs: lambda func: func,
         ):
             yield
+
     @staticmethod
     def test_chkrootkit_setup(
         mock_files,
@@ -154,19 +168,27 @@ class TestChkrootkitSetup:
         # Get the template paths that were used
         script_path_call = None
         logrotate_path_call = None
-        
+
         for call in mock_files.template.call_args_list:
             if call.kwargs["name"] == "Upload chkrootkit scan script":
                 script_path_call = call.kwargs["src"]
             elif call.kwargs["name"] == "Upload chkrootkit logrotate configuration":
                 logrotate_path_call = call.kwargs["src"]
-        
+
         # Check that we got both template paths
         assert script_path_call is not None, "Script template path not found in calls"
-        assert logrotate_path_call is not None, "Logrotate template path not found in calls"
-        
+        assert logrotate_path_call is not None, (
+            "Logrotate template path not found in calls"
+        )
+
         # Check that the script path resolves to expected template (mocked)
-        assert script_path_call == "/mock/path/to/templates/ubuntu/chkrootkit_scan_script.j2"
-        
+        assert (
+            script_path_call
+            == "/mock/path/to/templates/ubuntu/chkrootkit_scan_script.j2"
+        )
+
         # Check that the logrotate path resolves to expected template (mocked)
-        assert logrotate_path_call == "/mock/path/to/templates/ubuntu/chkrootkit_logrotate.j2"
+        assert (
+            logrotate_path_call
+            == "/mock/path/to/templates/ubuntu/chkrootkit_logrotate.j2"
+        )

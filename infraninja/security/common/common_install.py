@@ -44,6 +44,15 @@ class CommonPackageInstaller:
             "void": ["cronie"],
             "freebsd": ["cron"],
         },
+        "udev": {
+            "debian": ["udev"],
+            "alpine": ["udev", "eudev"],
+            "rhel": ["systemd-udev"],
+            "arch": ["udev"],
+            "suse": ["udev"],
+            "void": ["eudev"],
+            "freebsd": ["devd"],
+        },
         "firewall": {
             "debian": [
                 "nftables",
