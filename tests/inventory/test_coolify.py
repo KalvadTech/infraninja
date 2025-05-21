@@ -118,6 +118,13 @@ class TestCoolify(unittest.TestCase):
         self.mock_path_exists = patch_path_exists.start()
         self.patchers.append(patch_path_exists)
 
+        # Mock open function to avoid actual file operations
+        mock_file = MagicMock()
+        mock_open = MagicMock(return_value=mock_file)
+        patch_open = patch("builtins.open", mock_open)
+        self.mock_open = patch_open.start()
+        self.patchers.append(patch_open)
+
         patch_path_mkdir = patch("pathlib.Path.mkdir")
         self.mock_path_mkdir = patch_path_mkdir.start()
         self.patchers.append(patch_path_mkdir)

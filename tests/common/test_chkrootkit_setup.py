@@ -17,7 +17,7 @@ class TestChkrootkitSetup:
     @pytest.fixture
     def mock_server(self):
         """Fixture to mock pyinfra server operations."""
-        with patch("infraninja.security.common.chkrootkit_setup.server") as mock_server:
+        with patch("infraninja.security.common.chkrootkit_setup.crontab") as mock_server:
             yield mock_server
 
     @pytest.fixture
