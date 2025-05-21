@@ -1,6 +1,6 @@
 from importlib.resources import files as resource_files
 from pyinfra.api import deploy
-from pyinfra.operations import files, systemd
+from pyinfra.operations import files, server
 
 
 @deploy("Auditd Setup")
@@ -25,14 +25,14 @@ def auditd_setup():
         dest="/etc/logrotate.d/audit",
     )
 
-    systemd.service(
+    server.service(
         name="Enable and start auditd",
         service="auditd",
         running=True,
         enabled=True,
     )
 
-    systemd.service(
+    server.service(
         name="Restart auditd to apply new rules",
         service="auditd",
         restarted=True,
