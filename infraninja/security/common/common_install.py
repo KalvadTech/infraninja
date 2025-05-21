@@ -33,7 +33,6 @@ class CommonPackageInstaller:
             "arch": ["acl"],
             "suse": ["acl"],
             "void": ["acl"],
-            "freebsd": ["acl"],
         },
         "cron": {
             "debian": ["cron"],
@@ -42,7 +41,6 @@ class CommonPackageInstaller:
             "arch": ["cronie"],
             "suse": ["cronie"],
             "void": ["cronie"],
-            "freebsd": ["cron"],
         },
         "udev": {
             "debian": ["udev"],
@@ -65,7 +63,6 @@ class CommonPackageInstaller:
             "arch": ["nftables", "iptables"],
             "suse": ["nftables", "iptables"],
             "void": ["nftables", "iptables"],
-            "freebsd": ["ipfw", "pf"],
         },
         "ssh": {
             "debian": ["openssh-server", "openssh-client"],
@@ -83,7 +80,6 @@ class CommonPackageInstaller:
             "arch": ["audit"],
             "suse": ["audit"],
             "void": ["audit"],
-            "freebsd": ["audit"],
         },
         "logrotate": {
             "debian": ["logrotate"],
@@ -101,7 +97,7 @@ class CommonPackageInstaller:
             "arch": ["fail2ban"],
             "suse": ["fail2ban"],
             "void": ["fail2ban"],
-            "freebsd": ["fail2ban"],
+            "freebsd": ["security/py-fail2ban"],
         },
         "security_tools": {
             "debian": [
@@ -118,6 +114,14 @@ class CommonPackageInstaller:
             "void": ["rkhunter", "chkrootkit", "lynis", "clamav"],
             "freebsd": ["rkhunter", "chkrootkit", "lynis", "clamav"],
         },
+        "apparmor": {
+            "debian": ["apparmor"],
+            "alpine": ["apparmor"],
+            "rhel": ["apparmor"],
+            "arch": ["apparmor"],
+            "suse": ["apparmor"],
+            "void": ["apparmor"],
+        },  
     }
 
     def __init__(self, packages=None):
