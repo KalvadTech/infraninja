@@ -67,14 +67,6 @@ def test_ssh_hardener_init_systems(test_case):
     ), patch("infraninja.security.common.ssh_hardening.host") as mock_host, patch(
         "infraninja.security.common.ssh_hardening.files"
     ) as mock_files, patch(
-        "infraninja.security.common.ssh_hardening.systemd"
-    ) as mock_systemd, patch(
-        "infraninja.security.common.ssh_hardening.openrc"
-    ) as mock_openrc, patch(
-        "infraninja.security.common.ssh_hardening.runit"
-    ) as mock_runit, patch(
-        "infraninja.security.common.ssh_hardening.sysvinit"
-    ) as mock_sysvinit, patch(
         "infraninja.security.common.ssh_hardening.server"
     ) as mock_server:
         # Setup host.get_fact to return appropriate values
@@ -91,52 +83,20 @@ def test_ssh_hardener_init_systems(test_case):
         replace_result.changed = True
         mock_files.replace.return_value = replace_result
 
-        # Mock the decorator to run the actual function without the decorator
-        with patch(
-            "pyinfra.api.deploy.deploy", lambda *args, **kwargs: lambda func: func
-        ):
-            # Create and run SSHHardener
-            hardener = SSHHardener()
+        # Create the hardener instance
+        hardener = SSHHardener()
+        
+        # Patch the deploy decorator to make it a no-op and call the method
+        with patch("pyinfra.api.deploy", lambda *args, **kwargs: lambda func: func):
+            # This calls the function directly without decoration
             hardener.deploy()
 
-        # Verify the correct service operation was called based on init system
+        # Verify the server.service was called with the correct service name
         expected_service = test_case["expected_service"]
-
-        if test_case["init_system"] == "systemctl":
-            assert mock_systemd.daemon_reload.called
-            assert mock_systemd.service.called
-            assert mock_systemd.service.call_args == call(
-                name="Restart SSH",
-                service=expected_service,
-                running=True,
-                restarted=True,
-            )
-        elif test_case["init_system"] == "rc-service":
-            assert mock_openrc.service.called
-            assert mock_openrc.service.call_args == call(
-                name="Restart SSH",
-                service=expected_service,
-                running=True,
-                restarted=True,
-            )
-        elif test_case["init_system"] == "sv":
-            assert mock_runit.service.called
-            assert mock_runit.service.call_args == call(
-                service=expected_service,
-                running=True,
-                restarted=True,
-            )
-        elif test_case["init_system"] == "service":
-            assert mock_sysvinit.service.called
-            assert mock_sysvinit.service.call_args == call(
-                name="Restart SSH with SysV init",
-                service=expected_service,
-                running=True,
-                restarted=True,
-            )
-        elif test_case["init_system"] is None:
-            assert mock_server.shell.called
-            assert expected_service in mock_server.shell.call_args[1]["commands"][0]
+        assert mock_server.service.called
+        assert mock_server.service.call_args[1]["service"] == expected_service
+        assert mock_server.service.call_args[1]["running"] is True
+        assert mock_server.service.call_args[1]["restarted"] is True
 
 
 def test_ssh_hardener_custom_config():
@@ -156,7 +116,7 @@ def test_ssh_hardener_custom_config():
         "pyinfra.context.host", MagicMock()
     ), patch("infraninja.security.common.ssh_hardening.host") as mock_host, patch(
         "infraninja.security.common.ssh_hardening.files"
-    ) as mock_files, patch("infraninja.security.common.ssh_hardening.systemd"):
+    ) as mock_files, patch("infraninja.security.common.ssh_hardening.server"):
         # Setup host.get_fact for distribution and init system
         mock_host.get_fact.side_effect = lambda fact, **kwargs: (
             {"name": "Ubuntu"}
@@ -166,12 +126,12 @@ def test_ssh_hardener_custom_config():
             else []  # Empty list for FindInFile to force using line()
         )
 
-        # Mock the decorator
-        with patch(
-            "pyinfra.api.deploy.deploy", lambda *args, **kwargs: lambda func: func
-        ):
-            # Create and run SSHHardener with custom config
-            hardener = SSHHardener(ssh_config=custom_config)
+        # Create the hardener with custom config
+        hardener = SSHHardener(ssh_config=custom_config)
+        
+        # Patch the deploy decorator to make it a no-op and call the method
+        with patch("pyinfra.api.deploy", lambda *args, **kwargs: lambda func: func):
+            # This calls the function directly without decoration
             hardener.deploy()
 
         # Verify all custom config options were set
@@ -196,8 +156,8 @@ def test_ssh_hardener_no_changes():
     ), patch("infraninja.security.common.ssh_hardening.host") as mock_host, patch(
         "infraninja.security.common.ssh_hardening.files"
     ) as mock_files, patch(
-        "infraninja.security.common.ssh_hardening.systemd"
-    ) as mock_systemd:
+        "infraninja.security.common.ssh_hardening.server"
+    ) as mock_server:
         # Setup host.get_fact for existing options matching what we want
         def get_fact_side_effect(fact, **kwargs):
             if fact.__name__ == "LinuxDistribution":
@@ -224,16 +184,16 @@ def test_ssh_hardener_no_changes():
         replace_result.changed = False
         mock_files.replace.return_value = replace_result
 
-        # Mock the decorator
-        with patch(
-            "pyinfra.api.deploy.deploy", lambda *args, **kwargs: lambda func: func
-        ):
-            # Create and run SSHHardener
-            hardener = SSHHardener()
+        # Create the hardener instance
+        hardener = SSHHardener()
+        
+        # Patch the deploy decorator to make it a no-op and call the method
+        with patch("pyinfra.api.deploy", lambda *args, **kwargs: lambda func: func):
+            # This calls the function directly without decoration
             hardener.deploy()
 
         # Verify that we checked the config
         assert mock_files.replace.call_count == 3  # One for each default option
 
         # Verify service restart wasn't attempted
-        assert not mock_systemd.service.called
+        assert not mock_server.service.called

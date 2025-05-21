@@ -12,7 +12,7 @@ INIT_SYSTEM_TEST_CASES = [
             "release_meta": {"ID": "ubuntu", "ID_LIKE": "debian"},
         },
         "init_system": "systemctl",
-        "expected_service_op": "systemd.service",
+        "expected_service_op": "server.service",
     },
     {
         "name": "alpine_openrc",
@@ -21,7 +21,7 @@ INIT_SYSTEM_TEST_CASES = [
             "release_meta": {"ID": "alpine", "ID_LIKE": ""},
         },
         "init_system": None,  # Will be detected as Alpine directly
-        "expected_service_op": "openrc.service",
+        "expected_service_op": "server.service",
     },
     {
         "name": "rhel_systemd",
@@ -30,7 +30,7 @@ INIT_SYSTEM_TEST_CASES = [
             "release_meta": {"ID": "centos", "ID_LIKE": "rhel fedora"},
         },
         "init_system": None,  # Will be detected as RHEL directly
-        "expected_service_op": "systemd.service",
+        "expected_service_op": "server.service",
     },
     {
         "name": "arch_systemd",
@@ -39,7 +39,7 @@ INIT_SYSTEM_TEST_CASES = [
             "release_meta": {"ID": "arch", "ID_LIKE": ""},
         },
         "init_system": None,  # Will be detected as Arch directly
-        "expected_service_op": "systemd.service",
+        "expected_service_op": "server.service",
     },
     {
         "name": "void_runit",
@@ -48,7 +48,7 @@ INIT_SYSTEM_TEST_CASES = [
             "release_meta": {"ID": "void", "ID_LIKE": ""},
         },
         "init_system": None,  # Will be detected as Void directly
-        "expected_service_op": "runit.service",
+        "expected_service_op": "server.service",
     },
     {
         "name": "generic_systemd",
@@ -57,7 +57,7 @@ INIT_SYSTEM_TEST_CASES = [
             "release_meta": {"ID": "unknown", "ID_LIKE": ""},
         },
         "init_system": "systemctl",
-        "expected_service_op": "systemd.service",
+        "expected_service_op": "server.service",
     },
     {
         "name": "generic_openrc",
@@ -66,7 +66,7 @@ INIT_SYSTEM_TEST_CASES = [
             "release_meta": {"ID": "unknown", "ID_LIKE": ""},
         },
         "init_system": "rc-service",
-        "expected_service_op": "openrc.service",
+        "expected_service_op": "server.service",
     },
     {
         "name": "generic_runit",
@@ -75,7 +75,7 @@ INIT_SYSTEM_TEST_CASES = [
             "release_meta": {"ID": "unknown", "ID_LIKE": ""},
         },
         "init_system": "sv",
-        "expected_service_op": "runit.service",
+        "expected_service_op": "server.service",
     },
     {
         "name": "generic_sysvinit",
@@ -84,7 +84,7 @@ INIT_SYSTEM_TEST_CASES = [
             "release_meta": {"ID": "unknown", "ID_LIKE": ""},
         },
         "init_system": "service",
-        "expected_service_op": "sysvinit.service",
+        "expected_service_op": "server.service",
     },
     {
         "name": "generic_fallback",
@@ -93,7 +93,7 @@ INIT_SYSTEM_TEST_CASES = [
             "release_meta": {"ID": "unknown", "ID_LIKE": ""},
         },
         "init_system": None,  # No init system detected
-        "expected_service_op": "server.shell",
+        "expected_service_op": "server.service",
     },
 ]
 
@@ -114,14 +114,6 @@ def test_service_disabler_init_systems(test_case):
     with patch("pyinfra.context.state", MagicMock(config=MagicMock())), patch(
         "pyinfra.context.host", MagicMock()
     ), patch("infraninja.security.common.disable_services.host") as mock_host, patch(
-        "infraninja.security.common.disable_services.systemd"
-    ) as mock_systemd, patch(
-        "infraninja.security.common.disable_services.openrc"
-    ) as mock_openrc, patch(
-        "infraninja.security.common.disable_services.runit"
-    ) as mock_runit, patch(
-        "infraninja.security.common.disable_services.sysvinit"
-    ) as mock_sysvinit, patch(
         "infraninja.security.common.disable_services.server"
     ) as mock_server:
         # Configure host.get_fact to return the distro info or which command status
@@ -135,35 +127,24 @@ def test_service_disabler_init_systems(test_case):
 
         # Create a map of service operations to their mocks
         service_ops = {
-            "systemd.service": mock_systemd.service,
-            "openrc.service": mock_openrc.service,
-            "runit.service": mock_runit.service,
-            "sysvinit.service": mock_sysvinit.service,
-            "server.shell": mock_server.shell,
+            "server.service": mock_server.service,
         }
 
-        # Mock the decorator to run the actual function without the decorator
-        with patch(
-            "pyinfra.api.deploy.deploy", lambda *args, **kwargs: lambda func: func
-        ):
-            # Create and run the ServiceDisabler with default services
-            disabler = ServiceDisabler()
+        # Create the service disabler instance
+        disabler = ServiceDisabler()
+        
+        # Patch the deploy decorator to make it a no-op and call the method
+        with patch("pyinfra.api.deploy", lambda *args, **kwargs: lambda func: func):
+            # This calls the function directly without decoration
             disabler.deploy()
 
         # Get the expected operation and check it was called
         expected_op = service_ops[test_case["expected_service_op"]]
 
-        # For distros that detect directly (without init system detection),
-        # we expect appropriate service operations to be called
-        if test_case["name"] in [
-            "alpine_openrc",
-            "rhel_systemd",
-            "arch_systemd",
-            "void_runit",
-        ]:
-            assert expected_op.called, (
-                f"Expected {test_case['expected_service_op']} to be called"
-            )
+        # For all cases, verify that server.service was called
+        assert expected_op.called, (
+            f"Expected {test_case['expected_service_op']} to be called"
+        )
 
         # For all test cases, verify that the appropriate service operation was called
         # for each of the default services
@@ -174,7 +155,7 @@ def test_service_disabler_init_systems(test_case):
                     call_count += 1
                     break
 
-        # Make sure several services were processed (not all may get the same operation)
+        # Make sure several services were processed
         assert call_count > 0, (
             f"No services were processed with {test_case['expected_service_op']}"
         )
@@ -190,8 +171,8 @@ def test_service_disabler_custom_services():
     with patch("pyinfra.context.state", MagicMock(config=MagicMock())), patch(
         "pyinfra.context.host", MagicMock()
     ), patch("infraninja.security.common.disable_services.host") as mock_host, patch(
-        "infraninja.security.common.disable_services.systemd"
-    ) as mock_systemd:
+        "infraninja.security.common.disable_services.server"
+    ) as mock_server:
         # Configure host.get_fact to return systemd for init system
         mock_host.get_fact.side_effect = lambda fact, **kwargs: (
             {"name": "Ubuntu", "release_meta": {"ID": "ubuntu", "ID_LIKE": "debian"}}
@@ -203,23 +184,23 @@ def test_service_disabler_custom_services():
 
         mock_host.noop = MagicMock()  # Mock host.noop
 
-        # Mock the decorator
-        with patch(
-            "pyinfra.api.deploy.deploy", lambda *args, **kwargs: lambda func: func
-        ):
-            # Create and run ServiceDisabler with custom services
-            disabler = ServiceDisabler(services=custom_services)
+        # Create the service disabler instance with custom services
+        disabler = ServiceDisabler(services=custom_services)
+        
+        # Patch the deploy decorator to make it a no-op and call the method
+        with patch("pyinfra.api.deploy", lambda *args, **kwargs: lambda func: func):
+            # This calls the function directly without decoration
             disabler.deploy()
 
-        # Verify that systemd.service was called for each custom service
+        # Verify that server.service was called for each custom service
         for service in custom_services:
             service_call_found = False
-            for call_args in mock_systemd.service.call_args_list:
+            for call_args in mock_server.service.call_args_list:
                 if service in str(call_args):
                     service_call_found = True
                     break
             assert service_call_found, (
-                f"Expected systemd.service to be called for {service}"
+                f"Expected server.service to be called for {service}"
             )
 
         # Verify that none of the default services were processed
@@ -228,7 +209,7 @@ def test_service_disabler_custom_services():
                 continue  # Skip if service is in both lists
 
             default_service_call_found = False
-            for call_args in mock_systemd.service.call_args_list:
+            for call_args in mock_server.service.call_args_list:
                 if service in str(call_args):
                     default_service_call_found = True
                     break
