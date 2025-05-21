@@ -1,16 +1,7 @@
 from pyinfra.context import host
 from pyinfra.api.deploy import deploy
-from pyinfra.facts.server import LinuxDistribution, Which
-from pyinfra.operations import (
-    apk,
-    apt,
-    dnf,
-    pacman,
-    yum,
-    zypper,
-    xbps,
-    pkg,
-)
+from pyinfra.facts.server import LinuxDistribution
+from pyinfra.operations import server
 
 
 class CommonPackageInstaller:
@@ -101,7 +92,7 @@ class CommonPackageInstaller:
             "arch": ["fail2ban"],
             "suse": ["fail2ban"],
             "void": ["fail2ban"],
-            "freebsd": ["py39-fail2ban"],
+            "freebsd": ["fail2ban"],
         },
         "security_tools": {
             "debian": [
@@ -203,51 +194,12 @@ class CommonPackageInstaller:
             host.noop("No packages to install for this distribution")
             return False
 
-        # Install packages based on distro family
-        if distro_family == "debian":
-            apt.update()
-            apt.packages(
-                name="Install common security packages",
-                packages=packages_to_install,
-            )
-        elif distro_family == "alpine":
-            apk.update()
-            apk.packages(
-                name="Install common security packages",
-                packages=packages_to_install,
-            )
-        elif distro_family == "rhel":
-            if host.get_fact(Which, command="dnf"):
-                dnf.packages(
-                    name="Install common security packages",
-                    packages=packages_to_install,
-                )
-            else:
-                yum.packages(
-                    name="Install common security packages",
-                    packages=packages_to_install,
-                )
-        elif distro_family == "arch":
-            pacman.update()
-            pacman.packages(
-                name="Install common security packages",
-                packages=packages_to_install,
-            )
-        elif distro_family == "suse":
-            zypper.packages(
-                name="Install common security packages",
-                packages=packages_to_install,
-            )
-        elif distro_family == "void":
-            xbps.packages(
-                name="Install common security packages",
-                packages=packages_to_install,
-                present=True,
-            )
-        elif distro_family == "freebsd":
-            pkg.packages(
-                name="Install common security packages",
-                packages=packages_to_install,
-            )
+        # Use the server.packages operation which automatically detects and uses
+        # the appropriate package manager for the current distribution
+        server.packages(
+            name="Install common security packages",
+            packages=packages_to_install,
+            present=True,
+        )
 
         return True

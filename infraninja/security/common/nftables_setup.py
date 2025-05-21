@@ -13,7 +13,7 @@ def nftables_setup():
 
     nft_exists = host.get_fact(Command, command="command -v nft")
     if not nft_exists:
-        return
+        return "Skip nftables setup - nft not found"
 
     # Ensure the /etc/nftables directory exists
     files.directory(
