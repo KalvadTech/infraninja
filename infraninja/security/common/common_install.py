@@ -94,15 +94,6 @@ class CommonPackageInstaller:
             "void": ["fail2ban"],
             "freebsd": ["py39-fail2ban"],
         },
-        "clamav": {
-            "debian": ["clamav", "clamav-daemon"],
-            "alpine": ["clamav"],
-            "rhel": ["clamav", "clamav-update"],
-            "arch": ["clamav"],
-            "suse": ["clamav"],
-            "void": ["clamav"],
-            "freebsd": ["clamav"],
-        },
     }
 
     def __init__(self, packages=None):
@@ -114,28 +105,82 @@ class CommonPackageInstaller:
         """
         self.packages = packages or self.DEFAULT_PACKAGES.copy()
 
+    @staticmethod
+    def _get_distro_family():
+        """
+        Determine the Linux distribution family for package selection.
+
+        Returns:
+            str: The distribution family ('debian', 'alpine', 'rhel', etc.)
+        """
+        # Get detailed distribution information
+        distro = host.get_fact(LinuxDistribution)
+        distro_name = distro.get("name", "")
+        distro_id = distro.get("release_meta", {}).get("ID", "").lower()
+        id_like = distro.get("release_meta", {}).get("ID_LIKE", "").lower()
+    
+        # Normalize distro names
+        distro_name = distro_name.lower() if distro_name else ""
+
+        # Determine the distribution family
+        if any(
+            dist in distro_name for dist in ["ubuntu", "debian", "mint", "linuxmint"]
+        ) or any(dist in id_like for dist in ["debian", "ubuntu"]):
+            return "debian"
+        elif "alpine" in distro_name:
+            return "alpine"
+        elif (
+            any(
+                dist in distro_name
+                for dist in ["fedora", "rhel", "centos", "rocky", "alma"]
+            )
+            or "rhel" in id_like
+        ):
+            return "rhel"
+        elif (
+            any(dist in distro_name for dist in ["arch", "manjaro", "endeavouros"])
+            or "arch" in id_like
+        ):
+            return "arch"
+        elif any(dist in distro_name for dist in ["opensuse", "suse"]):
+            return "suse"
+        elif "void" in distro_name:
+            return "void"
+        elif "freebsd" in distro_name:
+            return "freebsd"
+        else:
+            host.noop(f"Warning: Unsupported OS: {distro_name} (ID: {distro_id})")
+            return None
+
     @deploy("Install Common Security Packages")
     def deploy(self):
         """
         Install common security packages across different Linux distributions.
-
-        Raises:
-            OperationError: if no packages are defined for the detected distribution.
         """
+        distro_family = self._get_distro_family()
+        if not distro_family:
+            raise ValueError(
+                f"Unsupported OS: {host.get_fact(LinuxDistribution).get('name', 'Unknown')}"
+            )
 
-        distro = host.get_fact(LinuxDistribution)
-        distro_name = distro.get("name", "")
-        if distro_name:
-            distro_name = distro_name.lower()
-        distro_id = distro.get("release_meta", {}).get("ID", "")
-        if distro_id:
-            distro_id = distro_id.lower()
-
-        host.noop(f"Installing Packages on: {distro_name} (ID: {distro_id})")
+        host.noop(f"Installing common security packages for {distro_family} family")
 
         # Store all packages to install for this distro
         packages_to_install = []
 
+        # Collect all packages for this distro family
+        for package_type, distro_packages in self.packages.items():
+            if distro_family in distro_packages:
+                pkg_list = distro_packages[distro_family]
+                host.noop(f"Adding {package_type} packages: {', '.join(pkg_list)}")
+                packages_to_install.extend(pkg_list)
+
+        if not packages_to_install:
+            host.noop("No packages to install for this distribution")
+            return False
+
+        # Use the server.packages operation which automatically detects and uses
+        # the appropriate package manager for the current distribution
         server.packages(
             name="Install common security packages",
             packages=packages_to_install,
