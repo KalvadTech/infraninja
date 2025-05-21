@@ -94,6 +94,15 @@ class CommonPackageInstaller:
             "void": ["fail2ban"],
             "freebsd": ["py39-fail2ban"],
         },
+        "clamav": {
+            "debian": ["clamav", "clamav-daemon"],
+            "alpine": ["clamav"],
+            "rhel": ["clamav", "clamav-update"],
+            "arch": ["clamav"],
+            "suse": ["clamav"],
+            "void": ["clamav"],
+            "freebsd": ["clamav"],
+        },
     }
 
     def __init__(self, packages=None):
