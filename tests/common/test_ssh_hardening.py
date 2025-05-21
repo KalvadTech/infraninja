@@ -15,7 +15,7 @@ INIT_SYSTEM_TEST_CASES = [
         "name": "systemd_debian",
         "init_system": "systemctl",
         "distro_info": {"name": "Ubuntu"},
-        "expected_service": "ssh",
+        "expected_service": "sshd",
     },
     {
         "name": "openrc",
