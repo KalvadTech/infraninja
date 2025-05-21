@@ -1,6 +1,6 @@
 from importlib.resources import files as resource_files
 from pyinfra.api import deploy
-from pyinfra.operations import files, systemd
+from pyinfra.operations import files, server
 
 
 @deploy("Fail2Ban Setup")
@@ -16,7 +16,7 @@ def fail2ban_setup():
     )
 
     # Enable and start the Fail2Ban service
-    systemd.service(
+    server.service(
         name="Enable and start Fail2Ban",
         service="fail2ban",
         running=True,
@@ -24,7 +24,7 @@ def fail2ban_setup():
     )
 
     # Restart Fail2Ban to apply new settings
-    systemd.service(
+    server.service(
         name="Restart Fail2Ban to apply changes",
         service="fail2ban",
         restarted=True,

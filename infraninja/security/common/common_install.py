@@ -92,7 +92,7 @@ class CommonPackageInstaller:
             "arch": ["fail2ban"],
             "suse": ["fail2ban"],
             "void": ["fail2ban"],
-            "freebsd": ["py39-fail2ban"],
+            "freebsd": ["fail2ban"],
         },
     }
 
@@ -118,7 +118,7 @@ class CommonPackageInstaller:
         distro_name = distro.get("name", "")
         distro_id = distro.get("release_meta", {}).get("ID", "").lower()
         id_like = distro.get("release_meta", {}).get("ID_LIKE", "").lower()
-    
+
         # Normalize distro names
         distro_name = distro_name.lower() if distro_name else ""
 
