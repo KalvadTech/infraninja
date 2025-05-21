@@ -1,5 +1,5 @@
-from pyinfra import host
-from pyinfra.api import deploy
+from pyinfra.context import host
+from pyinfra.api.deploy import deploy
 from pyinfra.facts.server import LinuxName
 from pyinfra.operations import server, files
 
@@ -11,6 +11,10 @@ def kernel_hardening():
 
     if not linux_name:
         print("[ERROR] This script requires a Linux system")
+        return False
+
+    if linux_name.lower() == "freebsd":
+        print("[Warning] This script is not compatible with FreeBSD, skipping.")
         return False
 
     # Verify sysctl is available
@@ -31,8 +35,6 @@ def kernel_hardening():
     # Kernel hardening configuration
     sysctl_config = {
         # Network Security
-        "net.ipv4.conf.all.accept_redirects": "0",
-        "net.ipv4.conf.default.accept_redirects": "0",
         "net.ipv4.conf.all.secure_redirects": "0",
         "net.ipv4.conf.default.secure_redirects": "0",
         "net.ipv4.conf.all.accept_source_route": "0",
