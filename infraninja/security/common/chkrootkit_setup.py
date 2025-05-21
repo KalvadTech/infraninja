@@ -3,6 +3,7 @@ from pyinfra.api import deploy
 from pyinfra.operations import files, crontab
 
 
+
 @deploy("chkrootkit Setup")
 def chkrootkit_setup():
     template_dir = resource_files("infraninja.security.templates.ubuntu")

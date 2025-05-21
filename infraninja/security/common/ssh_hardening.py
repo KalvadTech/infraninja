@@ -7,6 +7,7 @@ from pyinfra.facts.files import FindInFile
 class SSHHardener:
     """
     Class-based SSH hardening for infraninja and pyinfra deploys.
+
     Usage:
         from infraninja.security.common.ssh_hardening import SSHHardener
         SSHHardener().deploy()
@@ -21,6 +22,7 @@ class SSHHardener:
     def __init__(self, ssh_config=None):
         """
         Initialize SSHHardener with default or custom SSH configuration.
+
         Args:
             ssh_config (dict): Custom SSH configuration options.
         """
