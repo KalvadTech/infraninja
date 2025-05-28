@@ -121,7 +121,7 @@ class CommonPackageInstaller:
             "arch": ["apparmor"],
             "suse": ["apparmor"],
             "void": ["apparmor"],
-        },  
+        },
     }
 
     def __init__(self, packages=None):

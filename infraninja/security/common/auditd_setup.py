@@ -1,5 +1,5 @@
 from importlib.resources import files as resource_files
-from pyinfra.api import deploy
+from pyinfra.api.deploy import deploy
 from pyinfra.operations import files, server
 
 
@@ -31,6 +31,8 @@ def auditd_setup():
         running=True,
         enabled=True,
     )
+
+    # TODO: fedora doesnt allow you to do manual restart of auditd nor reload, possibly have to set a restart flag for reboot required
 
     server.service(
         name="Restart auditd to apply new rules",

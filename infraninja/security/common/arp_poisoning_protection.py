@@ -1,4 +1,4 @@
-from pyinfra.api import deploy
+from pyinfra.api.deploy import deploy
 from pyinfra.operations import server
 
 
