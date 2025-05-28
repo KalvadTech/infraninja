@@ -1,7 +1,7 @@
 from pyinfra.context import host
 from pyinfra.api.deploy import deploy
 from pyinfra.facts.server import LinuxDistribution
-from pyinfra.operations import server, zypper
+from pyinfra.operations import server
 
 
 class CommonPackageInstaller:
@@ -200,10 +200,9 @@ class CommonPackageInstaller:
         host.noop(f"Adding {len(self.zypper_repos)} zypper repositories")
 
         for repo_url in self.zypper_repos:
-            zypper.repo(
+            server.shell(
                 name=f"Add zypper repository: {repo_url}",
-                src=repo_url,
-                present=True,
+                commands=[f"zypper --gpg-auto-import-keys addrepo {repo_url}"],
             )
 
         # Refresh repositories after adding them
@@ -246,13 +245,17 @@ class CommonPackageInstaller:
         # Use the server.packages operation which automatically detects and uses
         # the appropriate package manager for the current distribution
         if distro_family == "suse":
-            # Use zypper directly with auto-import keys for SUSE systems
-            zypper.packages(
+            # Need to handle zypper repositories differently
+            # First refresh repositories
+            server.shell(
+                name="Refresh zypper repositories with auto-import keys",
+                commands=["zypper --gpg-auto-import-keys refresh"],
+            )
+            # Then install packages
+            server.packages(
                 name="Install common security packages",
                 packages=packages_to_install,
                 present=True,
-                update=True,
-                extra_global_install_args="--gpg-auto-import-keys",
             )
         else:
             server.packages(
