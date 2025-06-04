@@ -3,7 +3,7 @@ from pyinfra.operations import server
 
 
 @deploy("ARP Poisoning Protection Rules for Alpine")
-def arp_poisoning_protection_alpine():
+def arp_poisoning_protectio():
     # Enable ARP spoofing protection
     server.sysctl(
         name="Enable ARP spoofing protection (arp_ignore)",

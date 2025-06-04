@@ -10,7 +10,7 @@ def fail2ban_setup():
     )
 
     files.template(
-        name="Upload Fail2Ban configuration for Ubuntu",
+        name="Upload Fail2Ban configuration",
         src=str(template_path),
         dest="/etc/fail2ban/jail.local",
     )
