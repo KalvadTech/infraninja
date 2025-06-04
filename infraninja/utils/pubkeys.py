@@ -339,6 +339,7 @@ class SSHKeyManager:
         except Exception as e:
             raise SSHKeyManagerError(f"Error clearing cache: {str(e)}")
 
+
 # Global function for backward compatibility
 def add_ssh_keys(force_refresh: bool = False, **kwargs) -> Any:
     """
@@ -352,4 +353,3 @@ def add_ssh_keys(force_refresh: bool = False, **kwargs) -> Any:
     """
     manager: SSHKeyManager = SSHKeyManager.get_instance(**kwargs)
     return manager.add_ssh_keys(force_refresh)
-

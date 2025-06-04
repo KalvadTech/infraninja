@@ -149,23 +149,23 @@ class SSHKeyDeleter:
                         key_to_remove = key.strip()
 
                     server.user_authorized_keys(
-                        name=f"Remove SSH key {i+1} for {current_user}",
+                        name=f"Remove SSH key {i + 1} for {current_user}",
                         user=current_user,
                         group=user_details["group"],
                         public_keys=[key_to_remove],
                         delete_keys=True,  # This tells pyinfra to remove the keys
                     )
 
-                    logger.debug(f"Removed SSH key {i+1}/{len(keys_to_delete)}")
+                    logger.debug(f"Removed SSH key {i + 1}/{len(keys_to_delete)}")
 
                 except Exception as key_error:
-                    logger.error(f"Failed to remove SSH key {i+1}: {str(key_error)}")
+                    logger.error(f"Failed to remove SSH key {i + 1}: {str(key_error)}")
                     # Continue with other keys even if one fails
 
             logger.info(
                 "Successfully processed removal of %d SSH keys for user %s",
                 len(keys_to_delete),
-                current_user
+                current_user,
             )
             return True
 
@@ -234,23 +234,27 @@ class SSHKeyDeleter:
                         key_to_remove = key.strip()
 
                     server.user_authorized_keys(
-                        name=f"Remove specific SSH key {i+1} for {current_user}",
+                        name=f"Remove specific SSH key {i + 1} for {current_user}",
                         user=current_user,
                         group=user_details["group"],
                         public_keys=[key_to_remove],
                         delete_keys=True,  # This tells pyinfra to remove the keys
                     )
 
-                    logger.debug(f"Removed specific SSH key {i+1}/{len(keys_to_delete)}")
+                    logger.debug(
+                        f"Removed specific SSH key {i + 1}/{len(keys_to_delete)}"
+                    )
 
                 except Exception as key_error:
-                    logger.error(f"Failed to remove specific SSH key {i+1}: {str(key_error)}")
+                    logger.error(
+                        f"Failed to remove specific SSH key {i + 1}: {str(key_error)}"
+                    )
                     # Continue with other keys even if one fails
 
             logger.info(
                 "Successfully processed removal of %d specific SSH keys for user %s",
                 len(keys_to_delete),
-                current_user
+                current_user,
             )
             return True
 
