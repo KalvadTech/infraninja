@@ -35,11 +35,11 @@ class SSHKeyDeletion:
     """
 
     _lock: threading.RLock = threading.RLock()
-    _instance: Optional["SSHKeyDeleter"] = None
+    _instance: Optional["SSHKeyDeletion"] = None
 
     @classmethod
-    def get_instance(cls, *args, **kwargs) -> "SSHKeyDeleter":
-        """Get or create the singleton instance of SSHKeyDeleter."""
+    def get_instance(cls, *args, **kwargs) -> "SSHKeyDeletion":
+        """Get or create the singleton instance of SSHKeyDeletion."""
         if cls._instance is None:
             with cls._lock:
                 if cls._instance is None:
@@ -288,7 +288,7 @@ def delete_ssh_keys(force_refresh: bool = False, **kwargs) -> bool:
     Returns:
         bool: True if keys were removed successfully, False otherwise.
     """
-    deleter: SSHKeyDeleter = SSHKeyDeleter.get_instance(**kwargs)
+    deleter: SSHKeyDeletion = SSHKeyDeletion.get_instance(**kwargs)
     # Call the internal method without the decorator
     return deleter._delete_ssh_keys_impl(force_refresh)
 
@@ -304,6 +304,6 @@ def delete_specific_ssh_keys(keys_to_delete: List[str], **kwargs) -> bool:
     Returns:
         bool: True if keys were removed successfully, False otherwise.
     """
-    deleter: SSHKeyDeleter = SSHKeyDeleter.get_instance(**kwargs)
+    deleter: SSHKeyDeletion = SSHKeyDeletion.get_instance(**kwargs)
     # Call the internal method without the decorator
     return deleter._delete_specific_keys_impl(keys_to_delete)
