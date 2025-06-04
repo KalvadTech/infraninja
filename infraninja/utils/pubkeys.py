@@ -339,10 +339,6 @@ class SSHKeyManager:
         except Exception as e:
             raise SSHKeyManagerError(f"Error clearing cache: {str(e)}")
 
-
-# Moving the @deploy decorator to the method inside the class
-
-
 # Global function for backward compatibility
 def add_ssh_keys(force_refresh: bool = False, **kwargs) -> Any:
     """
@@ -356,5 +352,4 @@ def add_ssh_keys(force_refresh: bool = False, **kwargs) -> Any:
     """
     manager: SSHKeyManager = SSHKeyManager.get_instance(**kwargs)
     return manager.add_ssh_keys(force_refresh)
-    manager: SSHKeyManager = SSHKeyManager.get_instance(**kwargs)
-    return manager.add_ssh_keys(force_refresh)
+
