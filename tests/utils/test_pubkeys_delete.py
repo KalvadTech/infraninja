@@ -2,26 +2,26 @@ import unittest
 from unittest.mock import Mock, patch
 import threading
 
-from infraninja.utils.pubkeys_delete import SSHKeyDeleter, SSHKeyManagerError
+from infraninja.utils.pubkeys_delete import SSHKeyDeletion, SSHKeyManagerError
 
 
-class TestSSHKeyDeleter(unittest.TestCase):
-    """Test cases for the SSHKeyDeleter class."""
+class TestSSHKeyDeletion(unittest.TestCase):
+    """Test cases for the SSHKeyDeletion class."""
 
     def setUp(self):
         """Set up test fixtures before each test method."""
         # Clear singleton instance before each test
-        SSHKeyDeleter._instance = None
+        SSHKeyDeletion._instance = None
 
     def tearDown(self):
         """Clean up after each test method."""
         # Clear singleton instance after each test
-        SSHKeyDeleter._instance = None
+        SSHKeyDeletion._instance = None
 
     def test_singleton_pattern(self):
-        """Test that SSHKeyDeleter follows singleton pattern."""
-        deleter1 = SSHKeyDeleter.get_instance()
-        deleter2 = SSHKeyDeleter.get_instance()
+        """Test that SSHKeyDeletion follows singleton pattern."""
+        deleter1 = SSHKeyDeletion.get_instance()
+        deleter2 = SSHKeyDeletion.get_instance()
 
         self.assertIs(deleter1, deleter2, "Should return the same instance")
 
@@ -30,7 +30,7 @@ class TestSSHKeyDeleter(unittest.TestCase):
         instances = []
 
         def create_instance():
-            instances.append(SSHKeyDeleter.get_instance())
+            instances.append(SSHKeyDeletion.get_instance())
 
         # Create multiple threads
         threads = []
@@ -54,7 +54,7 @@ class TestSSHKeyDeleter(unittest.TestCase):
         api_url = "https://test-api.com"
         api_key = "test-key"
 
-        deleter = SSHKeyDeleter.get_instance(api_url=api_url, api_key=api_key)
+        deleter = SSHKeyDeletion.get_instance(api_url=api_url, api_key=api_key)
 
         # Verify that SSHKeyManager.get_instance was called with correct parameters
         mock_ssh_key_manager.get_instance.assert_called_once_with(
@@ -77,7 +77,7 @@ class TestSSHKeyDeleter(unittest.TestCase):
         ]
         mock_manager.fetch_ssh_keys.return_value = test_keys
 
-        deleter = SSHKeyDeleter.get_instance()
+        deleter = SSHKeyDeletion.get_instance()
         keys = deleter.fetch_keys_to_delete(force_refresh=True)
 
         self.assertEqual(keys, test_keys)
@@ -93,7 +93,7 @@ class TestSSHKeyDeleter(unittest.TestCase):
         # Mock empty keys response
         mock_manager.fetch_ssh_keys.return_value = None
 
-        deleter = SSHKeyDeleter.get_instance()
+        deleter = SSHKeyDeletion.get_instance()
         keys = deleter.fetch_keys_to_delete()
 
         self.assertIsNone(keys)
@@ -109,7 +109,7 @@ class TestSSHKeyDeleter(unittest.TestCase):
         # Mock API error
         mock_manager.fetch_ssh_keys.side_effect = SSHKeyManagerError("API Error")
 
-        deleter = SSHKeyDeleter.get_instance()
+        deleter = SSHKeyDeletion.get_instance()
 
         with self.assertRaises(SSHKeyManagerError):
             deleter.fetch_keys_to_delete()
@@ -122,7 +122,7 @@ class TestSSHKeyDeleter(unittest.TestCase):
         mock_ssh_key_manager_class.get_instance.return_value = mock_manager
         mock_manager.clear_cache.return_value = True
 
-        deleter = SSHKeyDeleter.get_instance()
+        deleter = SSHKeyDeletion.get_instance()
         result = deleter.clear_cache()
 
         self.assertTrue(result)
@@ -132,7 +132,7 @@ class TestSSHKeyDeleter(unittest.TestCase):
         """Test that SSH key format processing works correctly."""
         # This would test the internal key processing logic
         # For now, we'll just test that the methods exist and can be called
-        deleter = SSHKeyDeleter.get_instance()
+        deleter = SSHKeyDeletion.get_instance()
 
         # Verify that the methods exist
         self.assertTrue(hasattr(deleter, "_delete_ssh_keys_impl"))
@@ -147,12 +147,12 @@ class TestGlobalFunctions(unittest.TestCase):
     def setUp(self):
         """Set up test fixtures before each test method."""
         # Clear singleton instance before each test
-        SSHKeyDeleter._instance = None
+        SSHKeyDeletion._instance = None
 
     def tearDown(self):
         """Clean up after each test method."""
         # Clear singleton instance after each test
-        SSHKeyDeleter._instance = None
+        SSHKeyDeletion._instance = None
 
     def test_global_functions_exist(self):
         """Test that global functions are available."""
@@ -165,7 +165,7 @@ class TestGlobalFunctions(unittest.TestCase):
         self.assertTrue(callable(delete_ssh_keys))
         self.assertTrue(callable(delete_specific_ssh_keys))
 
-    @patch("infraninja.utils.pubkeys_delete.SSHKeyDeleter")
+    @patch("infraninja.utils.pubkeys_delete.SSHKeyDeletion")
     def test_delete_ssh_keys_global(self, mock_deleter_class):
         """Test the global delete_ssh_keys function."""
         from infraninja.utils.pubkeys_delete import delete_ssh_keys
@@ -179,7 +179,7 @@ class TestGlobalFunctions(unittest.TestCase):
         # For testing, we just verify the function exists and can be imported
         self.assertTrue(callable(delete_ssh_keys))
 
-    @patch("infraninja.utils.pubkeys_delete.SSHKeyDeleter")
+    @patch("infraninja.utils.pubkeys_delete.SSHKeyDeletion")
     def test_delete_specific_ssh_keys_global(self, mock_deleter_class):
         """Test the global delete_specific_ssh_keys function."""
         from infraninja.utils.pubkeys_delete import delete_specific_ssh_keys

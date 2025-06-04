@@ -16,7 +16,7 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 
-class SSHKeyDeleter:
+class SSHKeyDeletion:
     """
     Manages SSH key deletion operations by removing keys from authorized_keys files.
     This class leverages the existing SSHKeyManager to fetch keys and then removes them.
@@ -24,8 +24,8 @@ class SSHKeyDeleter:
     Usage:
         # Example usage of SSHKeyDeleter
 
-        # Initialize the SSHKeyDeleter with API credentials
-        key_deleter = SSHKeyDeleter(
+        # Initialize the SSHKeyDeletion with API credentials
+        key_deleter = SSHKeyDeletion(
             api_url="https://example.com/api",
             api_key="your_api_key_here"
         )
@@ -153,7 +153,7 @@ class SSHKeyDeleter:
                         user=current_user,
                         group=user_details["group"],
                         public_keys=[key_to_remove],
-                        delete_keys=True,  # This tells pyinfra to remove the keys
+                        delete_keys=True,  
                     )
 
                     logger.debug(f"Removed SSH key {i + 1}/{len(keys_to_delete)}")
