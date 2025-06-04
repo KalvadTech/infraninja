@@ -1,11 +1,11 @@
-from pyinfra.api import deploy
-from pyinfra.operations import server, systemd
+from pyinfra.api.deploy import deploy
+from pyinfra.operations import server
 
 
 @deploy("Apply Routing Controls")
 def routing_controls():
-    systemd.service("apparmor", running=True, enabled=True)
-    systemd.service("auditd", running=True, enabled=True)
+    server.service(service="apparmor", running=True, enabled=True)
+    server.service(service="auditd", running=True, enabled=True)
 
     server.sysctl(
         name="Enable positive source/destination address checks",

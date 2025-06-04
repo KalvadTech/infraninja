@@ -132,7 +132,7 @@ def test_service_disabler_init_systems(test_case):
 
         # Create the service disabler instance
         disabler = ServiceDisabler()
-        
+
         # Patch the deploy decorator to make it a no-op and call the method
         with patch("pyinfra.api.deploy", lambda *args, **kwargs: lambda func: func):
             # This calls the function directly without decoration
@@ -186,7 +186,7 @@ def test_service_disabler_custom_services():
 
         # Create the service disabler instance with custom services
         disabler = ServiceDisabler(services=custom_services)
-        
+
         # Patch the deploy decorator to make it a no-op and call the method
         with patch("pyinfra.api.deploy", lambda *args, **kwargs: lambda func: func):
             # This calls the function directly without decoration

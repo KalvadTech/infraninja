@@ -1,2 +1,3 @@
 build==1.2.2
 pyinfra==3.2
+pytest==7.0.0

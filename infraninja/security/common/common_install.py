@@ -21,6 +21,13 @@ class CommonPackageInstaller:
             }
         }
 
+        For openSUSE/SUSE systems, you can add additional repositories:
+        zypper_repos = [
+            "https://download.opensuse.org/repositories/security/openSUSE_Tumbleweed/security.repo",
+            "https://download.opensuse.org/repositories/security/15.6/security.repo"
+        ]
+        CommonPackageInstaller(zypper_repos=zypper_repos).deploy()
+
     """
 
     # Core common packages for security tools
@@ -33,7 +40,6 @@ class CommonPackageInstaller:
             "arch": ["acl"],
             "suse": ["acl"],
             "void": ["acl"],
-            "freebsd": ["acl"],
         },
         "cron": {
             "debian": ["cron"],
@@ -42,7 +48,15 @@ class CommonPackageInstaller:
             "arch": ["cronie"],
             "suse": ["cronie"],
             "void": ["cronie"],
-            "freebsd": ["cron"],
+        },
+        "udev": {
+            "debian": ["udev"],
+            "alpine": ["udev", "eudev"],
+            "rhel": ["systemd-udev"],
+            "arch": ["udev"],
+            "suse": ["udev"],
+            "void": ["eudev"],
+            "freebsd": ["devd"],
         },
         "firewall": {
             "debian": [
@@ -56,7 +70,6 @@ class CommonPackageInstaller:
             "arch": ["nftables", "iptables"],
             "suse": ["nftables", "iptables"],
             "void": ["nftables", "iptables"],
-            "freebsd": ["ipfw", "pf"],
         },
         "ssh": {
             "debian": ["openssh-server", "openssh-client"],
@@ -74,7 +87,6 @@ class CommonPackageInstaller:
             "arch": ["audit"],
             "suse": ["audit"],
             "void": ["audit"],
-            "freebsd": ["audit"],
         },
         "logrotate": {
             "debian": ["logrotate"],
@@ -92,7 +104,7 @@ class CommonPackageInstaller:
             "arch": ["fail2ban"],
             "suse": ["fail2ban"],
             "void": ["fail2ban"],
-            "freebsd": ["fail2ban"],
+            "freebsd": ["security/py-fail2ban"],
         },
         "security_tools": {
             "debian": [
@@ -109,16 +121,27 @@ class CommonPackageInstaller:
             "void": ["rkhunter", "chkrootkit", "lynis", "clamav"],
             "freebsd": ["rkhunter", "chkrootkit", "lynis", "clamav"],
         },
+        "apparmor": {
+            "debian": ["apparmor"],
+            "alpine": ["apparmor"],
+            "rhel": ["apparmor"],
+            "arch": ["apparmor"],
+            "suse": ["apparmor"],
+            "void": ["apparmor"],
+        },
     }
 
-    def __init__(self, packages=None):
+    def __init__(self, packages=None, zypper_repos=None):
         """
         Initialize with custom packages or use defaults.
 
         Args:
             packages (dict, optional): Custom packages dictionary. Defaults to None.
+            zypper_repos (list, optional): List of zypper repository URLs to add before
+                                         installing packages (SUSE/openSUSE only). Defaults to None.
         """
         self.packages = packages or self.DEFAULT_PACKAGES.copy()
+        self.zypper_repos = zypper_repos or []
 
     @staticmethod
     def _get_distro_family():
@@ -167,6 +190,27 @@ class CommonPackageInstaller:
             host.noop(f"Warning: Unsupported OS: {distro_name} (ID: {distro_id})")
             return None
 
+    def _setup_zypper_repos(self):
+        """
+        Add zypper repositories if specified and on SUSE/openSUSE system.
+        """
+        if not self.zypper_repos:
+            return
+
+        host.noop(f"Adding {len(self.zypper_repos)} zypper repositories")
+
+        for repo_url in self.zypper_repos:
+            server.shell(
+                name=f"Add zypper repository: {repo_url}",
+                commands=[f"zypper --gpg-auto-import-keys addrepo {repo_url}"],
+            )
+
+        # Refresh repositories after adding them
+        server.shell(
+            name="Refresh zypper repositories with auto-accept keys",
+            commands=["zypper --gpg-auto-import-keys refresh"],
+        )
+
     @deploy("Install Common Security Packages")
     def deploy(self):
         """
@@ -179,6 +223,10 @@ class CommonPackageInstaller:
             )
 
         host.noop(f"Installing common security packages for {distro_family} family")
+
+        # Add zypper repositories if on SUSE/openSUSE
+        if distro_family == "suse" and self.zypper_repos:
+            self._setup_zypper_repos()
 
         # Store all packages to install for this distro
         packages_to_install = []
@@ -196,10 +244,24 @@ class CommonPackageInstaller:
 
         # Use the server.packages operation which automatically detects and uses
         # the appropriate package manager for the current distribution
-        server.packages(
-            name="Install common security packages",
-            packages=packages_to_install,
-            present=True,
-        )
+        if distro_family == "suse":
+            # Need to handle zypper repositories differently
+            # First refresh repositories
+            server.shell(
+                name="Refresh zypper repositories with auto-import keys",
+                commands=["zypper --gpg-auto-import-keys refresh"],
+            )
+            # Then install packages
+            server.packages(
+                name="Install common security packages",
+                packages=packages_to_install,
+                present=True,
+            )
+        else:
+            server.packages(
+                name="Install common security packages",
+                packages=packages_to_install,
+                present=True,
+            )
 
         return True

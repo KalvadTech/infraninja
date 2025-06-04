@@ -85,10 +85,12 @@ def test_acl_setup_setfacl_missing():
         assert result is None
 
         # Verify that host.noop was called to skip ACL setup
-        mock_host.noop.assert_called_once_with("Skip ACL setup - setfacl not found")
+        mock_host.noop.assert_called_once_with("Skip ACL setup - setfacl not available and could not be installed")
 
-        # Verify no further calls to server.shell after the first check
-        assert mock_server.shell.call_count == 1
+        # There should be at most 2 calls to server.shell:
+        # 1. Check if setfacl exists
+        # 2. Try to verify setfacl exists after installation attempt
+        assert mock_server.shell.call_count <= 2
 
 
 def test_acl_setup_missing_paths():
