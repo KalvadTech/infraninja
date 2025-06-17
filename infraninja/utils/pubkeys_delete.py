@@ -219,7 +219,9 @@ class SSHKeyDeleter:
         except Exception as e:
             raise SSHKeyDeleteError(f"Login request failed: {str(e)}")
 
-    def fetch_ssh_keys(self, force_refresh: bool = False) -> Optional[List[Dict[str, str]]]:
+    def fetch_ssh_keys(
+        self, force_refresh: bool = False
+    ) -> Optional[List[Dict[str, str]]]:
         """
         Fetch all SSH keys from the API server using the ssh-keylist endpoint.
 
@@ -261,15 +263,17 @@ class SSHKeyDeleter:
             return SSHKeyDeleter._ssh_keys
 
         except KeyError as e:
-            raise SSHKeyDeleteError(
-                f"Missing expected field in SSH keys response: {e}"
-            )
+            raise SSHKeyDeleteError(f"Missing expected field in SSH keys response: {e}")
         except json.JSONDecodeError as e:
             raise SSHKeyDeleteError(f"Failed to parse SSH keys response as JSON: {e}")
         except Exception as e:
             raise SSHKeyDeleteError(f"Unexpected error parsing SSH keys response: {e}")
 
-    def filter_keys_for_deletion(self, all_keys: List[Dict[str, str]], filter_criteria: Optional[Dict[str, Any]] = None) -> List[str]:
+    def filter_keys_for_deletion(
+        self,
+        all_keys: List[Dict[str, str]],
+        filter_criteria: Optional[Dict[str, Any]] = None,
+    ) -> List[str]:
         """
         Filter SSH keys based on criteria to determine which ones to delete.
 
@@ -282,17 +286,19 @@ class SSHKeyDeleter:
         """
         if not filter_criteria:
             # If no criteria provided, return all keys (be careful with this!)
-            logger.warning("No filter criteria provided - this will delete ALL SSH keys!")
+            logger.warning(
+                "No filter criteria provided - this will delete ALL SSH keys!"
+            )
             return [key_data["key"] for key_data in all_keys if "key" in key_data]
 
         keys_to_delete = []
-        
+
         # Filter by labels if provided
         if "labels" in filter_criteria:
             target_labels = filter_criteria["labels"]
             if not isinstance(target_labels, list):
                 target_labels = [target_labels]
-            
+
             for key_data in all_keys:
                 if key_data.get("label") in target_labels:
                     keys_to_delete.append(key_data["key"])
@@ -300,10 +306,11 @@ class SSHKeyDeleter:
         # Filter by key patterns if provided
         if "key_patterns" in filter_criteria:
             import re
+
             patterns = filter_criteria["key_patterns"]
             if not isinstance(patterns, list):
                 patterns = [patterns]
-            
+
             for key_data in all_keys:
                 key_content = key_data.get("key", "")
                 for pattern in patterns:
@@ -316,7 +323,7 @@ class SSHKeyDeleter:
             target_ids = filter_criteria["key_ids"]
             if not isinstance(target_ids, list):
                 target_ids = [target_ids]
-            
+
             for key_data in all_keys:
                 if key_data.get("id") in target_ids:
                     keys_to_delete.append(key_data["key"])
@@ -337,12 +344,15 @@ class SSHKeyDeleter:
             current_user = host.get_fact(User)
             if current_user == "root":
                 return True
-            
+
             # Check if user can sudo by testing a simple sudo command
             from pyinfra.facts.server import Command
-            sudo_check = host.get_fact(Command, "sudo -n true 2>/dev/null && echo 'success' || echo 'failed'")
+
+            sudo_check = host.get_fact(
+                Command, "sudo -n true 2>/dev/null && echo 'success' || echo 'failed'"
+            )
             return sudo_check is not None and "success" in str(sudo_check)
-            
+
         except Exception as e:
             raise SSHKeyDeleteError(f"Failed to check root access: {str(e)}")
 
@@ -357,10 +367,10 @@ class SSHKeyDeleter:
             str: Text with regex special characters escaped
         """
         # Regex special characters that need escaping
-        special_chars = r'\.^$*+?{}[]|()'
+        special_chars = r"\.^$*+?{}[]|()"
         escaped = text
         for char in special_chars:
-            escaped = escaped.replace(char, f'\\{char}')
+            escaped = escaped.replace(char, f"\\{char}")
         return escaped
 
     def _remove_key_from_authorized_keys(self, user: str, key_to_delete: str) -> bool:
@@ -390,6 +400,7 @@ class SSHKeyDeleter:
 
             # Check if authorized_keys file exists
             from pyinfra.facts.files import File
+
             file_info = host.get_fact(File, authorized_keys_path)
             if not file_info:
                 logger.info(f"No authorized_keys file found for user {user}")
@@ -397,33 +408,36 @@ class SSHKeyDeleter:
 
             # Read current authorized_keys content using cat command
             from pyinfra.facts.server import Command
-            cat_result = host.get_fact(Command, f"cat {authorized_keys_path} 2>/dev/null || echo ''")
+
+            cat_result = host.get_fact(
+                Command, f"cat {authorized_keys_path} 2>/dev/null || echo ''"
+            )
             if not cat_result:
                 logger.info(f"Could not read authorized_keys file for user {user}")
                 return False
-            
+
             current_content = str(cat_result).strip()
             if not current_content:
                 logger.info(f"Empty authorized_keys file for user {user}")
                 return False
 
             # Parse current keys and filter out the key to delete
-            current_lines = current_content.strip().split('\n')
+            current_lines = current_content.strip().split("\n")
             remaining_keys = []
-            
+
             # Extract the key part (ignore key type and comment) for comparison
             key_parts = key_to_delete.strip().split()
             if len(key_parts) < 2:
                 raise SSHKeyDeleteError(f"Invalid SSH key format: {key_to_delete}")
-            
+
             key_to_delete_data = key_parts[1]  # The actual key data
 
             for line in current_lines:
                 line = line.strip()
-                if not line or line.startswith('#'):
+                if not line or line.startswith("#"):
                     remaining_keys.append(line)
                     continue
-                
+
                 # Check if this line contains the key to delete
                 line_parts = line.split()
                 if len(line_parts) >= 2:
@@ -451,10 +465,17 @@ class SSHKeyDeleter:
             return True
 
         except Exception as e:
-            raise SSHKeyDeleteError(f"Error removing key from {user}'s authorized_keys: {str(e)}")
+            raise SSHKeyDeleteError(
+                f"Error removing key from {user}'s authorized_keys: {str(e)}"
+            )
 
     @deploy("Delete SSH keys from users' authorized_keys files")
-    def delete_ssh_keys_for_users(self, users: List[str], filter_criteria: Optional[Dict[str, Any]] = None, force_refresh: bool = False) -> bool:
+    def delete_ssh_keys_for_users(
+        self,
+        users: List[str],
+        filter_criteria: Optional[Dict[str, Any]] = None,
+        force_refresh: bool = False,
+    ) -> bool:
         """
         Delete SSH keys from specified users' authorized_keys files.
 
@@ -489,20 +510,24 @@ class SSHKeyDeleter:
                 logger.info("No SSH keys match deletion criteria")
                 return True
 
-            logger.info(f"Found {len(keys_to_delete)} keys to delete for {len(users)} users")
+            logger.info(
+                f"Found {len(keys_to_delete)} keys to delete for {len(users)} users"
+            )
 
             # Process each user
             for user in users:
                 logger.info(f"Processing user: {user}")
                 keys_removed = 0
-                
+
                 # Try to remove each key from this user's authorized_keys
                 for key in keys_to_delete:
                     try:
                         if self._remove_key_from_authorized_keys(user, key):
                             keys_removed += 1
                     except Exception as e:
-                        logger.warning(f"Failed to remove key for user {user}: {str(e)}")
+                        logger.warning(
+                            f"Failed to remove key for user {user}: {str(e)}"
+                        )
                         continue
 
                 logger.info(f"Processed {keys_removed} keys for user {user}")
@@ -514,7 +539,9 @@ class SSHKeyDeleter:
             raise SSHKeyDeleteError(f"Error during SSH key deletion: {str(e)}")
 
     @deploy("Delete specific SSH key from users' authorized_keys files")
-    def delete_specific_key_for_users(self, users: List[str], key_to_delete: str) -> bool:
+    def delete_specific_key_for_users(
+        self, users: List[str], key_to_delete: str
+    ) -> bool:
         """
         Delete a specific SSH key from specified users' authorized_keys files.
 
@@ -543,7 +570,9 @@ class SSHKeyDeleter:
                 logger.info(f"Processing user: {user}")
                 try:
                     if self._remove_key_from_authorized_keys(user, key_to_delete):
-                        logger.info(f"Successfully processed key removal for user {user}")
+                        logger.info(
+                            f"Successfully processed key removal for user {user}"
+                        )
                     else:
                         logger.info(f"Key not found or user not found: {user}")
                 except Exception as e:
@@ -578,7 +607,12 @@ class SSHKeyDeleter:
 
 
 # Global functions for backward compatibility and ease of use
-def delete_ssh_keys_for_users(users: List[str], filter_criteria: Optional[Dict[str, Any]] = None, force_refresh: bool = False, **kwargs) -> Any:
+def delete_ssh_keys_for_users(
+    users: List[str],
+    filter_criteria: Optional[Dict[str, Any]] = None,
+    force_refresh: bool = False,
+    **kwargs,
+) -> Any:
     """
     Backward compatibility function that uses the singleton instance to delete keys for users.
 
@@ -595,7 +629,9 @@ def delete_ssh_keys_for_users(users: List[str], filter_criteria: Optional[Dict[s
     return deleter.delete_ssh_keys_for_users(users, filter_criteria, force_refresh)
 
 
-def delete_specific_key_for_users(users: List[str], key_to_delete: str, **kwargs) -> Any:
+def delete_specific_key_for_users(
+    users: List[str], key_to_delete: str, **kwargs
+) -> Any:
     """
     Backward compatibility function that uses the singleton instance to delete a specific key.
 
