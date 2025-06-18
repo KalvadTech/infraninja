@@ -1,8 +1,8 @@
-from pyinfra.api import deploy
-from pyinfra.operations import server
 from pyinfra import host
+from pyinfra.api import deploy
 from pyinfra.facts.files import File
 from pyinfra.facts.server import LinuxDistribution
+from pyinfra.operations import server
 
 
 @deploy("Set ACL")
