@@ -1,8 +1,8 @@
-from pyinfra.api import deploy
-from pyinfra.operations import server
-from pyinfra import host
+from pyinfra.api.deploy import deploy
+from pyinfra.context import host
 from pyinfra.facts.files import File
 from pyinfra.facts.server import LinuxDistribution
+from pyinfra.operations import files, server
 
 
 @deploy("Set ACL")
@@ -143,17 +143,17 @@ def acl_setup():
                         perm_value = sum(int(perm_map.get(p, "0")) for p in perms)
 
                         if user_or_group == "u":
-                            # Set user permissions using chmod
-                            server.shell(
-                                name=f"Set permissions for {path} using chmod",
-                                commands=[f"chmod u={perms} {path}"],
+                            files.file(
+                                name=f"Set user permissions for {path}",
+                                path=path,
+                                mode=f"u={perm_value}",
                                 _ignore_errors=True,
                             )
                         elif user_or_group == "g":
-                            # Set group permissions using chmod
-                            server.shell(
-                                name=f"Set permissions for {path} using chmod",
-                                commands=[f"chmod g={perms} {path}"],
+                            files.file(
+                                name=f"Set group permissions for {path}",
+                                path=path,
+                                mode=f"g={perm_value}",
                                 _ignore_errors=True,
                             )
             else:
