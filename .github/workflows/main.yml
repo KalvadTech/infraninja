@@ -13,7 +13,7 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v4
         with:
-          python-version: '3.x' # Specify the Python version you need
+          python-version: '3.12'
 
       - name: Install dependencies
         run: |
@@ -22,4 +22,4 @@ jobs:
       - name: Run Ruff
         uses: astral-sh/ruff-action@v3.2.1
         with:
-          args: format .
+          args: check .
