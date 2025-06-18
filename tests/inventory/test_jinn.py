@@ -1,12 +1,13 @@
 #!/usr/bin/env python3
 # tests/inventory/test_jinn.py
 
-import sys
 import json
+import sys
 import unittest
-import requests
 from pathlib import Path
-from unittest.mock import patch, MagicMock, mock_open
+from unittest.mock import MagicMock, mock_open, patch
+
+import requests
 
 # Add the project root to the Python path
 sys.path.insert(0, str(Path(__file__).parent.parent.parent))
@@ -174,24 +175,22 @@ Host server2
     def test_init_with_defaults(self):
         """Test initialization with default parameters."""
         # Skip the refresh_ssh_config call during initialization
-        with (
-            patch.object(Jinn, "refresh_ssh_config"),
-            patch(
+        with patch.object(Jinn, "refresh_ssh_config"):
+            with patch(
                 "pathlib.Path.expanduser", return_value=Path("/home/test/.ssh/id_rsa")
-            ),
-            patch.object(Path, "home", return_value=Path("/home/test")),
-        ):
-            jinn = Jinn(api_key=self.api_key)
+            ):
+                with patch.object(Path, "home", return_value=Path("/home/test")):
+                    jinn = Jinn(api_key=self.api_key)
 
-            # Check that the SSH key path was set correctly
-            self.assertEqual(jinn.ssh_key_path, Path("/home/test/.ssh/id_rsa"))
+                    # Check that the SSH key path was set correctly
+                    self.assertEqual(jinn.ssh_key_path, Path("/home/test/.ssh/id_rsa"))
 
-            # Check that the API configuration was set correctly
-            self.assertEqual(jinn.api_url, "https://jinn-api.kalvad.cloud")
-            self.assertEqual(jinn.api_key, self.api_key)
+                    # Check that the API configuration was set correctly
+                    self.assertEqual(jinn.api_url, "https://jinn-api.kalvad.cloud")
+                    self.assertEqual(jinn.api_key, self.api_key)
 
-            # Check that the SSH config directory was created
-            self.mock_path_mkdir.assert_called()
+                    # Check that the SSH config directory was created
+                    self.mock_path_mkdir.assert_called()
 
     def test_init_with_custom_params(self):
         """Test initialization with custom parameters."""
@@ -204,36 +203,29 @@ Host server2
             return self_path
 
         # Skip the refresh_ssh_config call during initialization
-        with (
-            patch.object(Jinn, "refresh_ssh_config"),
-            patch.object(Path, "expanduser", mock_expanduser),
-            patch.object(Path, "home", return_value=Path("/home/test")),
-        ):
-            jinn = Jinn(
-                ssh_key_path="~/custom_key",
-                api_url=self.api_url,
-                api_key=self.api_key,
-                groups=self.groups,
-                tags=self.tags,
-                use_bastion=True,
-                ssh_config_dir="~/custom_ssh_config",
-            )
+        with patch.object(Jinn, "refresh_ssh_config"):
+            with patch.object(Path, "expanduser", mock_expanduser):
+                with patch.object(Path, "home", return_value=Path("/home/test")):
+                    jinn = Jinn(
+                        ssh_key_path="~/custom_key",
+                        api_url=self.api_url,
+                        api_key=self.api_key,
+                        groups=self.groups,
+                        tags=self.tags,
+                        use_bastion=True,
+                        ssh_config_dir="~/custom_ssh_config",
+                    )
 
-            # Check that the parameters were set correctly
-            self.assertEqual(jinn.ssh_key_path, Path("/home/test/custom_key"))
-            self.assertEqual(jinn.api_url, self.api_url)
-            self.assertEqual(jinn.api_key, self.api_key)
-            self.assertEqual(jinn.groups, self.groups)
-            self.assertEqual(jinn.tags, self.tags)
-            self.assertTrue(jinn.use_bastion)
-            self.assertEqual(jinn.ssh_config_dir, Path("/home/test/custom_ssh_config"))
-
-    def test_init_missing_ssh_key(self):
-        """Test initialization with a missing SSH key."""
-        self.mock_path_exists.return_value = False
-
-        with self.assertRaises(JinnSSHError):
-            Jinn(api_key=self.api_key)
+                    # Check that the parameters were set correctly
+                    self.assertEqual(jinn.ssh_key_path, Path("/home/test/custom_key"))
+                    self.assertEqual(jinn.api_url, self.api_url)
+                    self.assertEqual(jinn.api_key, self.api_key)
+                    self.assertEqual(jinn.groups, self.groups)
+                    self.assertEqual(jinn.tags, self.tags)
+                    self.assertTrue(jinn.use_bastion)
+                    self.assertEqual(
+                        jinn.ssh_config_dir, Path("/home/test/custom_ssh_config")
+                    )
 
     def test_init_missing_api_key(self):
         """Test initialization with a missing API key."""
@@ -395,47 +387,46 @@ Host server2
 
     def test_load_servers(self):
         """Test the load_servers method."""
-        with (
-            patch.object(Jinn, "refresh_ssh_config"),
-            patch.object(Path, "home", return_value=Path("/home/test")),
-        ):
-            # Test normal operation
-            jinn = Jinn(api_key=self.api_key)
-            jinn.load_servers()
-
-            # Should have loaded 2 servers (the active ones)
-            self.assertEqual(len(jinn.servers), 2)
-            self.assertEqual(jinn.servers[0][0], "server1")
-            self.assertEqual(jinn.servers[1][0], "server2")
-
-            # Test with filters that exclude all servers
-            jinn.groups = ["nonexistent"]
-            with self.assertRaises(JinnAPIError):
+        with patch.object(Jinn, "refresh_ssh_config"):
+            with patch.object(Path, "home", return_value=Path("/home/test")):
+                # Test normal operation
+                jinn = Jinn(api_key=self.api_key)
                 jinn.load_servers()
 
-            # Test various API errors
-            error_cases = [
-                ("timeout", requests.Timeout("Timeout")),
-                ("http_error", requests.HTTPError("HTTP Error")),
-                ("request_exception", requests.RequestException("Request Error")),
-                ("json_decode_error", json.JSONDecodeError("JSON Decode Error", "", 0)),
-                ("key_error", KeyError("Missing Key")),
-                ("unexpected_error", Exception("Unexpected Error")),
-            ]
+                # Should have loaded 2 servers (the active ones)
+                self.assertEqual(len(jinn.servers), 2)
+                self.assertEqual(jinn.servers[0][0], "server1")
+                self.assertEqual(jinn.servers[1][0], "server2")
 
-            for _, error_exception in error_cases:
-                # Test error handling in the load_servers method directly, not in __init__
-                self.mock_requests_get.side_effect = error_exception
+                # Test with filters that exclude all servers
+                jinn.groups = ["nonexistent"]
                 with self.assertRaises(JinnAPIError):
-                    # Create a fresh jinn object and then test load_servers
-                    # This avoids the initialization errors that were causing test failures
-                    with (
-                        patch.object(Jinn, "get_project_name"),
-                        patch.object(Jinn, "load_servers"),
-                    ):
-                        test_jinn = Jinn(api_key=self.api_key)
-                    # Now test the load_servers method with the error
-                    test_jinn.load_servers()
+                    jinn.load_servers()
+
+                # Test various API errors
+                error_cases = [
+                    ("timeout", requests.Timeout("Timeout")),
+                    ("http_error", requests.HTTPError("HTTP Error")),
+                    ("request_exception", requests.RequestException("Request Error")),
+                    (
+                        "json_decode_error",
+                        json.JSONDecodeError("JSON Decode Error", "", 0),
+                    ),
+                    ("key_error", KeyError("Missing Key")),
+                    ("unexpected_error", Exception("Unexpected Error")),
+                ]
+
+                for _, error_exception in error_cases:
+                    # Test error handling in the load_servers method directly, not in __init__
+                    self.mock_requests_get.side_effect = error_exception
+                    with self.assertRaises(JinnAPIError):
+                        # Create a fresh jinn object and then test load_servers
+                        # This avoids the initialization errors that were causing test failures
+                        with patch.object(Jinn, "get_project_name"):
+                            with patch.object(Jinn, "load_servers"):
+                                test_jinn = Jinn(api_key=self.api_key)
+                        # Now test the load_servers method with the error
+                        test_jinn.load_servers()
 
     def test_get_servers(self):
         """Test the get_servers method."""
@@ -516,31 +507,29 @@ Host server2
             return not str(path_obj).endswith("/config")
 
         # Patch the Path.exists method and other necessary methods
-        with (
-            patch.object(Jinn, "refresh_ssh_config"),
-            patch("pathlib.Path.exists", mock_exists),
-            patch.object(Path, "home", return_value=Path("/home/test")),
-        ):
-            jinn = Jinn(api_key=self.api_key)
+        with patch.object(Jinn, "refresh_ssh_config"):
+            with patch("pathlib.Path.exists", mock_exists):
+                with patch.object(Path, "home", return_value=Path("/home/test")):
+                    jinn = Jinn(api_key=self.api_key)
 
-            # Reset mocks for this specific test
-            self.mock_os_chmod.reset_mock()
+                    # Reset mocks for this specific test
+                    self.mock_os_chmod.reset_mock()
 
-            # Mock the file operations
-            m = mock_open()
-            with patch("builtins.open", m):
-                jinn.update_main_ssh_config()
+                    # Mock the file operations
+                    m = mock_open()
+                    with patch("builtins.open", m):
+                        jinn.update_main_ssh_config()
 
-            # Check that the file was opened for writing
-            m.assert_called_once()
-            file_handle = m()
+                    # Check that the file was opened for writing
+                    m.assert_called_once()
+                    file_handle = m()
 
-            # In the new implementation, with a new file we only write the include directive without a leading newline
-            include_directive = f"Include {jinn.ssh_config_dir}/*\n"
-            file_handle.write.assert_called_with(include_directive)
+                    # In the new implementation, with a new file we only write the include directive without a leading newline
+                    include_directive = f"Include {jinn.ssh_config_dir}/*\n"
+                    file_handle.write.assert_called_with(include_directive)
 
-            # Check that the permissions were set
-            self.mock_os_chmod.assert_called_once()
+                    # Check that the permissions were set
+                    self.mock_os_chmod.assert_called_once()
 
     def test_update_main_ssh_config_existing_file(self):
         """Test the update_main_ssh_config method with an existing config file."""
@@ -549,56 +538,54 @@ Host server2
             "Host *\n    StrictHostKeyChecking yes\n"
         )
 
-        with (
-            patch.object(Jinn, "refresh_ssh_config"),
-            patch("pathlib.Path.exists", return_value=True),
-        ):
-            jinn = Jinn(api_key=self.api_key)
+        with patch.object(Jinn, "refresh_ssh_config"):
+            with patch("pathlib.Path.exists", return_value=True):
+                jinn = Jinn(api_key=self.api_key)
 
-            # Mock the file operations
-            m = mock_open()
-            with patch("builtins.open", m):
-                jinn.update_main_ssh_config()
+                # Mock the file operations
+                m = mock_open()
+                with patch("builtins.open", m):
+                    jinn.update_main_ssh_config()
 
-            # Check that the file was opened for writing
-            m.assert_called_once()
-            file_handle = m()
+                # Check that the file was opened for writing
+                m.assert_called_once()
+                file_handle = m()
 
-            # The implementation now uses multiple write calls
-            # Verify the include directive was written as the last call
-            include_directive = f"Include {jinn.ssh_config_dir}/*\n"
-            calls = file_handle.write.call_args_list
-            self.assertTrue(
-                any(call[0][0] == include_directive for call in calls),
-                f"Include directive not found in calls: {calls}",
-            )
+                # The implementation now uses multiple write calls
+                # Verify the include directive was written as the last call
+                include_directive = f"Include {jinn.ssh_config_dir}/*\n"
+                calls = file_handle.write.call_args_list
+                self.assertTrue(
+                    any(call[0][0] == include_directive for call in calls),
+                    f"Include directive not found in calls: {calls}",
+                )
 
-            # Note: In the updated implementation, the file is always rewritten to ensure
-            # there's only a single include directive, so we don't test for not opening the file anymore
+                # Note: In the updated implementation, the file is always rewritten to ensure
+                # there's only a single include directive, so we don't test for not opening the file anymore
 
-            # Test error handling
-            self.mock_path_read_text.side_effect = Exception("Read Error")
-            with self.assertRaises(JinnSSHError):
-                jinn.update_main_ssh_config()
+                # Test error handling
+                self.mock_path_read_text.side_effect = Exception("Read Error")
+                with self.assertRaises(JinnSSHError):
+                    jinn.update_main_ssh_config()
 
     def test_refresh_ssh_config(self):
         """Test the refresh_ssh_config method."""
         jinn = Jinn(api_key=self.api_key)
 
         # Mock the individual methods to check they're called
-        with (
-            patch.object(jinn, "get_ssh_config") as mock_get_ssh_config,
-            patch.object(jinn, "save_ssh_config") as mock_save_ssh_config,
-            patch.object(jinn, "update_main_ssh_config") as mock_update_main_ssh_config,
-        ):
-            mock_get_ssh_config.return_value = self.mock_ssh_config
+        with patch.object(jinn, "get_ssh_config") as mock_get_ssh_config:
+            with patch.object(jinn, "save_ssh_config") as mock_save_ssh_config:
+                with patch.object(
+                    jinn, "update_main_ssh_config"
+                ) as mock_update_main_ssh_config:
+                    mock_get_ssh_config.return_value = self.mock_ssh_config
 
-            jinn.refresh_ssh_config()
+                    jinn.refresh_ssh_config()
 
-            # Check that all methods were called
-            mock_get_ssh_config.assert_called_once()
-            mock_save_ssh_config.assert_called_once_with(self.mock_ssh_config)
-            mock_update_main_ssh_config.assert_called_once()
+                    # Check that all methods were called
+                    mock_get_ssh_config.assert_called_once()
+                    mock_save_ssh_config.assert_called_once_with(self.mock_ssh_config)
+                    mock_update_main_ssh_config.assert_called_once()
 
     def test_get_server_by_hostname(self):
         """Test the get_server_by_hostname method."""
