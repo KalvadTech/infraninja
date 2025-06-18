@@ -20,6 +20,13 @@ jobs:
           pip install -U pytest
           pip install -e .
 
+      - name: Setup test environment
+        run: |
+          mkdir -p ~/.ssh
+          chmod 700 ~/.ssh
+          touch ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+
       - name: Run Pytest
         run: |
             python -m pytest
