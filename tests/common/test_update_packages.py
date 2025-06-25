@@ -1,5 +1,6 @@
+from unittest.mock import MagicMock, patch
+
 import pytest
-from unittest.mock import patch, MagicMock
 
 # Import the module containing system_update
 from infraninja.security.common.update_packages import system_update
@@ -78,15 +79,6 @@ DISTRO_TEST_CASES = [
         },
         "expected_operations": ["zypper.update"],
     },
-    # FreeBSD
-    {
-        "name": "freebsd",
-        "distro_info": {
-            "name": "FreeBSD",
-            "release_meta": {"ID": "freebsd", "ID_LIKE": ""},
-        },
-        "expected_operations": ["pkg.update", "pkg.upgrade"],
-    },
     # Void Linux
     {
         "name": "void",
@@ -124,8 +116,6 @@ def test_system_update_for_distros(test_case):
     ) as mock_pacman, patch(
         "infraninja.security.common.update_packages.zypper"
     ) as mock_zypper, patch(
-        "infraninja.security.common.update_packages.pkg"
-    ) as mock_pkg, patch(
         "infraninja.security.common.update_packages.xbps"
     ) as mock_xbps:
         # Store all mocks for later verification
@@ -139,8 +129,6 @@ def test_system_update_for_distros(test_case):
             "pacman.update": mock_pacman.update,
             "pacman.upgrade": mock_pacman.upgrade,
             "zypper.update": mock_zypper.update,
-            "pkg.update": mock_pkg.update,
-            "pkg.upgrade": mock_pkg.upgrade,
             "xbps.update": mock_xbps.update,
             "xbps.upgrade": mock_xbps.upgrade,
         }

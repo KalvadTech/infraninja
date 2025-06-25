@@ -1,8 +1,9 @@
 from importlib.resources import files as resource_files
+
 from pyinfra.api.deploy import deploy
-from pyinfra.operations import files, iptables, server
-from pyinfra.facts.server import Command
 from pyinfra.context import host
+from pyinfra.facts.server import Command
+from pyinfra.operations import files, iptables, server
 
 
 @deploy("iptables Setup for Ubuntu")

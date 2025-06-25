@@ -1,15 +1,14 @@
-from pyinfra.context import host
 from pyinfra.api.deploy import deploy
+from pyinfra.context import host
 from pyinfra.facts.server import LinuxDistribution, Which
-from pyinfra.operations.freebsd import pkg
 from pyinfra.operations import (
     apk,
     apt,
     dnf,
     pacman,
+    xbps,
     yum,
     zypper,
-    xbps,
 )
 
 
@@ -72,11 +71,6 @@ def system_update():
     # openSUSE
     elif any(d in distro_name for d in ["opensuse", "suse"]):
         zypper.update(name=f"Update {distro_name} packages")
-
-    # FreeBSD
-    elif "freebsd" in distro_name:
-        pkg.update(name="Update FreeBSD package database")
-        pkg.upgrade(name="Upgrade FreeBSD packages")
 
     # Void Linux
     elif "void" in distro_name:
