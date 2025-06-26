@@ -183,5 +183,6 @@ pyrightconfig.json
 #my stuff
 .vagrant
 .infraninja
-deploy/
+deploy/deploy.py
+deploy/jinn.py
 .deepsource.toml
