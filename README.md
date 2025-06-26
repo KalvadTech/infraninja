@@ -1,5 +1,35 @@
 # 🥷 InfraNinja ⚡ – Your Stealthy Infrastructure Ninja
 
+Welcome to **InfraNinja**! 🎉 This project contains a comprehensive set of PyInfra deployments 🥷 used by Kalvad teams 🛠️, making them publicly available for everyone via PyPI! 🚀
+
+These ninja-level deployments are designed to simplify infrastructure management and automate common tasks, helping you deploy services, configure security hardening, manage inventory, and more – fast and effortlessly! 💨
+
+## ⚡️ Features
+
+- 🌐 **Automated Deployments**: Deploy services like **Netdata** with precision and ease! 🥷
+- 🛡️ **Comprehensive Security**: Advanced security hardening including SSH configuration, kernel hardening, firewall setup, malware detection, and intrusion detection systems
+- 🧩 **Modular Architecture**: Reusable deployment modules organized by OS (Ubuntu, Alpine, FreeBSD) and functionality
+- 🔗 **Dynamic Inventory**: Integration with **Jinn API** and **Coolify** for automated server inventory management
+- 🛠️ **Multi-OS Support**: Compatible with Ubuntu, Alpine Linux, and FreeBSD
+- 📋 **Compliance Ready**: Includes UAE IA compliance modules
+- 📦 **PyPI Ready**: Available publicly on PyPI for smooth installation
+
+## 🎯 Getting Started
+
+To get started with **InfraNinja**, you can install it directly from PyPI:
+
+```bash
+pip install infraninja
+```
+
+Then, bring ninja-style automation to your infrastructure with simple imports:
+
+```python
+from infraninja.netdata import deploy_netdata
+```
+
+## 🚀 Quick Examples
+
 ### Basic Netdata Deployment
 
 Deploy **Netdata** monitoring like a ninja 🥷:
@@ -63,52 +93,6 @@ coolify = Coolify(
 )
 
 servers = coolify.get_servers()
-```yments 📦
-
-Welcome to **InfraNinja**! 🎉 This project contains a comprehensive set of PyInfra deployments 🥷 used by Kalvad teams 🛠️, making them publicly available for everyone via PyPI! 🚀
-
-These ninja-level deployments are designed to simplify infrastructure management and automate common tasks, helping you deploy services, configure security hardening, manage inventory, and more – fast and effortlessly! 💨
-
-## ⚡️ Features
-
-- 🌐 **Automated Deployments**: Deploy services like **Netdata** with precision and ease! 🥷
-- 🛡️ **Comprehensive Security**: Advanced security hardening including SSH configuration, kernel hardening, firewall setup, malware detection, and intrusion detection systems
-- 🧩 **Modular Architecture**: Reusable deployment modules organized by OS (Ubuntu, Alpine, FreeBSD) and functionality
-- � **Dynamic Inventory**: Integration with **Jinn API** and **Coolify** for automated server inventory management
-- 🛠️ **Multi-OS Support**: Compatible with Ubuntu, Alpine Linux, and FreeBSD
-- 📋 **Compliance Ready**: Includes UAE IA compliance modules
-- 📦 **PyPI Ready**: Available publicly on PyPI for smooth installation
-
-## 🎯 Getting Started
-
-To get started with **InfraNinja**, you can install it directly from PyPi:
-
-```bash
-pip install infraninja
-```
-
-Then, bring ninja-style automation to your infrastructure with simple imports:
-
-```python
-from infraninja.netdata import deploy_netdata
-```
-
-## 🚀 Example Usage
-
-Here’s how you can deploy **Netdata** like a ninja 🥷:
-
-```python
-from infraninja.netdata import deploy_netdata
-
-deploy_netdata()
-```
-
-Or, configure **Netdata** settings with precision:
-
-```python
-from infraninja.netdata import configure_netdata
-
-configure_netdata()
 ```
 
 ## 📜 Available Deployments
@@ -119,7 +103,7 @@ InfraNinja provides comprehensive deployment modules organized by functionality:
 
 - **Netdata**: Real-time performance monitoring and alerting
 
-### �️ Security Modules
+### 🛡️ Security Modules
 
 #### Common Security (Cross-Platform)
 
@@ -216,9 +200,12 @@ vagrant up
 vagrant ssh ubuntu   # or vagrant ssh alpine
 ```
 
-## 📝 License
+## 📈 Project Status
 
-This project is licensed under the **MIT License**. 📝 Feel free to use it, modify it, and become an infrastructure ninja yourself! 🥷
+- **Current Version**: 0.2.1
+- **Python Support**: >=3.8
+- **License**: MIT License
+- **Stability**: Production Ready
 
 ## 🤝 Contributions
 
@@ -236,12 +223,9 @@ Contributions are welcome! 🎉 If you spot any bugs 🐛 or have ideas 💡 for
 - **Issues**: [Report bugs and request features](https://github.com/KalvadTech/infraninja/issues)
 - **Discussions**: Share your ninja deployments with the community
 
-## 📈 Project Status
+## 📝 License
 
-- **Current Version**: 0.2.1
-- **Python Support**: >=3.8
-- **License**: MIT License
-- **Stability**: Production Ready
+This project is licensed under the **MIT License**. 📝 Feel free to use it, modify it, and become an infrastructure ninja yourself! 🥷
 
 ---
 
