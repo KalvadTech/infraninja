@@ -19,9 +19,7 @@ def system_update():
     distro_name = (distro.get("name", "") or "").lower() if distro else ""
 
     # FreeBSD base system updates
-    if (
-        "freebsd" in distro_name or not distro_name
-    ):  # Handle case where fact might not return properly on FreeBSD
+    if "freebsd" in distro_name or not distro_name:
         # Update package repository catalogs
         pkg.update(name="Update FreeBSD package catalogs")
 
