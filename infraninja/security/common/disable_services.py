@@ -1,6 +1,5 @@
-# filepath: /home/xoity/Desktop/work/infraninja/infraninja/security/common/disable_services.py
-from pyinfra.context import host
 from pyinfra.api.deploy import deploy
+from pyinfra.context import host
 from pyinfra.facts.server import LinuxDistribution
 from pyinfra.operations import server
 
