@@ -23,7 +23,6 @@ def system_update():
     - RHEL, CentOS, Fedora, Rocky Linux, AlmaLinux (using yum or dnf)
     - Arch Linux, Manjaro, EndeavourOS (using pacman)
     - openSUSE (using zypper)
-    - FreeBSD (using pkg)
     - Void Linux (using xbps)
     """
     # Get detailed distribution information
