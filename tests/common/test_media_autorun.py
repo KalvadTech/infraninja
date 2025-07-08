@@ -1,5 +1,6 @@
+from unittest.mock import MagicMock, patch
+
 import pytest
-from unittest.mock import patch, MagicMock
 
 from infraninja.security.common.media_autorun import media_autorun
 
@@ -51,9 +52,7 @@ def test_media_autorun(test_case):
         "infraninja.security.common.media_autorun.files"
     ) as mock_files, patch(
         "infraninja.security.common.media_autorun.server"
-    ) as mock_server, patch(
-        "infraninja.security.common.media_autorun.systemd"
-    ) as mock_systemd:
+    ) as mock_server:
         # Setup host.get_fact to return appropriate values
         mock_host.get_fact.side_effect = lambda fact, **kwargs: (
             test_case["distro_info"]
@@ -66,11 +65,11 @@ def test_media_autorun(test_case):
             # This calls the function directly without decoration
             media_autorun()
 
-        # Verify systemd.service was called to disable autofs
-        assert mock_systemd.service.called
-        assert mock_systemd.service.call_args[1]["service"] == "autofs"
-        assert mock_systemd.service.call_args[1]["running"] is False
-        assert mock_systemd.service.call_args[1]["enabled"] is False
+        # Verify server.service was called to disable autofs
+        assert mock_server.service.called, "server.service was not called"
+        assert mock_server.service.call_args[1]["service"] == "autofs"
+        assert mock_server.service.call_args[1]["running"] is False
+        assert mock_server.service.call_args[1]["enabled"] is False
 
         # Verify udev directory and rules were handled correctly based on the distro
         if not test_case["is_freebsd"]:
