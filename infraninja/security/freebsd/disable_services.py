@@ -26,8 +26,9 @@ class FreeBSDServiceDisabler:
     ]
 
     def __init__(self, services=None):
-        self.services = services or self.DEFAULT_SERVICES.copy()
+        self.services = self.DEFAULT_SERVICES.copy() if services is None else services
 
+    @deploy("Disable Unwanted Services on FreeBSD")
     def deploy(self):
         host.noop("Disabling services on FreeBSD")
 

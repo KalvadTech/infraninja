@@ -28,7 +28,9 @@ class SSHHardener:
             ssh_config (dict): Custom SSH configuration options.
         """
 
-        self.ssh_config = ssh_config or self.DEFAULT_SSH_CONFIG.copy()
+        self.ssh_config = (
+            ssh_config if ssh_config is not None else self.DEFAULT_SSH_CONFIG.copy()
+        )
 
     @deploy("SSH Hardening")
     def deploy(self):
