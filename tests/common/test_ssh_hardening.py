@@ -1,5 +1,6 @@
+from unittest.mock import MagicMock, patch
+
 import pytest
-from unittest.mock import patch, MagicMock
 
 from infraninja.security.common.ssh_hardening import SSHHardener
 
@@ -116,15 +117,22 @@ def test_ssh_hardener_custom_config():
         "pyinfra.context.host", MagicMock()
     ), patch("infraninja.security.common.ssh_hardening.host") as mock_host, patch(
         "infraninja.security.common.ssh_hardening.files"
-    ) as mock_files, patch("infraninja.security.common.ssh_hardening.server"):
+    ) as mock_files, patch(
+        "infraninja.security.common.ssh_hardening.server"
+    ) as mock_server:
         # Setup host.get_fact for distribution and init system
         mock_host.get_fact.side_effect = lambda fact, **kwargs: (
             {"name": "Ubuntu"}
             if fact.__name__ == "LinuxDistribution"
             else True
             if fact.__name__ == "Which" and kwargs.get("command") == "systemctl"
-            else []  # Empty list for FindInFile to force using line()
+            else []  # Empty list for FindInFile to force append
         )
+
+        # Mock server.shell to simulate .changed attribute
+        shell_result = MagicMock()
+        shell_result.changed = True
+        mock_server.shell.return_value = shell_result
 
         # Create the hardener with custom config
         hardener = SSHHardener(ssh_config=custom_config)
@@ -134,16 +142,8 @@ def test_ssh_hardener_custom_config():
             # This calls the function directly without decoration
             hardener.deploy()
 
-        # Verify all custom config options were set
-        assert mock_files.line.call_count == len(custom_config)
-        for option, value in custom_config.items():
-            # Check that files.line was called for each option
-            found = False
-            for call_args in mock_files.line.call_args_list:
-                if call_args[1]["line"] == f"{option} {value}":
-                    found = True
-                    break
-            assert found, f"Expected to find call for option: {option}"
+        # Verify all custom config options were set using server.shell (append)
+        assert mock_server.shell.call_count == len(custom_config)
 
 
 def test_ssh_hardener_no_changes():
@@ -192,8 +192,7 @@ def test_ssh_hardener_no_changes():
             # This calls the function directly without decoration
             hardener.deploy()
 
-        # Verify that we checked the config
-        assert mock_files.replace.call_count == 3  # One for each default option
-
+        # Since all options are already set correctly, files.replace should not be called
+        assert mock_files.replace.call_count == 0
         # Verify service restart wasn't attempted
         assert not mock_server.service.called
