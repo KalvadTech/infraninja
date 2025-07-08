@@ -1,7 +1,9 @@
-from pyinfra.context import host
 from pyinfra.api.deploy import deploy
-from pyinfra.operations import files, server
+from pyinfra.context import host
 from pyinfra.facts.files import FindInFile
+from pyinfra.operations import files, server
+
+#
 
 
 class SSHHardener:
@@ -38,25 +40,41 @@ class SSHHardener:
             matching_lines = host.get_fact(
                 FindInFile,
                 path="/etc/ssh/sshd_config",
-                pattern=rf"^#?\s*{option}\s+.*$",
+                pattern=rf"^{option}.*$",
             )
 
+            print(f"Checking for {option} in /etc/ssh/sshd_config: {matching_lines}")
+
             if matching_lines:
-                change = files.replace(
-                    name=f"Configure SSH: {option}",
-                    path="/etc/ssh/sshd_config",
-                    text=f"^{matching_lines[0]}$",
-                    replace=f"{option} {value}",
-                    _ignore_errors=True,
+                # Option exists, check if value matches desired value
+                existing_line = matching_lines[0]
+                desired_line = f"{option} {value}"
+
+                if existing_line.strip() != desired_line:
+                    # Value doesn't match, replace it
+                    change = files.replace(
+                        name=f"Configure SSH: {option} (update value)",
+                        path="/etc/ssh/sshd_config",
+                        text=f"^{existing_line}$",
+                        replace=desired_line,
+                        _ignore_errors=True,
+                    )
+                    if change.changed:
+                        config_changed = True
+                        print(
+                            f"Updated {option}: '{existing_line}' -> '{desired_line}'"
+                        )
+                else:
+                    print(f"{option} already set to correct value: {value}")
+            else:
+                # Option doesn't exist, append it to the end of the file
+                change = server.shell(
+                    name=f"Configure SSH: {option} (append new)",
+                    commands=[f"echo '{option} {value}' >> /etc/ssh/sshd_config"],
                 )
                 if change.changed:
                     config_changed = True
-            else:
-                # Append if not found
-                files.line(
-                    path="/etc/ssh/sshd_config", line=f"{option} {value}", present=True
-                )
-                config_changed = True
+                    print(f"Added new option {option}: {value}")
 
         if config_changed:
             # Restart SSH service to apply changes
