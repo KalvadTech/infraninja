@@ -4,6 +4,8 @@ import requests
 from pyinfra.operations import server
 from pyinfra.api import deploy, DeployError
 from .defaults import DEFAULTS
+from pyinfra import host
+
 
 @deploy("Setup SSH keys", data_defaults=DEFAULTS)
 def ssh_keys():
