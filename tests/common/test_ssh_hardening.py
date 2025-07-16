@@ -133,7 +133,7 @@ def test_ssh_hardener_custom_config():
         shell_result = MagicMock()
         shell_result.changed = True
         mock_server.shell.return_value = shell_result
-
+        print(mock_files)
         # Create the hardener with custom config
         hardener = SSHHardener(ssh_config=custom_config)
 
