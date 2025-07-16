@@ -117,6 +117,8 @@ def test_ssh_hardener_custom_config():
         "pyinfra.context.host", MagicMock()
     ), patch("infraninja.security.common.ssh_hardening.host") as mock_host, patch(
         "infraninja.security.common.ssh_hardening.files"
+    ) as mock_files, patch(
+        "infraninja.security.common.ssh_hardening.server"
     ) as mock_server:
         # Setup host.get_fact for distribution and init system
         mock_host.get_fact.side_effect = lambda fact, **kwargs: (
@@ -131,7 +133,7 @@ def test_ssh_hardener_custom_config():
         shell_result = MagicMock()
         shell_result.changed = True
         mock_server.shell.return_value = shell_result
-
+        print(mock_files)
         # Create the hardener with custom config
         hardener = SSHHardener(ssh_config=custom_config)
 
