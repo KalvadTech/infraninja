@@ -1,7 +1,10 @@
 DEFAULTS = {
-    # Install
-    "github_users": [],
-    "ssh_keys": [],
-    "delete_ssh_keys": False,
-    "ssh_keys_user": None,
+    "infraninja": {
+        "ssh_keys": {
+            "github_users": [],
+            "ssh_keys": [],
+            "delete": False,
+            "user": None,
+        }
+    }
 }

@@ -9,10 +9,12 @@ from pyinfra import host
 
 @deploy("Setup SSH keys", data_defaults=DEFAULTS)
 def ssh_keys():
-    if host.data.ssh_keys_user is None:
-        raise DeployError("ssh_keys_user is not set")
-    keys = host.data.ssh_keys
-    for github_user in host.data.github_users:
+    infraninja = host.data.get("infraninja")["ssh_keys"]
+    print(infraninja)
+    if infraninja["user"] is None:
+        raise DeployError("user is not set")
+    keys = infraninja["ssh_keys"]
+    for github_user in infraninja["github_users"]:
         url = "https://github.com/{}.keys".format(github_user)
         response = requests.request("GET", url)
         if response.status_code != 200:
@@ -21,5 +23,7 @@ def ssh_keys():
             if key != "":
                 keys.append(f"{key} {github_user}@github")
     server.user_authorized_keys(
-        host.data.ssh_keys_user, keys, delete_keys=host.data.delete_ssh_keys
+        infraninja["user"],
+        keys,
+        delete_keys=infraninja["delete"],
     )
