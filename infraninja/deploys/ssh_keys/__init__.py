@@ -6,7 +6,7 @@ from pyinfra.api import deploy, DeployError
 from .defaults import DEFAULTS
 
 @deploy("Setup SSH keys", data_defaults=DEFAULTS)
-def ssh_keys(state, host):
+def ssh_keys():
     if host.data.ssh_keys_user is None:
         raise DeployError("ssh_keys_user is not set")
     keys = host.data.ssh_keys
