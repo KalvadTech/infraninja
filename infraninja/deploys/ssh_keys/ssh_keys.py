@@ -1,9 +1,7 @@
 #!/usr/bin/env python3
 
 import requests
-from pyinfra import host
-from pyinfra.operations import apt, files, server, systemd
-from pyinfra.operations.server import hostname
+from pyinfra.operations import server
 from pyinfra.api import deploy, DeployError
 from .defaults import DEFAULTS
 
