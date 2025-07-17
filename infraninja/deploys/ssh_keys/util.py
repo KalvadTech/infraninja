@@ -2,7 +2,7 @@
 
 import logging
 import time
-from typing import List, Optional
+from typing import List
 
 import requests
 from pyinfra.api import DeployError, FactError
@@ -15,7 +15,7 @@ def fetch_github_ssh_keys(
     github_users: List[str],
     timeout: int = 10,
     max_retries: int = 3,
-    retry_delay: float = 1.0
+    retry_delay: float = 1.0,
 ) -> List[str]:
     """
     Fetch SSH keys from GitHub for a list of users.
@@ -53,7 +53,9 @@ def fetch_github_ssh_keys(
             continue
 
         logger.info(f"Fetching SSH keys for GitHub user: {github_user}")
-        user_keys = _fetch_user_keys_with_retry(github_user, timeout, max_retries, retry_delay)
+        user_keys = _fetch_user_keys_with_retry(
+            github_user, timeout, max_retries, retry_delay
+        )
         keys.extend(user_keys)
         logger.info(f"Successfully fetched {len(user_keys)} keys for {github_user}")
 
@@ -62,10 +64,7 @@ def fetch_github_ssh_keys(
 
 
 def _fetch_user_keys_with_retry(
-    github_user: str,
-    timeout: int,
-    max_retries: int,
-    retry_delay: float
+    github_user: str, timeout: int, max_retries: int, retry_delay: float
 ) -> List[str]:
     """
     Fetch SSH keys for a single GitHub user with retry logic.
@@ -91,10 +90,7 @@ def _fetch_user_keys_with_retry(
             response = requests.get(
                 url,
                 timeout=timeout,
-                headers={
-                    "User-Agent": "infraninja/1.0",
-                    "Accept": "text/plain"
-                }
+                headers={"User-Agent": "infraninja/1.0", "Accept": "text/plain"},
             )
 
             if response.status_code == 200:
@@ -102,7 +98,9 @@ def _fetch_user_keys_with_retry(
             elif response.status_code == 404:
                 raise FactError(f"GitHub user '{github_user}' not found")
             else:
-                error_msg = f"HTTP {response.status_code} when fetching keys for {github_user}"
+                error_msg = (
+                    f"HTTP {response.status_code} when fetching keys for {github_user}"
+                )
                 if attempt < max_retries:
                     logger.warning(f"{error_msg}, retrying in {retry_delay}s...")
                     time.sleep(retry_delay)
@@ -129,7 +127,9 @@ def _fetch_user_keys_with_retry(
                 raise DeployError(error_msg)
 
     # This should never be reached, but just in case
-    raise DeployError(f"Failed to fetch SSH keys for {github_user} after {max_retries + 1} attempts")
+    raise DeployError(
+        f"Failed to fetch SSH keys for {github_user} after {max_retries + 1} attempts"
+    )
 
 
 def _parse_ssh_keys(response_text: str, github_user: str) -> List[str]:
@@ -153,7 +153,9 @@ def _parse_ssh_keys(response_text: str, github_user: str) -> List[str]:
 
         # Basic validation of SSH key format
         if not _is_valid_ssh_key_format(line):
-            logger.warning(f"Skipping invalid SSH key format for {github_user} (line {line_num})")
+            logger.warning(
+                f"Skipping invalid SSH key format for {github_user} (line {line_num})"
+            )
             continue
 
         # Add GitHub username as comment to the key
@@ -210,8 +212,13 @@ def _is_valid_ssh_key_format(key: str) -> bool:
     # Check if first part looks like a valid SSH key type
     key_type = parts[0].lower()
     valid_types = {
-        "ssh-rsa", "ssh-dss", "ssh-ed25519", "ecdsa-sha2-nistp256",
-        "ecdsa-sha2-nistp384", "ecdsa-sha2-nistp521", "ssh-ed448"
+        "ssh-rsa",
+        "ssh-dss",
+        "ssh-ed25519",
+        "ecdsa-sha2-nistp256",
+        "ecdsa-sha2-nistp384",
+        "ecdsa-sha2-nistp521",
+        "ssh-ed448",
     }
 
     return key_type in valid_types

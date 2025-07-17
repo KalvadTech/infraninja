@@ -8,7 +8,11 @@ from pyinfra.api import deploy, DeployError
 from pyinfra import host
 
 from .defaults import DEFAULTS
-from .util import fetch_github_ssh_keys, _is_valid_ssh_key_format, _is_valid_github_username
+from .util import (
+    fetch_github_ssh_keys,
+    _is_valid_ssh_key_format,
+    _is_valid_github_username,
+)
 
 
 logger = logging.getLogger(__name__)
@@ -19,7 +23,7 @@ def ssh_keys(
     timeout: int = 10,
     max_retries: int = 3,
     retry_delay: float = 1.0,
-    validate_keys: bool = True
+    validate_keys: bool = True,
 ) -> None:
     """
     Deploy SSH keys for a user from multiple sources.
@@ -56,13 +60,15 @@ def ssh_keys(
     # Fetch GitHub keys if users are specified
     github_users = ssh_config["github_users"]
     if github_users:
-        logger.info(f"Fetching SSH keys from {len(github_users)} GitHub users: {github_users}")
+        logger.info(
+            f"Fetching SSH keys from {len(github_users)} GitHub users: {github_users}"
+        )
         try:
             github_keys = fetch_github_ssh_keys(
                 github_users=github_users,
                 timeout=timeout,
                 max_retries=max_retries,
-                retry_delay=retry_delay
+                retry_delay=retry_delay,
             )
             all_keys.extend(github_keys)
             logger.info(f"Successfully fetched {len(github_keys)} keys from GitHub")
@@ -142,7 +148,9 @@ def _get_and_validate_config() -> Dict[str, Any]:
     # Validate GitHub usernames using util function
     for username in github_users:
         if not isinstance(username, str):
-            raise DeployError(f"GitHub username must be a string, got: {type(username).__name__}")
+            raise DeployError(
+                f"GitHub username must be a string, got: {type(username).__name__}"
+            )
         if not username.strip():
             raise DeployError("GitHub username cannot be empty")
         if not _is_valid_github_username(username.strip()):
@@ -151,7 +159,9 @@ def _get_and_validate_config() -> Dict[str, Any]:
     # Validate SSH keys
     for i, key in enumerate(ssh_keys):
         if not isinstance(key, str):
-            raise DeployError(f"SSH key at position {i} must be a string, got: {type(key).__name__}")
+            raise DeployError(
+                f"SSH key at position {i} must be a string, got: {type(key).__name__}"
+            )
         if not key.strip():
             raise DeployError(f"SSH key at position {i} cannot be empty")
 
@@ -184,5 +194,7 @@ def _validate_and_filter_keys(keys: List[str]) -> List[str]:
         else:
             logger.warning(f"Skipping invalid SSH key at position {i}: {key[:50]}...")
 
-    logger.info(f"Validated {len(valid_keys)} out of {len(keys)} manually specified SSH keys")
+    logger.info(
+        f"Validated {len(valid_keys)} out of {len(keys)} manually specified SSH keys"
+    )
     return valid_keys
