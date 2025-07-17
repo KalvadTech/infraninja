@@ -1,10 +1,10 @@
-from pyinfra import operations
+from pyinfra import host, operations
 from pyinfra.api import DeployError, deploy
 from pyinfra.facts.server import OsRelease
 
 
 @deploy("Update")
-def deploy_update(state, host, extra_args=None):
+def deploy_update():
     os_id = host.get_fact(OsRelease).get("id")
     os_id_like = host.get_fact(OsRelease).get("id_like")
     if os_id_like:
@@ -43,7 +43,7 @@ def deploy_update(state, host, extra_args=None):
 
 
 @deploy("Upgrade")
-def deploy_upgrade(state, host, extra_args=None):
+def deploy_upgrade():
     os_id = host.get_fact(OsRelease).get("id")
     os_id_like = host.get_fact(OsRelease).get("id_like")
     if os_id_like:
