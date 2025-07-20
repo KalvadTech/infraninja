@@ -50,14 +50,21 @@ def package_update():
     This is useful when you only want to update packages without
     updating the FreeBSD base system.
     """
-    # Update package repository catalogs
-    pkg.update(name="Update FreeBSD package catalogs")
+    distro = host.get_fact(LinuxDistribution)
+    distro_name = (distro.get("name", "") or "").lower() if distro else ""
+    if "freebsd" in distro_name or not distro_name:
+        # Update package repository catalogs
+        pkg.update(name="Update FreeBSD package catalogs")
 
-    # Upgrade all installed packages
-    pkg.upgrade(name="Upgrade FreeBSD packages")
+        # Upgrade all installed packages
+        pkg.upgrade(name="Upgrade FreeBSD packages")
 
-    # Clean package cache to free up space
-    pkg.clean(all_pkg=True, name="Clean FreeBSD package cache")
+        # Clean package cache to free up space
+        pkg.clean(all_pkg=True, name="Clean FreeBSD package cache")
 
-    # Remove orphaned packages
-    pkg.autoremove(name="Remove orphaned packages")
+        # Remove orphaned packages
+        pkg.autoremove(name="Remove orphaned packages")
+    else:
+        raise ValueError(
+            f"This deployment is designed for FreeBSD systems only. Detected: {distro_name}"
+        )
