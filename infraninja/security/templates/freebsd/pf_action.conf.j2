@@ -1,0 +1,40 @@
+[Definition]
+# Option:  actionstart
+# Notes:   command executed on demand at the first ban
+# Values:  CMD
+#
+actionstart = 
+
+# Option:  actionstop
+# Notes:   command executed at the end of jail (or at the end of Fail2Ban)
+# Values:  CMD
+#
+actionstop = 
+
+# Option:  actioncheck
+# Notes:   command executed once before each actionban command
+# Values:  CMD
+#
+actioncheck = 
+
+# Option:  actionban
+# Notes:   command executed when banning an IP. Take care that the
+#          command is executed with Fail2Ban user rights.
+# Tags:    <ip>  IP address
+#          <port> port number
+#          <protocol> protocol
+# Values:  CMD
+#
+actionban = /sbin/pfctl -t fail2ban -T add <ip>
+
+# Option:  actionunban
+# Notes:   command executed when unbanning an IP. Take care that the
+#          command is executed with Fail2Ban user rights.
+# Tags:    <ip>  IP address
+#          <port> port number
+#          <protocol> protocol
+# Values:  CMD
+#
+actionunban = /sbin/pfctl -t fail2ban -T delete <ip>
+
+[Init]

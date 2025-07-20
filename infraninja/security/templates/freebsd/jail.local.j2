@@ -1,0 +1,48 @@
+[DEFAULT]
+# Ban hosts for 1 hour
+bantime = 3600
+
+# Check logs for new bans every 10 minutes
+findtime = 600
+
+# Ban after 5 failures
+maxretry = 5
+
+# Use pf for firewall actions (FreeBSD native)
+banaction = pf
+banaction_allports = pf
+
+# Default email settings
+destemail = root@localhost
+sender = fail2ban@localhost
+mta = sendmail
+
+# Logging settings
+logtarget = /var/log/fail2ban.log
+loglevel = INFO
+
+# Default action
+action = %(action_)s
+
+# SSH jail
+[sshd]
+enabled = true
+filter = sshd
+logpath = /var/log/auth.log
+maxretry = 5
+findtime = 600
+bantime = 3600
+
+# SMTP-AUTH (disabled by default)
+[postfix-auth]
+enabled = false
+filter = postfix-auth
+logpath = /var/log/maillog
+maxretry = 5
+
+# HTTP authentication (disabled by default)
+[nginx-http-auth]
+enabled = false
+filter = nginx-http-auth
+logpath = /var/log/nginx/error.log
+maxretry = 5

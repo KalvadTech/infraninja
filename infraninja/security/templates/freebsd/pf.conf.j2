@@ -1,0 +1,39 @@
+# PF configuration for FreeBSD - managed by InfraNinja
+# Basic secure firewall configuration
+
+# Define macros
+ext_if = "em0"  # External interface - adjust as needed
+tcp_services = "{ 22 }"  # SSH only by default
+icmp_types = "{ echoreq }"
+
+# Options
+set block-policy return
+set loginterface $ext_if
+set skip on lo
+
+# Normalization
+scrub in on $ext_if all fragment reassemble
+
+# Fail2ban table
+table <fail2ban> persist
+
+# Default block policy
+block all
+
+# Block fail2ban IPs first
+block in quick from <fail2ban> to any
+
+# Allow loopback
+pass quick on lo
+
+# Allow outgoing traffic
+pass out quick
+
+# Allow established connections
+pass in quick on $ext_if proto tcp from any to any port $tcp_services flags S/SA keep state
+
+# Allow ping
+pass in inet proto icmp all icmp-type $icmp_types keep state
+
+# Log all denied packets
+block in log on $ext_if all
