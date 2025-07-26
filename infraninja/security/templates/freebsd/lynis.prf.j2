@@ -1,0 +1,24 @@
+# FreeBSD Lynis profile configuration
+# Configured for FreeBSD-specific settings
+
+# Skip tests that are not applicable to FreeBSD
+skip-test=ACCT-9622
+skip-test=AUTH-9262
+skip-test=AUTH-9264
+skip-test=AUTH-9266
+skip-test=BOOT-5122
+skip-test=BOOT-5124
+skip-test=FILE-6310
+skip-test=KRNL-6000
+skip-test=NETW-2704
+skip-test=NETW-3001
+skip-test=PROC-3602
+skip-test=SCHD-7702
+skip-test=TOOL-5002
+skip-test=USB-1000
+
+# FreeBSD-specific settings
+compliance-standards=pci-dss
+
+# Colors disabled for automated runs
+colors=no
