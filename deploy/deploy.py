@@ -1,11 +1,11 @@
 from pyinfra.api.deploy import deploy
-from infraninja.security.ubuntu.fail2ban_setup import fail2ban_setup
-
 
 @deploy("Test Security Setup")
 def test_deploy():
-
-    fail2ban_setup(_sudo=True)
-
+    """
+    This function is a placeholder for a deployment task.
+    It can be used to test the deployment process.
+    """
+    print("Running test deployment...")
 
 test_deploy()

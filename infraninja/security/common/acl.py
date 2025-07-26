@@ -4,6 +4,8 @@ from pyinfra.facts.files import File
 from pyinfra.facts.server import LinuxDistribution
 from pyinfra.operations import server
 
+# TODO: check if user is using FreeBSD, if using freeBSD throw a not
+
 
 @deploy("Set ACL")
 def acl_setup():

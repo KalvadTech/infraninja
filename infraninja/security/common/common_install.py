@@ -1,5 +1,5 @@
-from pyinfra.context import host
 from pyinfra.api.deploy import deploy
+from pyinfra.context import host
 from pyinfra.facts.server import LinuxDistribution
 from pyinfra.operations import server
 
@@ -253,13 +253,11 @@ class CommonPackageInstaller:
             )
             # Then install packages
             server.packages(
-                name="Install common security packages",
                 packages=packages_to_install,
                 present=True,
             )
         else:
             server.packages(
-                name="Install common security packages",
                 packages=packages_to_install,
                 present=True,
             )
