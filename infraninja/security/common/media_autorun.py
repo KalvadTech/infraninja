@@ -6,6 +6,25 @@ from pyinfra.operations import files, server
 
 @deploy("disable Media Autorun")
 def media_autorun():
+    """
+    Disable automatic mounting and execution of removable media.
+
+    Prevents security risks from malicious USB devices and other removable
+    media by disabling autorun functionality. Configures udev rules and
+    fstab entries to ensure manual control over media mounting.
+
+    .. code:: python
+
+        from infraninja.security.common.media_autorun import media_autorun
+        media_autorun()
+
+    :returns: None
+    :rtype: None
+
+    .. note::
+        FreeBSD systems skip udev-related configurations as they use
+        a different device management system.
+    """
     server.service(
         name="Disable udisks2 service",
         service="autofs",

@@ -6,28 +6,42 @@ from pyinfra.operations import server
 
 class CommonPackageInstaller:
     """
-    Installs common packages across various Linux distributions.
-    Similar to SSHHardener and ServiceDisabler, this is a class-based approach.
+    Installs common security packages across various Linux distributions.
 
-    Usage:
+    Provides a unified interface for installing essential security tools
+    across different Linux distributions and package managers. Automatically
+    detects the distribution family and uses appropriate package names.
+
+    Supported distributions:
+    - Debian-based (Ubuntu, Debian, Mint) - using apt
+    - Alpine Linux - using apk
+    - Red Hat family (RHEL, CentOS, Fedora, Rocky, Alma) - using yum/dnf
+    - Arch Linux family (Arch, Manjaro, EndeavourOS) - using pacman
+    - SUSE family (openSUSE) - using zypper
+    - Void Linux - using xbps
+    - FreeBSD - using pkg
+
+    .. code:: python
+
         from infraninja.security.common.common_install import CommonPackageInstaller
+
+        # Install default security packages
         CommonPackageInstaller().deploy()
 
-        you may define your own packages by passing a dictionary to the constructor:
+        # Install custom package set
         custom_packages = {
-            'generic_name': {
-                'debian': ['debian_pkg1', 'debian_pkg2'],
-                'alpine': ['alpine_pkg1'],
+            'security_tools': {
+                'debian': ['custom-security-tool'],
+                'alpine': ['custom-security-alpine'],
             }
         }
+        CommonPackageInstaller(packages=custom_packages).deploy()
 
-        For openSUSE/SUSE systems, you can add additional repositories:
+        # For openSUSE with additional repositories
         zypper_repos = [
-            "https://download.opensuse.org/repositories/security/openSUSE_Tumbleweed/security.repo",
-            "https://download.opensuse.org/repositories/security/15.6/security.repo"
+            "https://download.opensuse.org/repositories/security/openSUSE_Tumbleweed/security.repo"
         ]
         CommonPackageInstaller(zypper_repos=zypper_repos).deploy()
-
     """
 
     # Core common packages for security tools
@@ -135,10 +149,10 @@ class CommonPackageInstaller:
         """
         Initialize with custom packages or use defaults.
 
-        Args:
-            packages (dict, optional): Custom packages dictionary. Defaults to None.
-            zypper_repos (list, optional): List of zypper repository URLs to add before
-                                         installing packages (SUSE/openSUSE only). Defaults to None.
+        :param packages: Custom packages dictionary mapping generic names to distribution-specific package lists
+        :type packages: dict, optional
+        :param zypper_repos: List of zypper repository URLs to add before installing packages (SUSE/openSUSE only)
+        :type zypper_repos: list, optional
         """
         self.packages = packages or self.DEFAULT_PACKAGES.copy()
         self.zypper_repos = zypper_repos or []
@@ -148,8 +162,13 @@ class CommonPackageInstaller:
         """
         Determine the Linux distribution family for package selection.
 
-        Returns:
-            str: The distribution family ('debian', 'alpine', 'rhel', etc.)
+        Analyzes system information to classify the distribution into
+        one of the supported families for appropriate package manager selection.
+
+        :returns: The distribution family identifier
+        :rtype: str
+        :returns: None if distribution is not supported
+        :rtype: None
         """
         # Get detailed distribution information
         distro = host.get_fact(LinuxDistribution)
@@ -193,6 +212,12 @@ class CommonPackageInstaller:
     def _setup_zypper_repos(self):
         """
         Add zypper repositories if specified and on SUSE/openSUSE system.
+
+        Configures additional package repositories for SUSE/openSUSE systems
+        to provide access to security packages that may not be in default repos.
+
+        :returns: None
+        :rtype: None
         """
         if not self.zypper_repos:
             return
@@ -215,6 +240,14 @@ class CommonPackageInstaller:
     def deploy(self):
         """
         Install common security packages across different Linux distributions.
+
+        Executes the package installation process by detecting the distribution
+        family, setting up any additional repositories if needed, and installing
+        the appropriate packages using the system's package manager.
+
+        :returns: True if packages were installed successfully, False if no packages to install
+        :rtype: bool
+        :raises ValueError: If the operating system is not supported
         """
         distro_family = self._get_distro_family()
         if not distro_family:
@@ -253,11 +286,13 @@ class CommonPackageInstaller:
             )
             # Then install packages
             server.packages(
+                name="Install common security packages",
                 packages=packages_to_install,
                 present=True,
             )
         else:
             server.packages(
+                name="Install common security packages",
                 packages=packages_to_install,
                 present=True,
             )

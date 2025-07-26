@@ -4,11 +4,25 @@ from pyinfra.facts.files import File
 from pyinfra.facts.server import LinuxDistribution
 from pyinfra.operations import server
 
-# TODO: check if user is using FreeBSD, if using freeBSD throw a not
-
 
 @deploy("Set ACL")
 def acl_setup():
+    """
+    Set up Access Control Lists (ACL) for security-critical files and directories.
+
+    Configures ACL permissions for security tools configuration files,
+    log files, and system directories. Automatically installs ACL utilities
+    if not present and handles OS-specific package managers.
+
+    .. code:: python
+
+        from infraninja.security.common.acl import acl_setup
+        acl_setup()
+
+    :returns: True if ACL setup completed successfully
+    :rtype: bool
+    :raises NotImplementedError: If called on FreeBSD systems
+    """
     # Get OS information
     distro = host.get_fact(LinuxDistribution)
     os_name = str(distro.get("name", "")).lower() if distro else ""

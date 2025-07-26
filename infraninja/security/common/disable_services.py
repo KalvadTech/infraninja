@@ -6,14 +6,25 @@ from pyinfra.operations import server
 
 class ServiceDisabler:
     """
-    Generalized class to disable common/unwanted services on any Linux distro using pyinfra operations.
+    Generalized class to disable common/unwanted services on any Linux distro.
 
-    Args:
-        services (list): List of services to disable. Default is a set of common services.
+    Provides a flexible way to disable services that are commonly not needed
+    or could pose security risks. Uses pyinfra operations to ensure services
+    are both stopped and disabled from starting at boot.
 
-    Usage:
-        service_disabler = ServiceDisabler(services=["service1", "service2"])
-        service_disabler.deploy()
+    .. code:: python
+
+        from infraninja.security.common.disable_services import ServiceDisabler
+
+        # Use default services list
+        ServiceDisabler().deploy()
+
+        # Use custom services list
+        custom_services = ["service1", "service2", "unwanted-daemon"]
+        ServiceDisabler(services=custom_services).deploy()
+
+    :param services: List of services to disable
+    :type services: list, optional
     """
 
     DEFAULT_SERVICES = [
@@ -26,10 +37,26 @@ class ServiceDisabler:
     ]
 
     def __init__(self, services=None):
+        """
+        Initialize ServiceDisabler with custom or default services list.
+
+        :param services: List of service names to disable
+        :type services: list, optional
+        """
         self.services = services or self.DEFAULT_SERVICES.copy()
 
     @deploy("Disable unwanted/common services")
     def deploy(self):
+        """
+        Deploy service disabling configuration.
+
+        Disables all services in the services list by stopping them and
+        preventing them from starting at boot. Detects the Linux distribution
+        and logs the process for each service.
+
+        :returns: True if deployment completed successfully
+        :rtype: bool
+        """
         # Get detailed distribution information
         distro = host.get_fact(LinuxDistribution)
         distro_name = distro.get("name", "")

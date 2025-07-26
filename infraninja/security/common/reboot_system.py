@@ -8,9 +8,22 @@ def check_reboot_required(host):
     """
     Check if a system reboot is required by examining various indicators.
 
+    Examines multiple system-specific indicators to determine if a reboot
+    is needed after system updates or configuration changes.
+
     On Linux systems:
     - Checks for /var/run/reboot-required and /var/run/reboot-required.pkgs
     - On Alpine Linux, compares installed kernel with running kernel
+    - On Arch Linux systems, checks for pending package updates
+    - On Fedora/RHEL systems, uses dnf needs-restarting
+
+    On FreeBSD systems:
+    - Compares running FreeBSD version with installed version
+
+    :param host: PyInfra host object for executing commands
+    :type host: pyinfra.context.Host
+    :returns: True if reboot is required, False otherwise
+    :rtype: bool
     """
     # Shell command to check if reboot is required
     command = """
@@ -87,13 +100,33 @@ def check_reboot_required(host):
 @deploy("Reboot the system")
 def reboot_system(need_reboot=None, force_reboot=False, skip_reboot_check=False):
     """
-    Reboot a system if necessary.
+    Reboot a system if necessary based on various conditions.
 
-    Args:
-        need_reboot: If True, always reboot. If False, never reboot.
-                    If None, check if reboot is required.
-        force_reboot: If True, override need_reboot and always reboot.
-        skip_reboot_check: If True, skip the reboot check and use need_reboot value directly.
+    Provides intelligent system reboot functionality with multiple options
+    for controlling when and whether to reboot. Can automatically detect
+    if a reboot is needed or use manual override parameters.
+
+    .. code:: python
+
+        from infraninja.security.common.reboot_system import reboot_system
+
+        # Auto-detect if reboot is needed
+        reboot_system()
+
+        # Force reboot regardless of conditions
+        reboot_system(force_reboot=True)
+
+        # Never reboot even if needed
+        reboot_system(need_reboot=False)
+
+    :param need_reboot: If True, always reboot. If False, never reboot. If None, check if reboot is required.
+    :type need_reboot: bool, optional
+    :param force_reboot: If True, override need_reboot and always reboot
+    :type force_reboot: bool
+    :param skip_reboot_check: If True, skip the reboot check and use need_reboot value directly
+    :type skip_reboot_check: bool
+    :returns: None
+    :rtype: None
     """
     if force_reboot:
         need_reboot = True
