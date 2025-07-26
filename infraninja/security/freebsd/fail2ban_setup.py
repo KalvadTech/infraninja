@@ -13,10 +13,11 @@ def fail2ban_setup():
     Set up Fail2ban on FreeBSD systems.
 
     This function handles:
-    - Installing Fail2ban if not already installed
     - Configuring Fail2ban with secure defaults
     - Setting up jails for SSH and other common services
     - Enabling and starting the Fail2ban service
+
+    Note: This function assumes Fail2ban is already installed.
     """
     # Check if we're on FreeBSD
     distro = host.get_fact(LinuxDistribution)

@@ -14,8 +14,6 @@ def test_fail2ban_setup_success():
     ), patch("infraninja.security.freebsd.fail2ban_setup.host") as mock_host, patch(
         "infraninja.security.freebsd.fail2ban_setup.files"
     ) as mock_files, patch(
-        "infraninja.security.freebsd.fail2ban_setup.server"
-    ) as mock_server, patch(
         "infraninja.security.freebsd.fail2ban_setup.service"
     ) as mock_service:
         # Configure host.get_fact to return FreeBSD distro info
@@ -30,12 +28,6 @@ def test_fail2ban_setup_success():
         ):
             # Run the fail2ban_setup function
             result = fail2ban_setup()
-
-        # Verify essential operations were called
-        mock_server.shell.assert_any_call(
-            name="Install fail2ban",
-            commands=["pkg install -y py39-fail2ban"],
-        )
 
         # Verify configuration directory was created
         mock_files.directory.assert_any_call(
@@ -96,8 +88,6 @@ def test_fail2ban_pf_integration():
     with patch("pyinfra.context.state", MagicMock(config=MagicMock())), patch(
         "pyinfra.context.host", MagicMock()
     ), patch("infraninja.security.freebsd.fail2ban_setup.host") as mock_host, patch(
-        "infraninja.security.freebsd.fail2ban_setup.server"
-    ) as mock_server, patch(
         "infraninja.security.freebsd.fail2ban_setup.files"
     ) as mock_files, patch("infraninja.security.freebsd.fail2ban_setup.service"):
         # Configure host.get_fact to return FreeBSD distro info
