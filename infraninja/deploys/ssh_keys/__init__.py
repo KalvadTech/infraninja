@@ -49,7 +49,7 @@ def ssh_keys(
 
     for i, ssh_config in enumerate(ssh_keys_configs):
         target_user = ssh_config["user"]
-        if "group" not in ssh_config or ssh_config["group"] == None:
+        if "group" not in ssh_config or ssh_config["group"] is None:
             target_group = target_user
         else:
             target_group = ssh_config["group"]
