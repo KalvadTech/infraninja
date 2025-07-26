@@ -1,12 +1,12 @@
-from pyinfra.api import deploy
+from pyinfra.api.deploy import deploy
 from pyinfra.context import host
 from pyinfra.facts.server import LinuxDistribution, Which
-from pyinfra.operations import files, server, systemd
+from pyinfra.operations import files, server
 
 
 @deploy("disable Media Autorun")
 def media_autorun():
-    systemd.service(
+    server.service(
         name="Disable udisks2 service",
         service="autofs",
         running=False,

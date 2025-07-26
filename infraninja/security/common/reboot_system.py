@@ -1,7 +1,7 @@
 from pyinfra.api.deploy import deploy
-from pyinfra.operations import server
-from pyinfra.facts.server import Command
 from pyinfra.context import host
+from pyinfra.facts.server import Command
+from pyinfra.operations import server
 
 
 def check_reboot_required(host):
@@ -46,6 +46,15 @@ def check_reboot_required(host):
         if command -v dnf >/dev/null 2>&1; then
             dnf needs-restarting -r >/dev/null 2>&1
             if [ $? -eq 1 ]; then
+                echo "reboot_required"
+                exit 0
+            fi
+        fi
+
+        elif [ "$OS_TYPE" = "FreeBSD" ]; then
+            RUNNING_VERSION=$(freebsd-version -r)
+            INSTALLED_VERSION=$(freebsd-version -k)
+            if [ "$RUNNING_VERSION" != "$INSTALLED_VERSION" ]; then
                 echo "reboot_required"
                 exit 0
             fi
