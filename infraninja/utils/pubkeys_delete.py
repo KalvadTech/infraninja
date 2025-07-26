@@ -5,10 +5,11 @@ import threading
 from typing import Any, Dict, List, Optional
 
 import requests
-from pyinfra.context import host
 from pyinfra.api.deploy import deploy
+from pyinfra.context import host
 from pyinfra.facts.server import User, Users
 from pyinfra.operations import server
+
 from infraninja.inventory.jinn import Jinn
 
 logging.basicConfig(
@@ -33,13 +34,13 @@ class SSHKeyDeleter:
 
     Usage:
         # Example usage of SSHKeyDeleter
+            .. code-block:: python
 
-        # Initialize the SSHKeyDeleter with API credentials
-        key_deleter = SSHKeyDeleter(
-            api_url="https://example.com/api",
-            api_key="your_api_key_here"
-        )
-
+                # Get the singleton instance
+                deleter = SSHKeyDeleter.get_instance(
+                    api_url="https://api.example.com",
+                    api_key="your_api_key"
+                )
         # Delete keys for specific users based on filter criteria
         filter_criteria = {"labels": ["old_key", "compromised"]}
         key_deleter.delete_ssh_keys_for_users(["user1", "user2"], filter_criteria)
@@ -54,7 +55,19 @@ class SSHKeyDeleter:
 
     @classmethod
     def get_instance(cls, *args, **kwargs) -> "SSHKeyDeleter":
-        """Get or create the singleton instance of SSHKeyDeleter."""
+        """
+        Get or create the singleton instance of SSHKeyDeleter.
+
+        This method implements the singleton pattern to ensure only one instance
+        of SSHKeyDeleter exists per application. Thread-safe.
+
+        Args:
+            *args: Positional arguments to pass to the constructor if creating a new instance
+            **kwargs: Keyword arguments to pass to the constructor if creating a new instance
+
+        Returns:
+            SSHKeyDeleter: The singleton instance of SSHKeyDeleter
+        """
         if cls._instance is None:
             with cls._lock:
                 if cls._instance is None:
@@ -107,8 +120,19 @@ class SSHKeyDeleter:
         """
         Get user credentials either from cache or user input.
 
+        This method prompts the user for credentials if they are not already cached.
+        Credentials are stored at the class level to be shared across all instances.
+
         Returns:
-            Dict[str, str]: A dictionary with username and password
+            Dict[str, str]: A dictionary containing 'username' and 'password' keys
+
+        Example:
+            .. code-block:: python
+
+                # Get credentials (will prompt if not cached)
+                creds = SSHKeyDeleter._get_credentials()
+                username = creds['username']
+                password = creds['password']
         """
         # Use class-level cached credentials across all instances
         if SSHKeyDeleter._credentials:
@@ -131,8 +155,11 @@ class SSHKeyDeleter:
         """
         Make authenticated request to API.
 
+        This method makes HTTP requests to the API using the stored session key
+        for authentication. It includes proper headers and cookie authentication.
+
         Args:
-            endpoint: The API endpoint URL
+            endpoint: The API endpoint URL to request
             method: HTTP method to use (default: 'get')
             **kwargs: Additional arguments to pass to requests.request
 
@@ -140,7 +167,16 @@ class SSHKeyDeleter:
             Optional[requests.Response]: API response if successful, None otherwise
 
         Raises:
-            SSHKeyDeleteError: If no session key is available
+            SSHKeyDeleteError: If no session key is available or request fails
+
+        Example:
+            .. code-block:: python
+
+                # Make a GET request to an endpoint
+                response = SSHKeyDeleter._make_auth_request(
+                    "https://api.example.com/keys",
+                    method="get"
+                )
         """
         if not SSHKeyDeleter._session_key:
             raise SSHKeyDeleteError(
@@ -170,8 +206,22 @@ class SSHKeyDeleter:
         """
         Authenticate with the API and get a session key.
 
+        This method authenticates with the API using username/password credentials
+        and obtains a session key for subsequent authenticated requests.
+
         Returns:
             bool: True if authentication succeeded, False otherwise
+
+        Raises:
+            SSHKeyDeleteError: If API URL is not configured, login fails, or response is invalid
+
+        Example:
+            .. code-block:: python
+
+                # Authenticate with the API
+                deleter = SSHKeyDeleter()
+                if deleter._login():
+                    print("Authentication successful")
         """
         # Return early if already authenticated using class variable
         if SSHKeyDeleter._session_key:
@@ -225,11 +275,26 @@ class SSHKeyDeleter:
         """
         Fetch all SSH keys from the API server using the ssh-keylist endpoint.
 
+        This method retrieves SSH key objects from the configured API endpoint.
+        Keys are cached to improve performance on subsequent calls.
+
         Args:
-            force_refresh: If True, ignore cached keys and force a new fetch
+            force_refresh: If True, ignore cached keys and force a new fetch from API
 
         Returns:
             Optional[List[Dict[str, str]]]: List of SSH key objects with id, label, and key
+
+        Raises:
+            SSHKeyDeleteError: If authentication fails, API is not configured, or API response is invalid
+
+        Example:
+            .. code-block:: python
+
+                # Fetch SSH keys from API
+                deleter = SSHKeyDeleter(api_url="https://api.example.com", api_key="key")
+                keys = deleter.fetch_ssh_keys()
+                if keys:
+                    print(f"Fetched {len(keys)} SSH key objects")
         """
         # Return cached keys if available and not forcing refresh
         if SSHKeyDeleter._ssh_keys and not force_refresh:
@@ -277,12 +342,29 @@ class SSHKeyDeleter:
         """
         Filter SSH keys based on criteria to determine which ones to delete.
 
+        This method applies various filtering criteria to determine which SSH keys
+        should be marked for deletion. Supported criteria include labels, key patterns,
+        and key IDs.
+
         Args:
             all_keys: List of all SSH key objects from the API
             filter_criteria: Dictionary with filtering criteria like labels, key_patterns, etc.
 
         Returns:
             List[str]: List of SSH key content strings to delete
+
+        Warning:
+            If no filter_criteria is provided, ALL keys will be marked for deletion.
+            Use with extreme caution.
+
+        Example:
+            .. code-block:: python
+
+                # Filter keys by labels
+                deleter = SSHKeyDeleter()
+                all_keys = deleter.fetch_ssh_keys()
+                criteria = {"labels": ["old_key", "compromised"]}
+                keys_to_delete = deleter.filter_keys_for_deletion(all_keys, criteria)
         """
         if not filter_criteria:
             # If no criteria provided, return all keys (be careful with this!)
@@ -334,11 +416,24 @@ class SSHKeyDeleter:
         """
         Check if current user has root access.
 
+        This method determines whether the current user has root privileges
+        or sudo access required for modifying other users' authorized_keys files.
+
         Returns:
             bool: True if user has root access, False otherwise
 
         Raises:
             SSHKeyDeleteError: If unable to determine root access
+
+        Example:
+            .. code-block:: python
+
+                # Check if we have the necessary permissions
+                deleter = SSHKeyDeleter()
+                if deleter._check_root_access():
+                    print("Can modify other users' SSH keys")
+                else:
+                    print("Need root or sudo access")
         """
         try:
             current_user = host.get_fact(User)
@@ -360,11 +455,21 @@ class SSHKeyDeleter:
         """
         Escape special regex characters in SSH key text.
 
+        This method escapes regex metacharacters in SSH key strings to prevent
+        them from being interpreted as regex patterns during text processing.
+
         Args:
             text: The text to escape
 
         Returns:
             str: Text with regex special characters escaped
+
+        Example:
+            .. code-block:: python
+
+                # Escape special characters in an SSH key
+                deleter = SSHKeyDeleter()
+                escaped_key = deleter._escape_regex_special_chars("ssh-rsa AAAA+key/data==")
         """
         # Regex special characters that need escaping
         special_chars = r"\.^$*+?{}[]|()"
@@ -377,6 +482,9 @@ class SSHKeyDeleter:
         """
         Remove a specific SSH key from a user's authorized_keys file using pyinfra's server.user_authorized_keys.
 
+        This method safely removes an SSH key from a user's authorized_keys file,
+        preserving other keys and maintaining proper file permissions.
+
         Args:
             user: Username whose authorized_keys file to modify
             key_to_delete: SSH key string to remove
@@ -386,6 +494,16 @@ class SSHKeyDeleter:
 
         Raises:
             SSHKeyDeleteError: If there's an error accessing or modifying the file
+
+        Example:
+            .. code-block:: python
+
+                # Remove a specific key from a user
+                deleter = SSHKeyDeleter()
+                success = deleter._remove_key_from_authorized_keys(
+                    "username",
+                    "ssh-rsa AAAA...key_data..."
+                )
         """
         try:
             # Get user details
