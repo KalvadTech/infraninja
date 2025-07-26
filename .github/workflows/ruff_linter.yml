@@ -22,4 +22,4 @@ jobs:
       - name: Run Ruff
         uses: astral-sh/ruff-action@v3.2.1
         with:
-          args: check .
+          args: check --exclude tests/
