@@ -8,6 +8,29 @@ from pyinfra.operations import files, iptables, server
 
 @deploy("iptables Setup for Ubuntu")
 def iptables_setup():
+    """
+    Set up iptables firewall with security-focused rules.
+
+    Configures a comprehensive iptables firewall with the following features:
+    - Allows loopback and established connections
+    - Permits SSH access (critical for remote management)
+    - Blocks common port scanning techniques
+    - Logs dropped traffic for security monitoring
+    - Sets up log rotation for firewall logs
+    - Makes rules persistent across reboots
+
+    .. code:: python
+
+        from infraninja.security.common.iptables_setup import iptables_setup
+        iptables_setup()
+
+    :returns: None if successful, error message if iptables not found
+    :rtype: None or str
+
+    .. warning::
+        This function modifies system firewall rules. Ensure SSH access
+        is properly configured before deployment to avoid lockout.
+    """
     # facts
     iptables_exists = host.get_fact(Command, command="command -v iptables")
     if not iptables_exists:

@@ -13,9 +13,7 @@ def test_pf_setup_success():
         "pyinfra.context.host", MagicMock()
     ), patch("infraninja.security.freebsd.pf_setup.host") as mock_host, patch(
         "infraninja.security.freebsd.pf_setup.files"
-    ) as mock_files, patch(
-        "infraninja.security.freebsd.pf_setup.server"
-    ) as mock_server, patch(
+    ), patch("infraninja.security.freebsd.pf_setup.server") as mock_server, patch(
         "infraninja.security.freebsd.pf_setup.service"
     ) as mock_service:
         # Configure host.get_fact to return FreeBSD distro info
@@ -74,11 +72,9 @@ def test_pf_setup_module_not_loaded():
         "pyinfra.context.host", MagicMock()
     ), patch("infraninja.security.freebsd.pf_setup.host") as mock_host, patch(
         "infraninja.security.freebsd.pf_setup.server"
-    ) as mock_server, patch(
-        "infraninja.security.freebsd.pf_setup.files"
-    ) as mock_files, patch(
+    ) as mock_server, patch("infraninja.security.freebsd.pf_setup.files"), patch(
         "infraninja.security.freebsd.pf_setup.service"
-    ) as mock_service:
+    ):
         # Configure host.get_fact to return FreeBSD and PF not loaded
         mock_host.get_fact.side_effect = lambda fact, command=None, **kwargs: (
             {"name": "FreeBSD", "release_meta": {"ID": "freebsd"}}

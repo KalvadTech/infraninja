@@ -10,9 +10,23 @@ class SSHHardener:
     """
     Class-based SSH hardening for infraninja and pyinfra deploys.
 
-    Usage:
+    Provides comprehensive SSH security configuration by modifying SSH daemon
+    settings to enhance security. Automatically detects existing configuration
+    and updates or adds new security settings as needed.
+
+    .. code:: python
+
         from infraninja.security.common.ssh_hardening import SSHHardener
         SSHHardener().deploy()
+
+        # With custom configuration
+        custom_config = {
+            "PermitRootLogin": "no",
+            "PasswordAuthentication": "no",
+            "X11Forwarding": "no",
+            "MaxAuthTries": "3"
+        }
+        SSHHardener(ssh_config=custom_config).deploy()
     """
 
     DEFAULT_SSH_CONFIG = {
@@ -25,14 +39,24 @@ class SSHHardener:
         """
         Initialize SSHHardener with default or custom SSH configuration.
 
-        Args:
-            ssh_config (dict): Custom SSH configuration options.
+        :param ssh_config: Custom SSH configuration options to apply
+        :type ssh_config: dict, optional
         """
 
         self.ssh_config = ssh_config or self.DEFAULT_SSH_CONFIG.copy()
 
     @deploy("SSH Hardening")
     def deploy(self):
+        """
+        Deploy SSH hardening configuration.
+
+        Applies SSH security settings by modifying /etc/ssh/sshd_config.
+        Updates existing configuration lines or adds new ones as needed.
+        Restarts the SSH service after configuration changes.
+
+        :returns: None
+        :rtype: None
+        """
         config_changed = False
 
         for option, value in self.ssh_config.items():

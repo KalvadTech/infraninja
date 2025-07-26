@@ -1,12 +1,32 @@
 from importlib.resources import files as resource_files
+
 from pyinfra.api.deploy import deploy
-from pyinfra.operations import files, server
 from pyinfra.context import host
 from pyinfra.facts.server import Command
+from pyinfra.operations import files, server
 
 
 @deploy("SMTP Hardening")
 def smtp_hardening():
+    """
+    Harden SMTP server configuration for enhanced security.
+
+    Applies security-focused configuration to Postfix SMTP server
+    to prevent abuse and enhance mail security. Updates main.cf
+    with hardened settings and restarts the service.
+
+    .. code:: python
+
+        from infraninja.security.common.smtp_hardening import smtp_hardening
+        smtp_hardening()
+
+    :returns: None if successful, early return if Postfix not installed
+    :rtype: None
+
+    .. note::
+        This function only runs if Postfix is installed on the system.
+        It will not attempt to install Postfix if it's missing.
+    """
     # Check if postfix is installed using host facts and Command
     postfix_exists = host.get_fact(Command, command="command -v postfix")
     if not postfix_exists:
