@@ -12,8 +12,6 @@ def test_freebsd_ssh_hardener_default_config():
     with patch("pyinfra.context.state", MagicMock(config=MagicMock())), patch(
         "pyinfra.context.host", MagicMock()
     ), patch("infraninja.security.freebsd.ssh_hardening.host") as mock_host, patch(
-        "infraninja.security.freebsd.ssh_hardening.files"
-    ) as mock_files, patch(
         "infraninja.security.freebsd.ssh_hardening.server"
     ) as mock_server, patch(
         "infraninja.security.freebsd.ssh_hardening.service"
@@ -71,8 +69,6 @@ def test_freebsd_ssh_hardener_custom_config():
     with patch("pyinfra.context.state", MagicMock(config=MagicMock())), patch(
         "pyinfra.context.host", MagicMock()
     ), patch("infraninja.security.freebsd.ssh_hardening.host") as mock_host, patch(
-        "infraninja.security.freebsd.ssh_hardening.files"
-    ) as mock_files, patch(
         "infraninja.security.freebsd.ssh_hardening.server"
     ) as mock_server, patch(
         "infraninja.security.freebsd.ssh_hardening.service"
@@ -114,10 +110,10 @@ def test_freebsd_ssh_hardener_existing_config_correct():
     with patch("pyinfra.context.state", MagicMock(config=MagicMock())), patch(
         "pyinfra.context.host", MagicMock()
     ), patch("infraninja.security.freebsd.ssh_hardening.host") as mock_host, patch(
-        "infraninja.security.freebsd.ssh_hardening.files"
-    ) as mock_files, patch(
         "infraninja.security.freebsd.ssh_hardening.server"
     ) as mock_server, patch(
+        "infraninja.security.freebsd.ssh_hardening.files"
+    ) as mock_files, patch(
         "infraninja.security.freebsd.ssh_hardening.service"
     ) as mock_service:
         # Configure mock_host.get_fact to return existing correct config
@@ -157,8 +153,6 @@ def test_freebsd_ssh_hardener_existing_config_incorrect():
     ), patch("infraninja.security.freebsd.ssh_hardening.host") as mock_host, patch(
         "infraninja.security.freebsd.ssh_hardening.files"
     ) as mock_files, patch(
-        "infraninja.security.freebsd.ssh_hardening.server"
-    ) as mock_server, patch(
         "infraninja.security.freebsd.ssh_hardening.service"
     ) as mock_service:
         # Configure mock_host.get_fact to return existing incorrect config

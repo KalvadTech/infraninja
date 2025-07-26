@@ -1,0 +1,16 @@
+# BSM audit log rotation configuration for FreeBSD newsyslog
+# This configuration manages BSM audit trail files via newsyslog
+
+# BSM audit trail rotation
+# Format: logfilename [owner:group] mode count size when flags [/pid_file] [sig_num]
+# Rotate audit trails daily or when they reach 50MB
+/var/audit/current			root:wheel	640  7	50000  *     B    /var/run/auditd.pid 30
+
+# Archive old audit trails  
+/var/audit/*.NOT_TERMINATED		root:wheel	640  30	*      @T00  JB
+
+# BSM audit log summary (if using praudit)
+/var/log/audit.log			root:wheel	640  7	10000  *     Z
+
+# Audit administration log
+/var/log/auditd.log			root:wheel	640  7	1000   *     Z
