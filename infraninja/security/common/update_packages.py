@@ -17,6 +17,10 @@ def system_update():
     """
     Update and upgrade packages across various Linux distributions.
 
+    Automatically detects the Linux distribution and uses the appropriate
+    package manager to update the package database and upgrade installed
+    packages. Supports a wide range of distributions and package managers.
+
     Supported distributions:
     - Debian, Ubuntu, Mint, and other Debian-based distros (using apt)
     - Alpine (using apk)
@@ -24,6 +28,15 @@ def system_update():
     - Arch Linux, Manjaro, EndeavourOS (using pacman)
     - openSUSE (using zypper)
     - Void Linux (using xbps)
+
+    .. code:: python
+
+        from infraninja.security.common.update_packages import system_update
+        system_update()
+
+    :returns: None
+    :rtype: None
+    :raises ValueError: If the operating system is not supported
     """
     # Get detailed distribution information
     distro = host.get_fact(LinuxDistribution)

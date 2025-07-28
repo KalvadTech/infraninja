@@ -1,11 +1,32 @@
-from pyinfra.context import host
 from pyinfra.api.deploy import deploy
+from pyinfra.context import host
 from pyinfra.facts.server import LinuxName
-from pyinfra.operations import server, files
+from pyinfra.operations import files, server
 
 
 @deploy("Kernel Security Hardening")
 def kernel_hardening():
+    """
+    Apply kernel security hardening configurations.
+
+    Implements comprehensive kernel-level security hardening by configuring
+    sysctl parameters for network security, memory protection, and system
+    security. Creates persistent configuration that survives reboots.
+
+    Security areas covered:
+    - Network security (IP redirects, source routing, TCP cookies)
+    - Memory protection (ASLR, minimum memory address)
+    - Core dump restrictions
+    - System security (SysRq, dmesg restrictions, kernel pointers)
+
+    .. code:: python
+
+        from infraninja.security.common.kernel_hardening import kernel_hardening
+        kernel_hardening()
+
+    :returns: True if kernel hardening completed successfully, False if some settings failed
+    :rtype: bool
+    """
     # Check if running on Linux
     linux_name = host.get_fact(LinuxName)
 

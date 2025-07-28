@@ -5,11 +5,12 @@ import threading
 from typing import Any, Dict, List, Optional
 
 import requests
-from pyinfra.context import host
 from pyinfra.api.deploy import deploy
+from pyinfra.api.exceptions import PyinfraError
+from pyinfra.context import host
 from pyinfra.facts.server import User, Users
 from pyinfra.operations import server
-from pyinfra.api.exceptions import PyinfraError
+
 from infraninja.inventory.jinn import Jinn
 
 logging.basicConfig(
@@ -34,11 +35,13 @@ class SSHKeyManager:
     Usage:
         # Example usage of SSHKeyManager
 
-        # Initialize the SSHKeyManager with API credentials
-        key_manager = SSHKeyManager(
-            api_url="https://example.com/api",
-            api_key="your_api_key_here"
-        )
+            .. code-block:: python
+
+                # Get the singleton instance
+                manager = SSHKeyManager.get_instance(
+                    api_url="https://api.example.com",
+                    api_key="your_api_key"
+                )
 
     """
 
@@ -51,7 +54,19 @@ class SSHKeyManager:
 
     @classmethod
     def get_instance(cls, *args, **kwargs) -> "SSHKeyManager":
-        """Get or create the singleton instance of SSHKeyManager."""
+        """
+        Get or create the singleton instance of SSHKeyManager.
+
+        This method implements the singleton pattern to ensure only one instance
+        of SSHKeyManager exists per application. Thread-safe.
+
+        Args:
+            *args: Positional arguments to pass to the constructor if creating a new instance
+            **kwargs: Keyword arguments to pass to the constructor if creating a new instance
+
+        Returns:
+            SSHKeyManager: The singleton instance of SSHKeyManager
+        """
         if cls._instance is None:
             with cls._lock:
                 if cls._instance is None:
@@ -104,8 +119,19 @@ class SSHKeyManager:
         """
         Get user credentials either from cache or user input.
 
+        This method prompts the user for credentials if they are not already cached.
+        Credentials are stored at the class level to be shared across all instances.
+
         Returns:
-            Dict[str, str]: A dictionary with username and password
+            Dict[str, str]: A dictionary containing 'username' and 'password' keys
+
+        Example:
+            .. code-block:: python
+
+                # Get credentials (will prompt if not cached)
+                creds = SSHKeyManager._get_credentials()
+                username = creds['username']
+                password = creds['password']
         """
         # Use class-level cached credentials across all instances
         if SSHKeyManager._credentials:
@@ -128,8 +154,11 @@ class SSHKeyManager:
         """
         Make authenticated request to API.
 
+        This method makes HTTP requests to the API using the stored session key
+        for authentication. It includes proper headers and cookie authentication.
+
         Args:
-            endpoint: The API endpoint URL
+            endpoint: The API endpoint URL to request
             method: HTTP method to use (default: 'get')
             **kwargs: Additional arguments to pass to requests.request
 
@@ -137,7 +166,16 @@ class SSHKeyManager:
             Optional[requests.Response]: API response if successful, None otherwise
 
         Raises:
-            SSHKeyManagerError: If no session key is available
+            SSHKeyManagerError: If no session key is available or request fails
+
+        Example:
+            .. code-block:: python
+
+                # Make a GET request to an endpoint
+                response = SSHKeyManager._make_auth_request(
+                    "https://api.example.com/keys",
+                    method="get"
+                )
         """
         if not SSHKeyManager._session_key:
             raise SSHKeyManagerError(
@@ -168,8 +206,22 @@ class SSHKeyManager:
         """
         Authenticate with the API and get a session key.
 
+        This method authenticates with the API using username/password credentials
+        and obtains a session key for subsequent authenticated requests.
+
         Returns:
             bool: True if authentication succeeded, False otherwise
+
+        Raises:
+            SSHKeyManagerError: If API URL is not configured, login fails, or response is invalid
+
+        Example:
+            .. code-block:: python
+
+                # Authenticate with the API
+                manager = SSHKeyManager()
+                if manager._login():
+                    print("Authentication successful")
         """
         # Return early if already authenticated using class variable
         if SSHKeyManager._session_key:
@@ -221,11 +273,26 @@ class SSHKeyManager:
         """
         Fetch SSH keys from the API server.
 
+        This method retrieves SSH public keys from the configured API endpoint.
+        Keys are cached to improve performance on subsequent calls.
+
         Args:
-            force_refresh: If True, ignore cached keys and force a new fetch
+            force_refresh: If True, ignore cached keys and force a new fetch from API
 
         Returns:
-            Optional[List[str]]: List of SSH public keys or None if fetch fails
+            Optional[List[str]]: List of SSH public key strings or None if fetch fails
+
+        Raises:
+            SSHKeyManagerError: If authentication fails, API is not configured, or API response is invalid
+
+        Example:
+            .. code-block:: python
+
+                # Fetch SSH keys from API
+                manager = SSHKeyManager(api_url="https://api.example.com", api_key="key")
+                keys = manager.fetch_ssh_keys()
+                if keys:
+                    print(f"Fetched {len(keys)} SSH keys")
         """
         # Return cached keys if available and not forcing refresh
         if SSHKeyManager._ssh_keys and not force_refresh:
