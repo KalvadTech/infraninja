@@ -3,7 +3,7 @@ from pyinfra.api.deploy import deploy
 from pyinfra.operations import server
 
 
-@deploy("JINN Test Deploy")
+@deploy("duwbd eploy")
 def jinn_test_deploy():
     """
     A test deploy specifically for Jinn integration testing.
