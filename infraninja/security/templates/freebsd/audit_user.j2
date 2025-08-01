@@ -1,0 +1,30 @@
+# BSM audit_user configuration for FreeBSD
+# This file specifies per-user audit flags
+# Format: username:alwaysaudit:neveraudit
+
+# Root user - comprehensive auditing
+root:lo,aa,ad,ex,nt,pc,fc,fd,fw:
+
+# Default for all other users
+# lo = login/logout events
+# aa = authentication and authorization events
+# Reduced logging for regular users to minimize audit trail size
+OTHER:lo,aa:pc,fc,fd,fw
+
+# System accounts - minimal auditing
+nobody::lo,aa,ad,ex,nt,pc,fc,fd,fw
+daemon::lo,aa,ad,ex,nt,pc,fc,fd,fw
+operator::lo,aa,ad,ex,nt,pc,fc,fd,fw
+bin::lo,aa,ad,ex,nt,pc,fc,fd,fw
+tty::lo,aa,ad,ex,nt,pc,fc,fd,fw
+kmem::lo,aa,ad,ex,nt,pc,fc,fd,fw
+mail::lo,aa,ad,ex,nt,pc,fc,fd,fw
+news::lo,aa,ad,ex,nt,pc,fc,fd,fw
+man::lo,aa,ad,ex,nt,pc,fc,fd,fw
+bind::lo,aa,ad,ex,nt,pc,fc,fd,fw
+proxy::lo,aa,ad,ex,nt,pc,fc,fd,fw
+_pflogd::lo,aa,ad,ex,nt,pc,fc,fd,fw
+_dhcp::lo,aa,ad,ex,nt,pc,fc,fd,fw
+uucp::lo,aa,ad,ex,nt,pc,fc,fd,fw
+pop::lo,aa,ad,ex,nt,pc,fc,fd,fw
+www::lo,aa,ad,ex,nt,pc,fc,fd,fw

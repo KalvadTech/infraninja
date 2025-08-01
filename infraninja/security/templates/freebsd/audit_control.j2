@@ -1,0 +1,39 @@
+# BSM audit_control configuration for FreeBSD
+# This file controls the BSM audit subsystem behavior
+
+# Default audit directory
+dir:/var/audit
+
+# Audit trail files prefix
+filesz:10M
+
+# Minimum free space before audit suspension (percentage)
+minfree:20
+
+# Audit flags for all users (if not specified in audit_user)
+# lo = login/logout events
+# aa = authentication and authorization events  
+# ad = administrative events
+# ex = exec events
+# nt = network events
+# pc = process control events
+# fc = file create events
+# fd = file delete events
+# fw = file write events
+flags:lo,aa,ad,ex,nt,pc
+
+# Non-attributable audit flags (for events not tied to specific users)
+naflags:lo,aa,ad,ex,nt,pc
+
+# Audit policy flags
+# cnt = continue auditing even if audit trail cannot be written
+# ahlt = halt system if audit trail cannot be written  
+# argv = audit command line arguments
+# arge = audit environment variables
+policy:cnt,argv
+
+# Audit trail file count (number of files to maintain)
+filesz:10M
+
+# Expire after time (not used if expire-after set to 0)
+expire-after:30d

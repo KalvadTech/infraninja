@@ -1,0 +1,56 @@
+# FreeBSD rkhunter configuration file
+# Configured for FreeBSD-specific paths and settings
+
+# System commands used by rkhunter
+# Commented out non-existent scripts to avoid warnings
+#SCRIPTWHITELIST="/usr/local/bin/rkill"
+#SCRIPTWHITELIST="/usr/local/bin/ldd"
+ALLOWHIDDENDIR="/dev/.udev"
+ALLOWHIDDENDIR="/dev/.static"
+ALLOWHIDDENDIR="/dev/.mount"
+ALLOWHIDDENDIR="/etc/.pwd.lock"
+ALLOWHIDDENDIR="/etc/.java"
+ALLOWHIDDENDIR="/usr/share/man/man5/.rhosts.5.gz"
+ALLOWHIDDENDIR="/usr/share/man/man1/.login.1.gz"
+
+# FreeBSD-specific settings
+INSTALLDIR="/usr/local"
+SCRIPTDIR="/usr/local/bin"
+BINDIR="/bin:/sbin:/usr/bin:/usr/sbin:/usr/local/bin:/usr/local/sbin"
+
+# File properties - disable package manager as rkhunter doesn't support FreeBSD pkg
+PKGMGR=NONE
+HASH_FUNC=SHA256
+
+# Network interface
+IFACE=em0
+
+# Mail configuration
+MAIL_ON_WARNING=root@localhost
+MAIL_CMD=mail
+
+# Update options
+WEB_CMD=/usr/local/bin/wget
+UPDATE_MIRRORS=1
+MIRRORS_MODE=0
+TMPDIR="/var/tmp/rkhunter"
+DBDIR="/var/lib/rkhunter/db"
+
+# Logging
+LOGFILE=/var/log/rkhunter/rkhunter.log
+APPEND_LOG=1
+COPY_LOG_ON_ERROR=1
+
+# Removed invalid package manager configuration for FreeBSD
+# FreeBSD pkg is not supported by rkhunter verification
+
+# Allow FreeBSD-specific files
+ALLOWHIDDENFILE="/usr/share/man/man1/..1.gz"
+ALLOWHIDDENFILE="/usr/share/man/man5/.k5login.5.gz"
+ALLOWHIDDENFILE="/usr/share/man/man5/.k5users.5.gz"
+
+# Disable problematic tests for FreeBSD
+DISABLE_TESTS="suspscan hidden_procs deleted_files packet_cap_apps"
+
+# Port scan detection
+SCAN_MODE_DEV=THOROUGH
