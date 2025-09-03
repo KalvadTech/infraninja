@@ -25,6 +25,9 @@ dependencies = [
 Homepage = "https://github.com/KalvadTech/infraninja"
 Issues = "https://github.com/KalvadTech/infraninja/issues"
 
+[project.entry-points.'pyinfra.connectors']
+pssh = 'infraninja.connectors.pssh:PSshConnector'
+
 [tool.setuptools]
 include-package-data = true
 
