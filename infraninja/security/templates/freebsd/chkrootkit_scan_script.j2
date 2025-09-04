@@ -1,0 +1,12 @@
+#!/bin/sh
+# FreeBSD chkrootkit scan script
+# Uses FreeBSD's sh instead of bash
+
+# Set PATH to include FreeBSD package binaries
+PATH="/usr/local/bin:/usr/local/sbin:$PATH"
+
+# Run chkrootkit and save to dated log file
+/usr/local/bin/chkrootkit > /var/log/chkrootkit/chkrootkit-scan-$(date +%F).log 2>&1
+
+# Also append to main log file for newsyslog rotation
+/usr/local/bin/chkrootkit >> /var/log/chkrootkit/chkrootkit.log 2>&1

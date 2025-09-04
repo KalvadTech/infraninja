@@ -1,0 +1,32 @@
+#!/bin/sh
+# FreeBSD Lynis audit script
+# Uses FreeBSD's sh instead of bash
+
+# Set PATH to include FreeBSD package binaries
+PATH="/usr/local/bin:/usr/local/sbin:$PATH"
+
+# Create dated log directory
+DATEDIR="/var/log/lynis/reports/$(date +%Y-%m)"
+mkdir -p "$DATEDIR"
+
+# Run Lynis audit and save to dated files
+/usr/local/bin/lynis audit system \
+    --profile /usr/local/etc/lynis/default.prf \
+    --logfile "$DATEDIR/lynis-audit-$(date +%F).log" \
+    --report-file "$DATEDIR/lynis-report-$(date +%F).dat" \
+    --quiet --no-colors 2>&1
+
+# Also update main log files for newsyslog rotation
+/usr/local/bin/lynis audit system \
+    --profile /usr/local/etc/lynis/default.prf \
+    --logfile /var/log/lynis/lynis.log \
+    --report-file /var/log/lynis/lynis-report.dat \
+    --quiet --no-colors 2>&1
+
+# Send summary to syslog
+logger -t lynis "Security audit completed at $(date)"
+
+# Create hardening suggestions file
+if [ -f "$DATEDIR/lynis-report-$(date +%F).dat" ]; then
+    grep "suggestion\[\]=" "$DATEDIR/lynis-report-$(date +%F).dat" > "$DATEDIR/hardening-suggestions-$(date +%F).txt"
+fi
