@@ -26,9 +26,6 @@ table inet filter {
         tcp dport { 80, 443 } accept
         {% endif %}
 
-        # Rate limiting for SSH
-        tcp dport {{ ssh_port | default('22') }} limit rate {{ ssh_rate_limit | default('10/minute') }} accept
-
         # Logging for denied packets
         log prefix "[NFT] Input Denied: " counter drop
     }
@@ -45,7 +42,7 @@ table inet filter {
         
         # Optional: restrict outbound connections
         {% if restrict_outbound | default(false) %}
-        tcp dport { 53, 80, 443, {{ ssh_port | default('22') }} } accept
+        tcp dport { 53, 80, 443 } accept
         udp dport { 53, 123 } accept  # DNS and NTP
         {% endif %}
     }
