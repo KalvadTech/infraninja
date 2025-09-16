@@ -1,0 +1,21 @@
+#!/bin/sh
+# FreeBSD rkhunter scan script
+# Uses FreeBSD's sh instead of bash
+
+# Set PATH to include FreeBSD package binaries
+PATH="/usr/local/bin:/usr/local/sbin:$PATH"
+
+# Create dated log directory
+DATEDIR="/var/log/rkhunter/$(date +%Y-%m)"
+mkdir -p "$DATEDIR"
+
+# Run rkhunter scan and save to dated log file
+/usr/local/bin/rkhunter --check --skip-keypress --report-warnings-only \
+    --logfile "$DATEDIR/rkhunter-scan-$(date +%F).log" 2>&1
+
+# Also append to main log file for newsyslog rotation
+/usr/local/bin/rkhunter --check --skip-keypress --report-warnings-only \
+    --logfile /var/log/rkhunter/rkhunter.log 2>&1
+
+# Send summary to syslog
+logger -t rkhunter "Rootkit scan completed at $(date)"
