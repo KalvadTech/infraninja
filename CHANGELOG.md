@@ -12,6 +12,33 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Refactored SSH key deletion functionality with comprehensive tests for SSHKeyDeleter
 - Enhanced test coverage for various security modules
 
+## [0.3.0] - 2025-09-16
+
+Merged PR #25: freeBSD more tasks
+
+### Changes
+
+- Added FreeBSD security tasks and modules, including:
+  - ACL management
+  - BSM (Basic Security Module) auditing setup
+  - chkrootkit malware detection
+  - Disable/trim unnecessary services
+  - Fail2ban setup
+  - Base tools installation
+  - Lynis security auditing
+  - PF firewall setup
+  - rkhunter rootkit scanner
+  - SSH hardening
+  - System package update operations
+- Refactored reboot handling to use pyinfra's built-in `RebootRequired` fact
+  for consistent cross-distro reboot checks (Linux + FreeBSD)
+
+### Testing
+
+- Expanded FreeBSD test coverage (ACL, BSM, chkrootkit, disable services, fail2ban,
+  install tools, lynis, PF, rkhunter, SSH hardening, update packages)
+- Refactored reboot tests to align with `RebootRequired` fact usage
+
 ## [0.2.1] - 2025-06-10
 
 ### Features
