@@ -144,6 +144,11 @@ venv.bak/
 # mkdocs documentation
 /site
 
+# Generated documentation (dynamically created)
+docs/actions/
+docs/inventories/
+docs/data.json
+
 # mypy
 .mypy_cache/
 .dmypy.json

@@ -36,7 +36,18 @@ class JinnSSHError(JinnError):
     pass
 
 
-class Jinn:
+class Jinn(Inventory):
+    """Jinn inventory implementation."""
+
+    slug = "jinn"
+    name = {
+        "en": "Jinn Inventory",
+        "ar": "مخزون جن"
+    }
+    description = {
+        "en": "Fetch servers from Jinn API",
+        "ar": "جلب الخوادم من واجهة برمجة تطبيقات جن"
+    }
     def __init__(
         self,
         ssh_key_path: Optional[Union[str, Path]] = None,
@@ -62,22 +73,10 @@ class Jinn:
             JinnSSHError: If SSH key path does not exist
             JinnAPIError: If API key is not set
         """
-        # Set SSH configuration
-        self.ssh_config_dir: Path = (
-            Path(ssh_config_dir).expanduser()
-            if ssh_config_dir
-            else Path.home() / ".ssh/config.d"
-        )
-        self.main_ssh_config: Path = Path.home() / ".ssh/config"
-        self.ssh_key_path: Path = (
-            Path(ssh_key_path).expanduser()
-            if ssh_key_path
-            else Path.home() / ".ssh/id_rsa"
-        )
+        # Initialize base class
+        super().__init__(ssh_key_path=ssh_key_path, ssh_config_dir=ssh_config_dir)
 
-        # Create SSH config directory if it doesn't exist
-        self.ssh_config_dir.mkdir(parents=True, exist_ok=True)
-
+        # Validate SSH key exists
         if not self.ssh_key_path.exists():
             raise JinnSSHError(f"SSH key path does not exist: {self.ssh_key_path}")
 
@@ -92,7 +91,6 @@ class Jinn:
         self.tags: Optional[List[str]] = tags
         self.use_bastion: bool = use_bastion
         self.project_name: Optional[str] = None
-        self.servers: List[Tuple[str, Dict[str, Any]]] = []
 
         # Set SSH config endpoint based on bastion usage
         self.ssh_config_endpoint: str = "/ssh-tools/ssh-config/"
