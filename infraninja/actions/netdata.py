@@ -1,9 +1,9 @@
 """Netdata monitoring deployment action"""
 
 from importlib.resources import files as resource_files
-from typing import Any
+from typing import Any, Dict
 
-from pyinfra.api import deploy
+from pyinfra import host
 from pyinfra.operations import files, server
 
 from infraninja.actions.base import Action
@@ -55,8 +55,7 @@ class NetdataAction(Action):
     }
     os_available = ["ubuntu", "debian", "alpine", "freebsd", "rhel", "centos", "fedora", "arch"]
 
-    @deploy("Deploy Netdata", data_defaults=DEFAULTS)
-    def execute(self, **kwargs) -> Any:
+    def execute(self, data_defaults: Dict[str, Any] = None) -> Any:
         """
         Execute Netdata deployment.
 
@@ -64,11 +63,19 @@ class NetdataAction(Action):
         with templates, and ensures the service is running.
 
         Args:
-            **kwargs: Optional parameters to pass to deployment
+            data_defaults: Default data configuration (default: DEFAULTS)
 
         Returns:
             Result of the deployment operation
         """
+        if data_defaults is None:
+            data_defaults = DEFAULTS
+
+        # Merge data_defaults with host.data
+        for key, value in data_defaults.items():
+            if key not in host.data:
+                host.data[key] = value
+
         # Download the installation script
         files.download(
             name="Download the installation script",

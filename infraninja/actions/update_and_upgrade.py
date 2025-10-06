@@ -3,7 +3,7 @@
 from typing import Any
 
 from pyinfra import host, operations
-from pyinfra.api import DeployError, deploy
+from pyinfra.api import DeployError
 from pyinfra.facts.server import OsRelease
 
 from infraninja.actions.base import Action
@@ -43,16 +43,12 @@ class UpdateAndUpgradeAction(Action):
     }
     os_available = ["ubuntu", "debian", "alpine", "freebsd", "rhel", "centos", "fedora", "arch"]
 
-    @deploy("Update and Upgrade")
-    def execute(self, **kwargs) -> Any:
+    def execute(self) -> Any:
         """
         Execute system update and upgrade.
 
         Detects the operating system and runs the appropriate package manager
         update and upgrade commands.
-
-        Args:
-            **kwargs: Optional parameters
 
         Returns:
             Result of the deployment operation
@@ -60,7 +56,6 @@ class UpdateAndUpgradeAction(Action):
         self._deploy_update()
         self._deploy_upgrade()
 
-    @deploy("Update")
     def _deploy_update(self):
         """Update package repositories based on the detected OS."""
         os_id = host.get_fact(OsRelease).get("id")
@@ -98,7 +93,6 @@ class UpdateAndUpgradeAction(Action):
             else:
                 raise DeployError(f"Unsupported OS: {os_id} {os_id_like}")
 
-    @deploy("Upgrade")
     def _deploy_upgrade(self):
         """Upgrade system packages based on the detected OS."""
         os_id = host.get_fact(OsRelease).get("id")
