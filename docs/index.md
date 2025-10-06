@@ -8,7 +8,6 @@ InfraNinja is a powerful infrastructure automation framework built on top of PyI
 
 - **Actions**: Pre-built deployment tasks for common infrastructure components
 - **Inventories**: Dynamic server inventory management from various sources
-- **Multilingual Support**: Full support for multiple languages (English, Arabic, French, etc.)
 - **Extensible**: Easy to create custom actions and inventories
 
 ## Key Concepts
@@ -59,7 +58,6 @@ infraninja/
 ├── actions/          # Action implementations
 ├── inventories/      # Inventory implementations
 ├── templates/        # Configuration templates
-└── docs/            # Documentation (you are here!)
 ```
 
 ## Contributing

@@ -147,7 +147,8 @@ venv.bak/
 # Generated documentation (dynamically created)
 docs/actions/
 docs/inventories/
-docs/data.json
+data.json
+stylesheets/
 
 # mypy
 .mypy_cache/
