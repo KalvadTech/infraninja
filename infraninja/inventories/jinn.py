@@ -1,16 +1,15 @@
-# inventory || jinn.py
+"""Jinn inventory integration"""
 
 import json
 import logging
 import os
-import sys
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Set, Tuple, Union
 
 import requests
 from requests.exceptions import RequestException
 
-sys.path.append(str(Path(__file__).parent.parent))
+from infraninja.inventories.base import Inventory
 
 logging.basicConfig(
     level=logging.INFO,

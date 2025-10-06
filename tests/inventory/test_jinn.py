@@ -12,7 +12,7 @@ import requests
 # Add the project root to the Python path
 sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 
-from infraninja.inventory.jinn import Jinn, JinnAPIError, JinnSSHError
+from infraninja.inventories.jinn import Jinn, JinnAPIError, JinnSSHError
 
 
 class TestJinn(unittest.TestCase):

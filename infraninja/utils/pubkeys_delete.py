@@ -10,7 +10,7 @@ from pyinfra.context import host
 from pyinfra.facts.server import User, Users
 from pyinfra.operations import server
 
-from infraninja.inventory.jinn import Jinn
+from infraninja.inventories.jinn import Jinn
 
 logging.basicConfig(
     level=logging.INFO,

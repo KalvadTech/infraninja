@@ -7,7 +7,7 @@ import unittest
 from pathlib import Path
 from unittest.mock import patch, MagicMock
 
-from infraninja.inventory.coolify import Coolify, CoolifyAPIError, CoolifySSHError
+from infraninja.inventories.coolify import Coolify, CoolifyAPIError, CoolifySSHError
 import requests
 
 sys.path.insert(0, str(Path(__file__).parent.parent.parent))
