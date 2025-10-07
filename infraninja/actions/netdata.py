@@ -53,7 +53,16 @@ class NetdataAction(Action):
         "ar": "نشر منصة مراقبة Netdata في الوقت الفعلي لرصد النظام الشامل ومقاييس الأداء",
         "fr": "Déployer la plateforme de surveillance en temps réel Netdata pour l'observabilité complète du système",
     }
-    os_available = ["ubuntu", "debian", "alpine", "freebsd", "rhel", "centos", "fedora", "arch"]
+    os_available = [
+        "ubuntu",
+        "debian",
+        "alpine",
+        "freebsd",
+        "rhel",
+        "centos",
+        "fedora",
+        "arch",
+    ]
 
     def execute(self, data_defaults: Dict[str, Any] = None) -> Any:
         """
@@ -98,7 +107,9 @@ class NetdataAction(Action):
         )
 
         # Get template path using importlib.resources
-        template_path = resource_files("infraninja.templates").joinpath("netdata.conf.j2")
+        template_path = resource_files("infraninja.templates").joinpath(
+            "netdata.conf.j2"
+        )
 
         netdata_config = files.template(
             name="Template the netdata.conf file",

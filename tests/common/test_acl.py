@@ -9,11 +9,12 @@ def test_acl_setup_setfacl_exists():
     Test ACL setup when setfacl command exists.
     """
     # Setup mocks for all the functions we need
-    with patch("pyinfra.context.state", MagicMock(config=MagicMock())), patch(
-        "pyinfra.context.host", MagicMock()
-    ), patch("infraninja.security.common.acl.host") as mock_host, patch(
-        "infraninja.security.common.acl.server"
-    ) as mock_server:
+    with (
+        patch("pyinfra.context.state", MagicMock(config=MagicMock())),
+        patch("pyinfra.context.host", MagicMock()),
+        patch("infraninja.security.common.acl.host") as mock_host,
+        patch("infraninja.security.common.acl.server") as mock_server,
+    ):
         # Mock setfacl exists check to return True
         setfacl_check = MagicMock()
         setfacl_check.return_value = True
@@ -63,11 +64,12 @@ def test_acl_setup_setfacl_missing():
     Test ACL setup when setfacl command is not available.
     """
     # Setup mocks for all the functions we need
-    with patch("pyinfra.context.state", MagicMock(config=MagicMock())), patch(
-        "pyinfra.context.host", MagicMock()
-    ), patch("infraninja.security.common.acl.host") as mock_host, patch(
-        "infraninja.security.common.acl.server"
-    ) as mock_server:
+    with (
+        patch("pyinfra.context.state", MagicMock(config=MagicMock())),
+        patch("pyinfra.context.host", MagicMock()),
+        patch("infraninja.security.common.acl.host") as mock_host,
+        patch("infraninja.security.common.acl.server") as mock_server,
+    ):
         # Mock setfacl exists check to return False
         mock_server.shell.return_value = False
 
@@ -100,11 +102,12 @@ def test_acl_setup_missing_paths():
     Test ACL setup with some paths missing.
     """
     # Setup mocks for all the functions we need
-    with patch("pyinfra.context.state", MagicMock(config=MagicMock())), patch(
-        "pyinfra.context.host", MagicMock()
-    ), patch("infraninja.security.common.acl.host") as mock_host, patch(
-        "infraninja.security.common.acl.server"
-    ) as mock_server:
+    with (
+        patch("pyinfra.context.state", MagicMock(config=MagicMock())),
+        patch("pyinfra.context.host", MagicMock()),
+        patch("infraninja.security.common.acl.host") as mock_host,
+        patch("infraninja.security.common.acl.server") as mock_server,
+    ):
         # Mock setfacl exists check to return True
         setfacl_check = MagicMock()
         setfacl_check.return_value = True
@@ -157,11 +160,12 @@ def test_acl_setup_with_exceptions():
     Test ACL setup when setfacl operations throw exceptions.
     """
     # Setup mocks for all the functions we need
-    with patch("pyinfra.context.state", MagicMock(config=MagicMock())), patch(
-        "pyinfra.context.host", MagicMock()
-    ), patch("infraninja.security.common.acl.host") as mock_host, patch(
-        "infraninja.security.common.acl.server"
-    ) as mock_server:
+    with (
+        patch("pyinfra.context.state", MagicMock(config=MagicMock())),
+        patch("pyinfra.context.host", MagicMock()),
+        patch("infraninja.security.common.acl.host") as mock_host,
+        patch("infraninja.security.common.acl.server") as mock_server,
+    ):
         # Mock setfacl exists check to return True
         setfacl_check = MagicMock()
         setfacl_check.return_value = True

@@ -40,13 +40,10 @@ class Coolify(Inventory):
     """Coolify inventory implementation."""
 
     slug = "coolify"
-    name = {
-        "en": "Coolify Inventory",
-        "ar": "مخزون Coolify"
-    }
+    name = {"en": "Coolify Inventory", "ar": "مخزون Coolify"}
     description = {
         "en": "Fetch servers from Coolify API",
-        "ar": "جلب الخوادم من واجهة برمجة تطبيقات Coolify"
+        "ar": "جلب الخوادم من واجهة برمجة تطبيقات Coolify",
     }
 
     def __init__(

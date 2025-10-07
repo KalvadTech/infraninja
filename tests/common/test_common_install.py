@@ -97,11 +97,12 @@ def test_common_package_installer(test_case):
     Test CommonPackageInstaller across different distributions.
     """
     # Create mocks
-    with patch("pyinfra.context.state", MagicMock(config=MagicMock())), patch(
-        "pyinfra.context.host", MagicMock()
-    ), patch("infraninja.security.common.common_install.host") as mock_host, patch(
-        "infraninja.security.common.common_install.server"
-    ) as mock_server:
+    with (
+        patch("pyinfra.context.state", MagicMock(config=MagicMock())),
+        patch("pyinfra.context.host", MagicMock()),
+        patch("infraninja.security.common.common_install.host") as mock_host,
+        patch("infraninja.security.common.common_install.server") as mock_server,
+    ):
         # Configure host.get_fact to return the distro info
         mock_host.get_fact.side_effect = lambda fact, **kwargs: (
             test_case["distro_info"]
@@ -165,11 +166,12 @@ def test_common_package_installer_custom_packages():
     }
 
     # Setup mocks
-    with patch("pyinfra.context.state", MagicMock(config=MagicMock())), patch(
-        "pyinfra.context.host", MagicMock()
-    ), patch("infraninja.security.common.common_install.host") as mock_host, patch(
-        "infraninja.security.common.common_install.server"
-    ) as mock_server:
+    with (
+        patch("pyinfra.context.state", MagicMock(config=MagicMock())),
+        patch("pyinfra.context.host", MagicMock()),
+        patch("infraninja.security.common.common_install.host") as mock_host,
+        patch("infraninja.security.common.common_install.server") as mock_server,
+    ):
         # Configure host.get_fact to return Debian
         mock_host.get_fact.return_value = {
             "name": "Debian GNU/Linux",
@@ -212,9 +214,11 @@ def test_common_package_installer_unsupported_os():
     Test CommonPackageInstaller raises an error for unsupported OS.
     """
     # Setup mocks
-    with patch("pyinfra.context.state", MagicMock(config=MagicMock())), patch(
-        "pyinfra.context.host", MagicMock()
-    ), patch("infraninja.security.common.common_install.host") as mock_host:
+    with (
+        patch("pyinfra.context.state", MagicMock(config=MagicMock())),
+        patch("pyinfra.context.host", MagicMock()),
+        patch("infraninja.security.common.common_install.host") as mock_host,
+    ):
         # Configure host.get_fact to return an unsupported distro
         mock_host.get_fact.return_value = {
             "name": "Unsupported OS",

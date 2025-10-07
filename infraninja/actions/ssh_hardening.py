@@ -1,6 +1,6 @@
 """SSH hardening action"""
 
-from typing import Any, Dict
+from typing import Any
 
 from pyinfra import host
 from pyinfra.facts.files import FindInFile

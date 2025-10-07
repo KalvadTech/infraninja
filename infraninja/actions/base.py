@@ -1,7 +1,7 @@
 """Base Action class for InfraNinja"""
 
 from abc import ABC, abstractmethod
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List
 
 
 class Action(ABC):
@@ -50,7 +50,9 @@ class Action(ABC):
     color: str = "#000000"
     logo: str = "fa-cog"
     description: Dict[str, str] = {}
-    os_available: List[str] = []  # List of supported OS (e.g., ["ubuntu", "debian", "alpine", "freebsd"])
+    os_available: List[
+        str
+    ] = []  # List of supported OS (e.g., ["ubuntu", "debian", "alpine", "freebsd"])
 
     def __init__(self, **kwargs):
         """
@@ -72,12 +74,12 @@ class Action(ABC):
         if not self.slug:
             raise ValueError(f"{self.__class__.__name__} must define 'slug'")
 
-        if not self.name or 'en' not in self.name:
+        if not self.name or "en" not in self.name:
             raise ValueError(
                 f"{self.__class__.__name__} must define 'name' with at least 'en' key"
             )
 
-        if not self.description or 'en' not in self.description:
+        if not self.description or "en" not in self.description:
             raise ValueError(
                 f"{self.__class__.__name__} must define 'description' with at least 'en' key"
             )
@@ -144,7 +146,9 @@ class Action(ABC):
 
     def __repr__(self) -> str:
         """String representation of the action."""
-        return f"<{self.__class__.__name__} slug='{self.slug}' category='{self.category}'>"
+        return (
+            f"<{self.__class__.__name__} slug='{self.slug}' category='{self.category}'>"
+        )
 
     def __str__(self) -> str:
         """User-friendly string representation."""

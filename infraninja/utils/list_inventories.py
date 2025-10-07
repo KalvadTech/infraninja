@@ -1,7 +1,7 @@
 """Utility to list all available inventories and their metadata"""
 
 import inspect
-from typing import Dict, List
+from typing import Dict
 
 from infraninja.inventories.base import Inventory
 
@@ -29,20 +29,16 @@ def list_inventories() -> Dict[str, Dict]:
     # Get all members of the inventories module
     for name, obj in inspect.getmembers(inventories_module):
         # Check if it's a class and a subclass of Inventory (but not Inventory itself)
-        if (
-            inspect.isclass(obj)
-            and issubclass(obj, Inventory)
-            and obj is not Inventory
-        ):
+        if inspect.isclass(obj) and issubclass(obj, Inventory) and obj is not Inventory:
             # Get metadata from class attributes without instantiating
             try:
                 metadata = {
-                    'slug': obj.slug,
-                    'name': obj.name,
-                    'description': obj.description,
+                    "slug": obj.slug,
+                    "name": obj.name,
+                    "description": obj.description,
                 }
-                if metadata['slug']:  # Only add if slug is defined
-                    inventories_dict[metadata['slug']] = metadata
+                if metadata["slug"]:  # Only add if slug is defined
+                    inventories_dict[metadata["slug"]] = metadata
             except Exception:
                 # Skip inventories that don't have required attributes
                 continue
@@ -99,7 +95,7 @@ def list_inventory_names(language: str = "en") -> Dict[str, str]:
     names = {}
 
     for slug, metadata in inventories.items():
-        name_dict = metadata.get('name', {})
-        names[slug] = name_dict.get(language, name_dict.get('en', ''))
+        name_dict = metadata.get("name", {})
+        names[slug] = name_dict.get(language, name_dict.get("en", ""))
 
     return names

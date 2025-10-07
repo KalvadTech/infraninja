@@ -1,8 +1,7 @@
 """Utility to list all available actions and their metadata"""
 
 import inspect
-from pathlib import Path
-from typing import Dict, List, Type
+from typing import Dict, List
 
 from infraninja.actions.base import Action
 
@@ -30,16 +29,12 @@ def list_actions() -> Dict[str, Dict]:
     # Get all members of the actions module
     for name, obj in inspect.getmembers(actions_module):
         # Check if it's a class and a subclass of Action (but not Action itself)
-        if (
-            inspect.isclass(obj)
-            and issubclass(obj, Action)
-            and obj is not Action
-        ):
+        if inspect.isclass(obj) and issubclass(obj, Action) and obj is not Action:
             # Instantiate the action to get metadata
             try:
                 action_instance = obj()
                 metadata = action_instance.get_metadata()
-                actions_dict[metadata['slug']] = metadata
+                actions_dict[metadata["slug"]] = metadata
             except Exception:
                 # Skip actions that can't be instantiated without parameters
                 continue
@@ -67,7 +62,7 @@ def list_actions_by_category() -> Dict[str, List[Dict]]:
     by_category = {}
 
     for slug, metadata in actions.items():
-        category = metadata.get('category', 'uncategorized')
+        category = metadata.get("category", "uncategorized")
         if category not in by_category:
             by_category[category] = []
         by_category[category].append(metadata)
@@ -98,7 +93,7 @@ def list_actions_by_tag(tag: str) -> List[Dict]:
     filtered = []
 
     for slug, metadata in actions.items():
-        if tag in metadata.get('tags', []):
+        if tag in metadata.get("tags", []):
             filtered.append(metadata)
 
     return filtered
@@ -127,7 +122,7 @@ def list_actions_by_os(os_name: str) -> List[Dict]:
     filtered = []
 
     for slug, metadata in actions.items():
-        if os_name in metadata.get('os_available', []):
+        if os_name in metadata.get("os_available", []):
             filtered.append(metadata)
 
     return filtered

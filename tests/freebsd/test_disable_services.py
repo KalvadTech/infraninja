@@ -9,11 +9,12 @@ def test_freebsd_service_disabler_default_services():
     """
     Test FreeBSDServiceDisabler with default services list.
     """
-    with patch("pyinfra.context.state", MagicMock(config=MagicMock())), patch(
-        "pyinfra.context.host", MagicMock()
-    ), patch("infraninja.security.freebsd.disable_services.host") as mock_host, patch(
-        "infraninja.security.freebsd.disable_services.service"
-    ) as mock_service:
+    with (
+        patch("pyinfra.context.state", MagicMock(config=MagicMock())),
+        patch("pyinfra.context.host", MagicMock()),
+        patch("infraninja.security.freebsd.disable_services.host") as mock_host,
+        patch("infraninja.security.freebsd.disable_services.service") as mock_service,
+    ):
         # Create service disabler with default services
         disabler = FreeBSDServiceDisabler()
 
@@ -67,11 +68,12 @@ def test_freebsd_service_disabler_custom_services():
     """
     custom_services = ["apache24", "mysql-server", "redis"]
 
-    with patch("pyinfra.context.state", MagicMock(config=MagicMock())), patch(
-        "pyinfra.context.host", MagicMock()
-    ), patch("infraninja.security.freebsd.disable_services.host"), patch(
-        "infraninja.security.freebsd.disable_services.service"
-    ) as mock_service:
+    with (
+        patch("pyinfra.context.state", MagicMock(config=MagicMock())),
+        patch("pyinfra.context.host", MagicMock()),
+        patch("infraninja.security.freebsd.disable_services.host"),
+        patch("infraninja.security.freebsd.disable_services.service") as mock_service,
+    ):
         # Create service disabler with custom services
         disabler = FreeBSDServiceDisabler(services=custom_services)
 
@@ -104,11 +106,12 @@ def test_freebsd_service_disabler_empty_services():
     """
     Test FreeBSDServiceDisabler with empty services list.
     """
-    with patch("pyinfra.context.state", MagicMock(config=MagicMock())), patch(
-        "pyinfra.context.host", MagicMock()
-    ), patch("infraninja.security.freebsd.disable_services.host") as mock_host, patch(
-        "infraninja.security.freebsd.disable_services.service"
-    ) as mock_service:
+    with (
+        patch("pyinfra.context.state", MagicMock(config=MagicMock())),
+        patch("pyinfra.context.host", MagicMock()),
+        patch("infraninja.security.freebsd.disable_services.host") as mock_host,
+        patch("infraninja.security.freebsd.disable_services.service") as mock_service,
+    ):
         # Mock host.noop to avoid parameter issues
         mock_host.noop = MagicMock()
 
@@ -135,11 +138,12 @@ def test_freebsd_service_disabler_none_services_uses_default():
     """
     Test FreeBSDServiceDisabler with None services (should use default).
     """
-    with patch("pyinfra.context.state", MagicMock(config=MagicMock())), patch(
-        "pyinfra.context.host", MagicMock()
-    ), patch("infraninja.security.freebsd.disable_services.host"), patch(
-        "infraninja.security.freebsd.disable_services.service"
-    ) as mock_service:
+    with (
+        patch("pyinfra.context.state", MagicMock(config=MagicMock())),
+        patch("pyinfra.context.host", MagicMock()),
+        patch("infraninja.security.freebsd.disable_services.host"),
+        patch("infraninja.security.freebsd.disable_services.service") as mock_service,
+    ):
         # Create service disabler with None services (should use default)
         disabler = FreeBSDServiceDisabler(services=None)
 
@@ -163,11 +167,12 @@ def test_freebsd_service_disabler_service_call_parameters():
     """
     test_services = ["testservice1", "testservice2"]
 
-    with patch("pyinfra.context.state", MagicMock(config=MagicMock())), patch(
-        "pyinfra.context.host", MagicMock()
-    ), patch("infraninja.security.freebsd.disable_services.host"), patch(
-        "infraninja.security.freebsd.disable_services.service"
-    ) as mock_service:
+    with (
+        patch("pyinfra.context.state", MagicMock(config=MagicMock())),
+        patch("pyinfra.context.host", MagicMock()),
+        patch("infraninja.security.freebsd.disable_services.host"),
+        patch("infraninja.security.freebsd.disable_services.service") as mock_service,
+    ):
         # Create service disabler
         disabler = FreeBSDServiceDisabler(services=test_services)
 
@@ -236,13 +241,12 @@ def test_freebsd_service_disabler_service_count(services_input, expected_count):
     """
     Test FreeBSDServiceDisabler with various service list inputs.
     """
-    with patch("pyinfra.context.state", MagicMock(config=MagicMock())), patch(
-        "pyinfra.context.host", MagicMock()
-    ), patch(
-        "infraninja.security.freebsd.disable_services.service"
-    ) as mock_service, patch(
-        "infraninja.security.freebsd.disable_services.host"
-    ) as mock_host:
+    with (
+        patch("pyinfra.context.state", MagicMock(config=MagicMock())),
+        patch("pyinfra.context.host", MagicMock()),
+        patch("infraninja.security.freebsd.disable_services.service") as mock_service,
+        patch("infraninja.security.freebsd.disable_services.host") as mock_host,
+    ):
         # Mock host.noop to avoid parameter issues
         mock_host.noop = MagicMock()
 
@@ -265,11 +269,12 @@ def test_freebsd_service_disabler_deploy_decorator_usage():
     """
     test_services = ["test1", "test2"]
 
-    with patch("pyinfra.context.state", MagicMock(config=MagicMock())), patch(
-        "pyinfra.context.host", MagicMock()
-    ), patch("infraninja.security.freebsd.disable_services.service"), patch(
-        "infraninja.security.freebsd.disable_services.host"
-    ) as mock_host:
+    with (
+        patch("pyinfra.context.state", MagicMock(config=MagicMock())),
+        patch("pyinfra.context.host", MagicMock()),
+        patch("infraninja.security.freebsd.disable_services.service"),
+        patch("infraninja.security.freebsd.disable_services.host") as mock_host,
+    ):
         # Mock host.noop to avoid parameter issues
         mock_host.noop = MagicMock()
 
@@ -299,10 +304,11 @@ def test_freebsd_service_disabler_host_noop_calls():
     """
     test_services = ["testservice"]
 
-    with patch("pyinfra.context.state", MagicMock(config=MagicMock())), patch(
-        "pyinfra.context.host", MagicMock()
-    ), patch("infraninja.security.freebsd.disable_services.host") as mock_host, patch(
-        "infraninja.security.freebsd.disable_services.service"
+    with (
+        patch("pyinfra.context.state", MagicMock(config=MagicMock())),
+        patch("pyinfra.context.host", MagicMock()),
+        patch("infraninja.security.freebsd.disable_services.host") as mock_host,
+        patch("infraninja.security.freebsd.disable_services.service"),
     ):
         # Mock host.noop to avoid parameter issues
         mock_host.noop = MagicMock()

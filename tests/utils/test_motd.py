@@ -37,8 +37,9 @@ class TestMOTD:
         state_mock.config = MagicMock()
         host_mock = MagicMock()
 
-        with patch("pyinfra.context.state", state_mock), patch(
-            "pyinfra.context.host", host_mock
+        with (
+            patch("pyinfra.context.state", state_mock),
+            patch("pyinfra.context.host", host_mock),
         ):
             yield
 

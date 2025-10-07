@@ -63,13 +63,13 @@ def test_ssh_hardener_init_systems(test_case):
     mock_find_in_file = MagicMock(return_value=["#PermitRootLogin yes"])
 
     # Setup mocks for all the functions we need
-    with patch("pyinfra.context.state", MagicMock(config=MagicMock())), patch(
-        "pyinfra.context.host", MagicMock()
-    ), patch("infraninja.security.common.ssh_hardening.host") as mock_host, patch(
-        "infraninja.security.common.ssh_hardening.files"
-    ) as mock_files, patch(
-        "infraninja.security.common.ssh_hardening.server"
-    ) as mock_server:
+    with (
+        patch("pyinfra.context.state", MagicMock(config=MagicMock())),
+        patch("pyinfra.context.host", MagicMock()),
+        patch("infraninja.security.common.ssh_hardening.host") as mock_host,
+        patch("infraninja.security.common.ssh_hardening.files") as mock_files,
+        patch("infraninja.security.common.ssh_hardening.server") as mock_server,
+    ):
         # Setup host.get_fact to return appropriate values
         mock_host.get_fact.side_effect = lambda fact, **kwargs: (
             test_case["distro_info"]
@@ -113,13 +113,13 @@ def test_ssh_hardener_custom_config():
     }
 
     # Create mocks for the functions we need
-    with patch("pyinfra.context.state", MagicMock(config=MagicMock())), patch(
-        "pyinfra.context.host", MagicMock()
-    ), patch("infraninja.security.common.ssh_hardening.host") as mock_host, patch(
-        "infraninja.security.common.ssh_hardening.files"
-    ) as mock_files, patch(
-        "infraninja.security.common.ssh_hardening.server"
-    ) as mock_server:
+    with (
+        patch("pyinfra.context.state", MagicMock(config=MagicMock())),
+        patch("pyinfra.context.host", MagicMock()),
+        patch("infraninja.security.common.ssh_hardening.host") as mock_host,
+        patch("infraninja.security.common.ssh_hardening.files"),
+        patch("infraninja.security.common.ssh_hardening.server") as mock_server,
+    ):
         # Setup host.get_fact for distribution and init system
         mock_host.get_fact.side_effect = lambda fact, **kwargs: (
             {"name": "Ubuntu"}
@@ -151,13 +151,13 @@ def test_ssh_hardener_no_changes():
     Test SSHHardener when no config changes are needed.
     """
     # Create mocks for the functions we need
-    with patch("pyinfra.context.state", MagicMock(config=MagicMock())), patch(
-        "pyinfra.context.host", MagicMock()
-    ), patch("infraninja.security.common.ssh_hardening.host") as mock_host, patch(
-        "infraninja.security.common.ssh_hardening.files"
-    ) as mock_files, patch(
-        "infraninja.security.common.ssh_hardening.server"
-    ) as mock_server:
+    with (
+        patch("pyinfra.context.state", MagicMock(config=MagicMock())),
+        patch("pyinfra.context.host", MagicMock()),
+        patch("infraninja.security.common.ssh_hardening.host") as mock_host,
+        patch("infraninja.security.common.ssh_hardening.files") as mock_files,
+        patch("infraninja.security.common.ssh_hardening.server") as mock_server,
+    ):
         # Setup host.get_fact for existing options matching what we want
         def get_fact_side_effect(fact, **kwargs):
             if fact.__name__ == "LinuxDistribution":

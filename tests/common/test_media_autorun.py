@@ -46,13 +46,13 @@ def test_media_autorun(test_case):
         return False
 
     # Setup mocks for all the functions we need
-    with patch("pyinfra.context.state", MagicMock(config=MagicMock())), patch(
-        "pyinfra.context.host", MagicMock()
-    ), patch("infraninja.security.common.media_autorun.host") as mock_host, patch(
-        "infraninja.security.common.media_autorun.files"
-    ) as mock_files, patch(
-        "infraninja.security.common.media_autorun.server"
-    ) as mock_server:
+    with (
+        patch("pyinfra.context.state", MagicMock(config=MagicMock())),
+        patch("pyinfra.context.host", MagicMock()),
+        patch("infraninja.security.common.media_autorun.host") as mock_host,
+        patch("infraninja.security.common.media_autorun.files") as mock_files,
+        patch("infraninja.security.common.media_autorun.server") as mock_server,
+    ):
         # Setup host.get_fact to return appropriate values
         mock_host.get_fact.side_effect = lambda fact, **kwargs: (
             test_case["distro_info"]

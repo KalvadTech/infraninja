@@ -9,13 +9,13 @@ def test_fail2ban_setup_success():
     """
     Test fail2ban_setup function with successful execution.
     """
-    with patch("pyinfra.context.state", MagicMock(config=MagicMock())), patch(
-        "pyinfra.context.host", MagicMock()
-    ), patch("infraninja.security.freebsd.fail2ban_setup.host") as mock_host, patch(
-        "infraninja.security.freebsd.fail2ban_setup.files"
-    ) as mock_files, patch(
-        "infraninja.security.freebsd.fail2ban_setup.service"
-    ) as mock_service:
+    with (
+        patch("pyinfra.context.state", MagicMock(config=MagicMock())),
+        patch("pyinfra.context.host", MagicMock()),
+        patch("infraninja.security.freebsd.fail2ban_setup.host") as mock_host,
+        patch("infraninja.security.freebsd.fail2ban_setup.files") as mock_files,
+        patch("infraninja.security.freebsd.fail2ban_setup.service") as mock_service,
+    ):
         # Configure host.get_fact to return FreeBSD distro info
         mock_host.get_fact.return_value = {
             "name": "FreeBSD",
@@ -59,9 +59,11 @@ def test_fail2ban_setup_non_freebsd():
     """
     Test fail2ban_setup function raises error on non-FreeBSD systems.
     """
-    with patch("pyinfra.context.state", MagicMock(config=MagicMock())), patch(
-        "pyinfra.context.host", MagicMock()
-    ), patch("infraninja.security.freebsd.fail2ban_setup.host") as mock_host:
+    with (
+        patch("pyinfra.context.state", MagicMock(config=MagicMock())),
+        patch("pyinfra.context.host", MagicMock()),
+        patch("infraninja.security.freebsd.fail2ban_setup.host") as mock_host,
+    ):
         # Configure host.get_fact to return a non-FreeBSD distro
         mock_host.get_fact.return_value = {
             "name": "Ubuntu",
@@ -85,11 +87,13 @@ def test_fail2ban_pf_integration():
     """
     Test fail2ban_setup integrates with PF properly.
     """
-    with patch("pyinfra.context.state", MagicMock(config=MagicMock())), patch(
-        "pyinfra.context.host", MagicMock()
-    ), patch("infraninja.security.freebsd.fail2ban_setup.host") as mock_host, patch(
-        "infraninja.security.freebsd.fail2ban_setup.files"
-    ) as mock_files, patch("infraninja.security.freebsd.fail2ban_setup.service"):
+    with (
+        patch("pyinfra.context.state", MagicMock(config=MagicMock())),
+        patch("pyinfra.context.host", MagicMock()),
+        patch("infraninja.security.freebsd.fail2ban_setup.host") as mock_host,
+        patch("infraninja.security.freebsd.fail2ban_setup.files") as mock_files,
+        patch("infraninja.security.freebsd.fail2ban_setup.service"),
+    ):
         # Configure host.get_fact to return FreeBSD distro info
         mock_host.get_fact.return_value = {
             "name": "FreeBSD",

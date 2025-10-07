@@ -41,7 +41,16 @@ class UpdateAndUpgradeAction(Action):
         "ar": "تحديث مستودعات الحزم وترقية جميع الحزم المثبتة عبر توزيعات Linux المتعددة وFreeBSD",
         "fr": "Mettre à jour les dépôts de paquets et améliorer tous les paquets installés sur plusieurs distributions",
     }
-    os_available = ["ubuntu", "debian", "alpine", "freebsd", "rhel", "centos", "fedora", "arch"]
+    os_available = [
+        "ubuntu",
+        "debian",
+        "alpine",
+        "freebsd",
+        "rhel",
+        "centos",
+        "fedora",
+        "arch",
+    ]
 
     def execute(self) -> Any:
         """

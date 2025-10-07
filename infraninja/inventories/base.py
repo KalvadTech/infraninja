@@ -51,7 +51,7 @@ class Inventory(ABC):
         self,
         ssh_key_path: Optional[Union[str, Path]] = None,
         ssh_config_dir: Optional[Union[str, Path]] = None,
-        **kwargs
+        **kwargs,
     ):
         """
         Initialize the inventory with common SSH configuration.
@@ -95,12 +95,12 @@ class Inventory(ABC):
         if not self.slug:
             raise ValueError(f"{self.__class__.__name__} must define 'slug'")
 
-        if not self.name or 'en' not in self.name:
+        if not self.name or "en" not in self.name:
             raise ValueError(
                 f"{self.__class__.__name__} must define 'name' with at least 'en' key"
             )
 
-        if not self.description or 'en' not in self.description:
+        if not self.description or "en" not in self.description:
             raise ValueError(
                 f"{self.__class__.__name__} must define 'description' with at least 'en' key"
             )

@@ -40,14 +40,12 @@ class Jinn(Inventory):
     """Jinn inventory implementation."""
 
     slug = "jinn"
-    name = {
-        "en": "Jinn Inventory",
-        "ar": "مخزون جن"
-    }
+    name = {"en": "Jinn Inventory", "ar": "مخزون جن"}
     description = {
         "en": "Fetch servers from Jinn API",
-        "ar": "جلب الخوادم من واجهة برمجة تطبيقات جن"
+        "ar": "جلب الخوادم من واجهة برمجة تطبيقات جن",
     }
+
     def __init__(
         self,
         ssh_key_path: Optional[Union[str, Path]] = None,

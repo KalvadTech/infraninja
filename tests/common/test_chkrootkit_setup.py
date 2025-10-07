@@ -53,8 +53,9 @@ class TestChkrootkitSetup:
     @pytest.fixture
     def mock_pyinfra_context(self):
         """Fixture to mock pyinfra context."""
-        with patch("pyinfra.context.state", MagicMock(config=MagicMock())), patch(
-            "pyinfra.context.host", MagicMock()
+        with (
+            patch("pyinfra.context.state", MagicMock(config=MagicMock())),
+            patch("pyinfra.context.host", MagicMock()),
         ):
             yield
 
