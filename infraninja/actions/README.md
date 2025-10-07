@@ -154,7 +154,6 @@ class CustomAction(Action):
     }
 
     def execute(self, **kwargs):
-        @deploy("My Custom Deployment")
         def custom_deploy():
             server.shell(
                 name="Run custom command",
@@ -178,7 +177,7 @@ Common categories include:
 
 ## Multilingual Support
 
-Actions support multiple languages for `name` and `description` fields. Currently supported languages:
+Actions support multiple languages for `name` and `description` fields. Currently configured languages:
 
 - **en**: English (required)
 - **ar**: Arabic

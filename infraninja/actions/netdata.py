@@ -8,19 +8,6 @@ from pyinfra.operations import files, server
 
 from infraninja.actions.base import Action
 
-DEFAULTS = {
-    "claim_token": "XXXXX",
-    "claim_rooms": "XXXXX",
-    "claim_url": "https://app.netdata.cloud",
-    "reclaim": False,
-    "dbengine_multihost_disk_space": 2048,
-    "stream": {
-        "enabled": False,
-        "destination": "streaming.netdata.cloud",
-        "api_key": "XXXXX",
-    },
-}
-
 
 class NetdataAction(Action):
     """
@@ -64,7 +51,17 @@ class NetdataAction(Action):
         "arch",
     ]
 
-    def execute(self, data_defaults: Dict[str, Any] = None) -> Any:
+    def execute(
+        self,
+        claim_token: str = "XXXXX",
+        claim_rooms: str = "XXXXX",
+        claim_url: str = "https://app.netdata.cloud",
+        reclaim: bool = False,
+        dbengine_multihost_disk_space: int = 2048,
+        stream_enabled: bool = False,
+        stream_destination: str = "streaming.netdata.cloud",
+        stream_api_key: str = "XXXXX",
+    ) -> Any:
         """
         Execute Netdata deployment.
 
@@ -72,19 +69,18 @@ class NetdataAction(Action):
         with templates, and ensures the service is running.
 
         Args:
-            data_defaults: Default data configuration (default: DEFAULTS)
+            claim_token: Netdata Cloud claim token
+            claim_rooms: Netdata Cloud rooms to join
+            claim_url: Netdata Cloud URL
+            reclaim: Whether to reclaim the node
+            dbengine_multihost_disk_space: Disk space for multi-host DB engine in MB
+            stream_enabled: Whether streaming is enabled
+            stream_destination: Streaming destination
+            stream_api_key: Streaming API key
 
         Returns:
             Result of the deployment operation
         """
-        if data_defaults is None:
-            data_defaults = DEFAULTS
-
-        # Merge data_defaults with host.data
-        for key, value in data_defaults.items():
-            if key not in host.data:
-                host.data[key] = value
-
         # Download the installation script
         files.download(
             name="Download the installation script",
@@ -118,6 +114,18 @@ class NetdataAction(Action):
             user="root",
             group="root",
             mode="644",
+            jinja_env_kwargs={
+                "claim_token": claim_token,
+                "claim_rooms": claim_rooms,
+                "claim_url": claim_url,
+                "reclaim": reclaim,
+                "dbengine_multihost_disk_space": dbengine_multihost_disk_space,
+                "stream": {
+                    "enabled": stream_enabled,
+                    "destination": stream_destination,
+                    "api_key": stream_api_key,
+                },
+            },
         )
 
         # Restart Netdata service
