@@ -108,8 +108,9 @@ class SSHKeyDeleter:
                 # Basic URL validation
                 if "URLHERE" in self.api_url:
                     logger.error(f"URL contains placeholder 'URLHERE': {self.api_url}")
+                    msg = f"Invalid API URL with placeholder: {self.api_url}. Please provide a valid URL."
                     raise SSHKeyDeleteError(
-                        f"Invalid API URL with placeholder: {self.api_url}. Please provide a valid URL."
+                        msg
                     )
 
             # Store the API key
@@ -179,8 +180,9 @@ class SSHKeyDeleter:
                 )
         """
         if not SSHKeyDeleter._session_key:
+            msg = "Cannot make authenticated request: No session key available"
             raise SSHKeyDeleteError(
-                "Cannot make authenticated request: No session key available"
+                msg
             )
 
         headers = {
@@ -194,13 +196,15 @@ class SSHKeyDeleter:
                 method, endpoint, headers=headers, cookies=cookies, timeout=30, **kwargs
             )
             if response.status_code != 200:
+                msg = f"API request failed with status code {response.status_code}: {response.text[:100]}"
                 raise SSHKeyDeleteError(
-                    f"API request failed with status code {response.status_code}: {response.text[:100]}"
+                    msg
                 )
             return response
 
         except Exception as e:
-            raise SSHKeyDeleteError(f"API request failed: {str(e)}")
+            msg = f"API request failed: {str(e)}"
+            raise SSHKeyDeleteError(msg)
 
     def _login(self) -> bool:
         """
@@ -228,7 +232,8 @@ class SSHKeyDeleter:
             return True
 
         if not self.api_url:
-            raise SSHKeyDeleteError("Cannot login: No API URL configured")
+            msg = "Cannot login: No API URL configured"
+            raise SSHKeyDeleteError(msg)
 
         login_endpoint = f"{self.api_url}/login/"
         headers = {"Content-Type": "application/json", "Accept": "application/json"}
@@ -249,8 +254,9 @@ class SSHKeyDeleter:
             )
 
             if response.status_code != 200:
+                msg = f"Login failed with status code {response.status_code}: {response.text[:100]}"
                 raise SSHKeyDeleteError(
-                    f"Login failed with status code {response.status_code}: {response.text[:100]}"
+                    msg
                 )
 
             response_data = response.json()
@@ -258,16 +264,19 @@ class SSHKeyDeleter:
             SSHKeyDeleter._session_key = response_data.get("session_key")
 
             if not SSHKeyDeleter._session_key:
+                msg = "Login succeeded but no session key in response"
                 raise SSHKeyDeleteError(
-                    "Login succeeded but no session key in response"
+                    msg
                 )
 
             return True
 
         except json.JSONDecodeError:
-            raise SSHKeyDeleteError("Received invalid JSON in login response")
+            msg = "Received invalid JSON in login response"
+            raise SSHKeyDeleteError(msg)
         except Exception as e:
-            raise SSHKeyDeleteError(f"Login request failed: {str(e)}")
+            msg = f"Login request failed: {str(e)}"
+            raise SSHKeyDeleteError(msg)
 
     def fetch_ssh_keys(
         self, force_refresh: bool = False
@@ -301,23 +310,27 @@ class SSHKeyDeleter:
             return SSHKeyDeleter._ssh_keys
 
         if not self._login():
-            raise SSHKeyDeleteError("Failed to authenticate with API")
+            msg = "Failed to authenticate with API"
+            raise SSHKeyDeleteError(msg)
 
         if not self.api_url:
-            raise SSHKeyDeleteError("Cannot fetch SSH keys: No API URL configured")
+            msg = "Cannot fetch SSH keys: No API URL configured"
+            raise SSHKeyDeleteError(msg)
 
         # Use the correct endpoint from the API spec
         endpoint = f"{self.api_url}/ssh-tools/ssh-keylist/"
         response = self._make_auth_request(endpoint)
         if not response:
-            raise SSHKeyDeleteError("Failed to retrieve SSH keys from API")
+            msg = "Failed to retrieve SSH keys from API"
+            raise SSHKeyDeleteError(msg)
 
         # Parse the response
         try:
             ssh_data = response.json()
 
             if "result" not in ssh_data:
-                raise SSHKeyDeleteError("SSH key API response missing 'result' field")
+                msg = "SSH key API response missing 'result' field"
+                raise SSHKeyDeleteError(msg)
 
             # Store the full key objects for more flexibility
             SSHKeyDeleter._ssh_keys = ssh_data["result"]
@@ -328,11 +341,14 @@ class SSHKeyDeleter:
             return SSHKeyDeleter._ssh_keys
 
         except KeyError as e:
-            raise SSHKeyDeleteError(f"Missing expected field in SSH keys response: {e}")
+            msg = f"Missing expected field in SSH keys response: {e}"
+            raise SSHKeyDeleteError(msg)
         except json.JSONDecodeError as e:
-            raise SSHKeyDeleteError(f"Failed to parse SSH keys response as JSON: {e}")
+            msg = f"Failed to parse SSH keys response as JSON: {e}"
+            raise SSHKeyDeleteError(msg)
         except Exception as e:
-            raise SSHKeyDeleteError(f"Unexpected error parsing SSH keys response: {e}")
+            msg = f"Unexpected error parsing SSH keys response: {e}"
+            raise SSHKeyDeleteError(msg)
 
     def filter_keys_for_deletion(
         self,
@@ -449,7 +465,8 @@ class SSHKeyDeleter:
             return sudo_check is not None and "success" in str(sudo_check)
 
         except Exception as e:
-            raise SSHKeyDeleteError(f"Failed to check root access: {str(e)}")
+            msg = f"Failed to check root access: {str(e)}"
+            raise SSHKeyDeleteError(msg)
 
     def _escape_regex_special_chars(self, text: str) -> str:
         """
@@ -546,7 +563,8 @@ class SSHKeyDeleter:
             # Extract the key part (ignore key type and comment) for comparison
             key_parts = key_to_delete.strip().split()
             if len(key_parts) < 2:
-                raise SSHKeyDeleteError(f"Invalid SSH key format: {key_to_delete}")
+                msg = f"Invalid SSH key format: {key_to_delete}"
+                raise SSHKeyDeleteError(msg)
 
             key_to_delete_data = key_parts[1]  # The actual key data
 
@@ -571,7 +589,7 @@ class SSHKeyDeleter:
                 user=user,
                 public_keys=remaining_keys,
                 delete_keys=True,  # Remove any keys not in our list
-                _sudo=True if user != host.get_fact(User) else False,
+                _sudo=user != host.get_fact(User),
             )
 
             removed_count = len(current_lines) - len(remaining_keys)
@@ -583,8 +601,9 @@ class SSHKeyDeleter:
             return True
 
         except Exception as e:
+            msg = f"Error removing key from {user}'s authorized_keys: {str(e)}"
             raise SSHKeyDeleteError(
-                f"Error removing key from {user}'s authorized_keys: {str(e)}"
+                msg
             )
 
     @deploy("Delete SSH keys from users' authorized_keys files")
@@ -611,9 +630,12 @@ class SSHKeyDeleter:
         try:
             # Check root access first
             if not self._check_root_access():
-                raise SSHKeyDeleteError(
+                msg = (
                     "Root access required to modify other users' authorized_keys files. "
                     "Please run as root or ensure sudo access."
+                )
+                raise SSHKeyDeleteError(
+                    msg
                 )
 
             # Get all SSH keys from the API
@@ -654,7 +676,8 @@ class SSHKeyDeleter:
             return True
 
         except Exception as e:
-            raise SSHKeyDeleteError(f"Error during SSH key deletion: {str(e)}")
+            msg = f"Error during SSH key deletion: {str(e)}"
+            raise SSHKeyDeleteError(msg)
 
     @deploy("Delete specific SSH key from users' authorized_keys files")
     def delete_specific_key_for_users(
@@ -676,9 +699,12 @@ class SSHKeyDeleter:
         try:
             # Check root access first
             if not self._check_root_access():
-                raise SSHKeyDeleteError(
+                msg = (
                     "Root access required to modify other users' authorized_keys files. "
                     "Please run as root or ensure sudo access."
+                )
+                raise SSHKeyDeleteError(
+                    msg
                 )
 
             logger.info(f"Deleting specific key for {len(users)} users")
@@ -701,7 +727,8 @@ class SSHKeyDeleter:
             return True
 
         except Exception as e:
-            raise SSHKeyDeleteError(f"Error during specific SSH key deletion: {str(e)}")
+            msg = f"Error during specific SSH key deletion: {str(e)}"
+            raise SSHKeyDeleteError(msg)
 
     def clear_cache(self) -> bool:
         """
@@ -721,7 +748,8 @@ class SSHKeyDeleter:
                 logger.debug("Cache cleared")
                 return True
         except Exception as e:
-            raise SSHKeyDeleteError(f"Error clearing cache: {str(e)}")
+            msg = f"Error clearing cache: {str(e)}"
+            raise SSHKeyDeleteError(msg)
 
 
 # Global functions for backward compatibility and ease of use

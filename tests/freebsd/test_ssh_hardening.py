@@ -259,7 +259,7 @@ def test_freebsd_ssh_hardener_default_config_values():
     }
 
     # Verify the default config matches expectations
-    assert SSHHardener.DEFAULT_SSH_CONFIG == expected_default_config
+    assert expected_default_config == SSHHardener.DEFAULT_SSH_CONFIG
 
 
 def test_freebsd_ssh_hardener_config_independence():

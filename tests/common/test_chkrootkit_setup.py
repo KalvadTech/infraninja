@@ -1,6 +1,7 @@
-from unittest.mock import patch, MagicMock
-import pytest
 from pathlib import Path
+from unittest.mock import MagicMock, patch
+
+import pytest
 
 from infraninja.security.common.chkrootkit_setup import chkrootkit_setup
 

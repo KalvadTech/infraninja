@@ -4,10 +4,10 @@ from unittest.mock import Mock, patch
 
 # Import the module under test
 from infraninja.utils.pubkeys_delete import (
-    SSHKeyDeleter,
     SSHKeyDeleteError,
-    delete_ssh_keys_for_users,
+    SSHKeyDeleter,
     delete_specific_key_for_users,
+    delete_ssh_keys_for_users,
 )
 
 

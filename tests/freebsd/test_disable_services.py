@@ -207,7 +207,7 @@ def test_freebsd_service_disabler_default_services_list():
     ]
 
     # Verify the default services list matches expectations
-    assert FreeBSDServiceDisabler.DEFAULT_SERVICES == expected_default_services
+    assert expected_default_services == FreeBSDServiceDisabler.DEFAULT_SERVICES
 
 
 def test_freebsd_service_disabler_services_independence():

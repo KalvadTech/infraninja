@@ -175,22 +175,24 @@ Host server2
     def test_init_with_defaults(self):
         """Test initialization with default parameters."""
         # Skip the refresh_ssh_config call during initialization
-        with patch.object(Jinn, "refresh_ssh_config"):
-            with patch(
+        with (
+            patch.object(Jinn, "refresh_ssh_config"),
+            patch(
                 "pathlib.Path.expanduser", return_value=Path("/home/test/.ssh/id_rsa")
-            ):
-                with patch.object(Path, "home", return_value=Path("/home/test")):
-                    jinn = Jinn(api_key=self.api_key)
+            ),
+            patch.object(Path, "home", return_value=Path("/home/test")),
+        ):
+            jinn = Jinn(api_key=self.api_key)
 
-                    # Check that the SSH key path was set correctly
-                    self.assertEqual(jinn.ssh_key_path, Path("/home/test/.ssh/id_rsa"))
+            # Check that the SSH key path was set correctly
+            self.assertEqual(jinn.ssh_key_path, Path("/home/test/.ssh/id_rsa"))
 
-                    # Check that the API configuration was set correctly
-                    self.assertEqual(jinn.api_url, "https://jinn-api.kalvad.cloud")
-                    self.assertEqual(jinn.api_key, self.api_key)
+            # Check that the API configuration was set correctly
+            self.assertEqual(jinn.api_url, "https://jinn-api.kalvad.cloud")
+            self.assertEqual(jinn.api_key, self.api_key)
 
-                    # Check that the SSH config directory was created
-                    self.mock_path_mkdir.assert_called()
+            # Check that the SSH config directory was created
+            self.mock_path_mkdir.assert_called()
 
     def test_init_with_custom_params(self):
         """Test initialization with custom parameters."""

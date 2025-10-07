@@ -65,7 +65,7 @@ class SSHHardeningAction(Action):
     def __init__(
         self,
         permit_root_login: str = "prohibit-password",
-        password_authentication: str = "no",
+        password_authentication: str = "no",  # noqa: S107
         x11_forwarding: str = "no",
     ):
         """
@@ -149,7 +149,7 @@ class SSHHardeningAction(Action):
 
         if os_id == "freebsd":
             # FreeBSD requires specific service command syntax
-            from pyinfra.operations.freebsd import service as freebsd_service
+            from pyinfra.operations.freebsd import service as freebsd_service  # noqa: PLC0415
 
             freebsd_service.service(
                 name="Restart SSH service (FreeBSD)",

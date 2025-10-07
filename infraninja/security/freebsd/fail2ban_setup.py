@@ -24,8 +24,9 @@ def fail2ban_setup():
     distro_name = (distro.get("name", "") or "").lower() if distro else ""
 
     if "freebsd" not in distro_name and distro_name:
+        msg = f"This deployment is designed for FreeBSD systems only. Detected: {distro_name}"
         raise ValueError(
-            f"This deployment is designed for FreeBSD systems only. Detected: {distro_name}"
+            msg
         )
 
     # Create fail2ban configuration directory if it doesn't exist

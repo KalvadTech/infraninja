@@ -1,7 +1,8 @@
 # filepath: /home/xoity/Desktop/work/infraninja/tests/utils/test_pubkeys.py
-import pytest
 import json
-from unittest.mock import patch, MagicMock, ANY
+from unittest.mock import ANY, MagicMock, patch
+
+import pytest
 import requests
 
 from infraninja.utils.pubkeys import SSHKeyManager, SSHKeyManagerError, add_ssh_keys

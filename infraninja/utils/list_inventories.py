@@ -69,7 +69,8 @@ def get_inventory_by_slug(slug: str) -> Dict:
     """
     inventories = list_inventories()
     if slug not in inventories:
-        raise KeyError(f"Inventory with slug '{slug}' not found")
+        msg = f"Inventory with slug '{slug}' not found"
+        raise KeyError(msg)
     return inventories[slug]
 
 

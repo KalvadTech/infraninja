@@ -23,8 +23,9 @@ def pf_setup():
     distro_name = (distro.get("name", "") or "").lower() if distro else ""
 
     if "freebsd" not in distro_name and distro_name:
+        msg = f"This deployment is designed for FreeBSD systems only. Detected: {distro_name}"
         raise ValueError(
-            f"This deployment is designed for FreeBSD systems only. Detected: {distro_name}"
+            msg
         )
 
     # Check if PF is available
@@ -72,7 +73,8 @@ def pf_setup():
             commands=["cp /etc/pf.conf.bak /etc/pf.conf"],
             _sudo=True,
         )
-        raise Exception("PF configuration syntax check failed. Backup restored.")
+        msg = "PF configuration syntax check failed. Backup restored."
+        raise Exception(msg)
 
     # Set up PF logging directory
     files.directory(

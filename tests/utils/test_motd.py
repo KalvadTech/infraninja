@@ -1,6 +1,7 @@
-import pytest
-from unittest.mock import patch, MagicMock
 from pathlib import Path
+from unittest.mock import MagicMock, patch
+
+import pytest
 
 # Import the module to test
 from infraninja.utils.motd import motd

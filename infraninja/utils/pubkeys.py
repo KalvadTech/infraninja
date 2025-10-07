@@ -107,8 +107,9 @@ class SSHKeyManager:
                 # Basic URL validation
                 if "URLHERE" in self.api_url:
                     logger.error(f"URL contains placeholder 'URLHERE': {self.api_url}")
+                    msg = f"Invalid API URL with placeholder: {self.api_url}. Please provide a valid URL."
                     raise SSHKeyManagerError(
-                        f"Invalid API URL with placeholder: {self.api_url}. Please provide a valid URL."
+                        msg
                     )
 
             # Store the API key
@@ -178,8 +179,9 @@ class SSHKeyManager:
                 )
         """
         if not SSHKeyManager._session_key:
+            msg = "Cannot make authenticated request: No session key available"
             raise SSHKeyManagerError(
-                "Cannot make authenticated request: No session key available"
+                msg
             )
 
         headers = {
@@ -194,13 +196,15 @@ class SSHKeyManager:
                 method, endpoint, headers=headers, cookies=cookies, timeout=30, **kwargs
             )
             if response.status_code != 200:
+                msg = f"API request failed with status code {response.status_code}: {response.text[:100]}"
                 raise SSHKeyManagerError(
-                    f"API request failed with status code {response.status_code}: {response.text[:100]}"
+                    msg
                 )
             return response
 
         except Exception as e:
-            raise SSHKeyManagerError(f"API request failed: {str(e)}")
+            msg = f"API request failed: {str(e)}"
+            raise SSHKeyManagerError(msg)
 
     def _login(self) -> bool:
         """
@@ -228,7 +232,8 @@ class SSHKeyManager:
             return True
 
         if not self.api_url:
-            raise SSHKeyManagerError("Cannot login: No API URL configured")
+            msg = "Cannot login: No API URL configured"
+            raise SSHKeyManagerError(msg)
 
         login_endpoint = f"{self.api_url}/login/"
         headers = {"Content-Type": "application/json", "Accept": "application/json"}
@@ -249,8 +254,9 @@ class SSHKeyManager:
             )
 
             if response.status_code != 200:
+                msg = f"Login failed with status code {response.status_code}: {response.text[:100]}"
                 raise SSHKeyManagerError(
-                    f"Login failed with status code {response.status_code}: {response.text[:100]}"
+                    msg
                 )
 
             response_data = response.json()
@@ -258,16 +264,19 @@ class SSHKeyManager:
             SSHKeyManager._session_key = response_data.get("session_key")
 
             if not SSHKeyManager._session_key:
+                msg = "Login succeeded but no session key in response"
                 raise SSHKeyManagerError(
-                    "Login succeeded but no session key in response"
+                    msg
                 )
 
             return True
 
         except json.JSONDecodeError:
-            raise SSHKeyManagerError("Received invalid JSON in login response")
+            msg = "Received invalid JSON in login response"
+            raise SSHKeyManagerError(msg)
         except Exception as e:
-            raise SSHKeyManagerError(f"Login request failed: {str(e)}")
+            msg = f"Login request failed: {str(e)}"
+            raise SSHKeyManagerError(msg)
 
     def fetch_ssh_keys(self, force_refresh: bool = False) -> Optional[List[str]]:
         """
@@ -299,22 +308,26 @@ class SSHKeyManager:
             return SSHKeyManager._ssh_keys
 
         if not self._login():
-            raise SSHKeyManagerError("Failed to authenticate with API")
+            msg = "Failed to authenticate with API"
+            raise SSHKeyManagerError(msg)
 
         if not self.api_url:
-            raise SSHKeyManagerError("Cannot fetch SSH keys: No API URL configured")
+            msg = "Cannot fetch SSH keys: No API URL configured"
+            raise SSHKeyManagerError(msg)
 
         endpoint = f"{self.api_url}/ssh-tools/ssh-keylist/"
         response = self._make_auth_request(endpoint)
         if not response:
-            raise SSHKeyManagerError("Failed to retrieve SSH keys from API")
+            msg = "Failed to retrieve SSH keys from API"
+            raise SSHKeyManagerError(msg)
 
         # Parse the response
         try:
             ssh_data = response.json()
 
             if "result" not in ssh_data:
-                raise SSHKeyManagerError("SSH key API response missing 'result' field")
+                msg = "SSH key API response missing 'result' field"
+                raise SSHKeyManagerError(msg)
 
             SSHKeyManager._ssh_keys = [
                 key_data["key"] for key_data in ssh_data["result"] if "key" in key_data
@@ -326,13 +339,16 @@ class SSHKeyManager:
             return SSHKeyManager._ssh_keys
 
         except KeyError as e:
+            msg = f"Missing expected field in SSH keys response: {e}"
             raise SSHKeyManagerError(
-                f"Missing expected field in SSH keys response: {e}"
+                msg
             )
         except json.JSONDecodeError as e:
-            raise SSHKeyManagerError(f"Failed to parse SSH keys response as JSON: {e}")
+            msg = f"Failed to parse SSH keys response as JSON: {e}"
+            raise SSHKeyManagerError(msg)
         except Exception as e:
-            raise SSHKeyManagerError(f"Unexpected error parsing SSH keys response: {e}")
+            msg = f"Unexpected error parsing SSH keys response: {e}"
+            raise SSHKeyManagerError(msg)
 
     @deploy("Add SSH keys to authorized_keys")
     def add_ssh_keys(self, force_refresh: bool = False) -> bool:
@@ -352,18 +368,21 @@ class SSHKeyManager:
             # Get the SSH keys - may raise SSHKeyManagerError from fetch_ssh_keys
             keys = self.fetch_ssh_keys(force_refresh)
             if not keys:
-                raise SSHKeyManagerError("No SSH keys available to deploy")
+                msg = "No SSH keys available to deploy"
+                raise SSHKeyManagerError(msg)
 
             # Get current user information
             current_user = host.get_fact(User)
             if not current_user:
-                raise PyinfraError("Failed to determine current user")
+                msg = "Failed to determine current user"
+                raise PyinfraError(msg)
 
             # Get user details
             users = host.get_fact(Users)
             if not users or current_user not in users:
+                msg = f"Failed to retrieve details for user: {current_user}"
                 raise PyinfraError(
-                    f"Failed to retrieve details for user: {current_user}"
+                    msg
                 )
 
             user_details = users[current_user]
@@ -382,9 +401,11 @@ class SSHKeyManager:
             return True
 
         except KeyError as e:
-            raise SSHKeyManagerError(f"Missing user information: {e}")
+            msg = f"Missing user information: {e}"
+            raise SSHKeyManagerError(msg)
         except Exception as e:
-            raise SSHKeyManagerError(f"Error setting up SSH keys: {str(e)}")
+            msg = f"Error setting up SSH keys: {str(e)}"
+            raise SSHKeyManagerError(msg)
 
     def clear_cache(self) -> bool:
         """
@@ -404,7 +425,8 @@ class SSHKeyManager:
                 logger.debug("Cache cleared")
                 return True
         except Exception as e:
-            raise SSHKeyManagerError(f"Error clearing cache: {str(e)}")
+            msg = f"Error clearing cache: {str(e)}"
+            raise SSHKeyManagerError(msg)
 
 
 # Global function for backward compatibility

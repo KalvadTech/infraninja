@@ -79,4 +79,4 @@ def install_security_tools():
                         packages=[package],
                     )
                 else:
-                    print(f"{package} is already installed, skipping.")
+                    pass

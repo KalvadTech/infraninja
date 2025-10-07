@@ -76,13 +76,15 @@ class Jinn(Inventory):
 
         # Validate SSH key exists
         if not self.ssh_key_path.exists():
-            raise JinnSSHError(f"SSH key path does not exist: {self.ssh_key_path}")
+            msg = f"SSH key path does not exist: {self.ssh_key_path}"
+            raise JinnSSHError(msg)
 
         # Set API configuration
         self.api_url: str = api_url.rstrip("/")
         self.api_key: Optional[str] = api_key
         if not self.api_key:
-            raise JinnAPIError("API key is not set")
+            msg = "API key is not set"
+            raise JinnAPIError(msg)
 
         # Set filtering options
         self.groups: Optional[List[str]] = groups
@@ -146,7 +148,8 @@ class Jinn(Inventory):
             self.project_name = response.json().get("name_en")
             return self.project_name
         except RequestException as e:
-            raise JinnAPIError(f"Failed to get project name: {str(e)}")
+            msg = f"Failed to get project name: {str(e)}"
+            raise JinnAPIError(msg)
 
     def get_groups(self, save: bool = False) -> List[str]:
         """Get available groups from the API.
@@ -173,7 +176,8 @@ class Jinn(Inventory):
                 self.groups = groups
             return groups
         except RequestException as e:
-            raise JinnAPIError(f"Failed to get groups: {str(e)}")
+            msg = f"Failed to get groups: {str(e)}"
+            raise JinnAPIError(msg)
 
     def format_host_list(
         self, filtered_servers: List[Dict[str, Any]]
@@ -262,22 +266,29 @@ class Jinn(Inventory):
             filtered_servers = [s for s in servers if self._filter_server(s)]
 
             if not filtered_servers:
-                raise JinnAPIError("No servers found matching the specified criteria")
+                msg = "No servers found matching the specified criteria"
+                raise JinnAPIError(msg)
 
             self.servers = self.format_host_list(filtered_servers)
 
         except requests.Timeout:
-            raise JinnAPIError("API request timed out")
+            msg = "API request timed out"
+            raise JinnAPIError(msg)
         except requests.HTTPError as e:
-            raise JinnAPIError(f"HTTP error: {str(e)}")
+            msg = f"HTTP error: {str(e)}"
+            raise JinnAPIError(msg)
         except requests.RequestException as e:
-            raise JinnAPIError(f"API request failed: {str(e)}")
+            msg = f"API request failed: {str(e)}"
+            raise JinnAPIError(msg)
         except json.JSONDecodeError as e:
-            raise JinnAPIError(f"Failed to parse API response: {str(e)}")
+            msg = f"Failed to parse API response: {str(e)}"
+            raise JinnAPIError(msg)
         except KeyError as e:
-            raise JinnAPIError(f"Missing required data in API response: {str(e)}")
+            msg = f"Missing required data in API response: {str(e)}"
+            raise JinnAPIError(msg)
         except Exception as e:
-            raise JinnAPIError(f"An unexpected error occurred: {str(e)}")
+            msg = f"An unexpected error occurred: {str(e)}"
+            raise JinnAPIError(msg)
 
     def get_servers(self) -> List[Tuple[str, Dict[str, Any]]]:
         """Get the list of servers.
@@ -308,7 +319,8 @@ class Jinn(Inventory):
             return response.text
 
         except RequestException as e:
-            raise JinnAPIError(f"Failed to fetch SSH config: {str(e)}")
+            msg = f"Failed to fetch SSH config: {str(e)}"
+            raise JinnAPIError(msg)
 
     def save_ssh_config(self, config_content: str) -> None:
         """Save SSH configuration to a file.
@@ -337,7 +349,8 @@ class Jinn(Inventory):
             os.chmod(config_file, 0o600)  # Set secure permissions
 
         except Exception as e:
-            raise JinnSSHError(f"Failed to save SSH config: {str(e)}")
+            msg = f"Failed to save SSH config: {str(e)}"
+            raise JinnSSHError(msg)
 
     def update_main_ssh_config(self) -> None:
         """Update the main SSH config file to include Jinn configs.
@@ -375,7 +388,8 @@ class Jinn(Inventory):
             os.chmod(self.main_ssh_config, 0o600)  # Set secure permissions
 
         except Exception as e:
-            raise JinnSSHError(f"Failed to update main SSH config: {str(e)}")
+            msg = f"Failed to update main SSH config: {str(e)}"
+            raise JinnSSHError(msg)
 
     def refresh_ssh_config(self) -> None:
         """Fetch and save new SSH configuration.

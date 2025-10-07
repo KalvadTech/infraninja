@@ -93,12 +93,14 @@ class SSHKeysAction(Action):
         """
         # Validate required parameters
         if not user or not isinstance(user, str) or not user.strip():
+            msg = "'user' parameter is required and must be a non-empty string"
             raise DeployError(
-                "'user' parameter is required and must be a non-empty string"
+                msg
             )
 
         if not urls and not ssh_keys:
-            raise DeployError("At least one of 'urls' or 'ssh_keys' must be provided")
+            msg = "At least one of 'urls' or 'ssh_keys' must be provided"
+            raise DeployError(msg)
 
         # Initialize lists if None
         if urls is None:
@@ -130,7 +132,8 @@ class SSHKeysAction(Action):
                 logger.info(f"Successfully fetched {len(url_keys)} keys from URLs")
             except Exception as e:
                 logger.error(f"Failed to fetch SSH keys from URLs: {e}")
-                raise DeployError(f"Failed to fetch SSH keys from URLs: {e}")
+                msg = f"Failed to fetch SSH keys from URLs: {e}"
+                raise DeployError(msg)
         else:
             logger.info("No URLs specified, skipping URL key fetch")
 
@@ -152,7 +155,8 @@ class SSHKeysAction(Action):
             logger.info(f"SSH keys deployment completed successfully for user {user}")
         except Exception as e:
             logger.error(f"Failed to deploy SSH keys for user {user}: {e}")
-            raise DeployError(f"Failed to deploy SSH keys for user {user}: {e}")
+            msg = f"Failed to deploy SSH keys for user {user}: {e}"
+            raise DeployError(msg)
 
     def _validate_and_filter_keys(self, keys: List[str]) -> List[str]:
         """Validate and filter SSH keys, removing invalid ones."""
@@ -185,7 +189,8 @@ class SSHKeysAction(Action):
     ) -> List[str]:
         """Fetch SSH keys from a list of URLs."""
         if not isinstance(urls, list):
-            raise DeployError("urls must be a list")
+            msg = "urls must be a list"
+            raise DeployError(msg)
 
         if not urls:
             logger.info("No URLs provided, returning empty key list")
@@ -227,7 +232,8 @@ class SSHKeysAction(Action):
                 if response.status_code == 200:
                     return self._parse_ssh_keys(response.text, url)
                 elif response.status_code == 404:
-                    raise DeployError(f"URL not found: '{url}'")
+                    msg = f"URL not found: '{url}'"
+                    raise DeployError(msg)
                 else:
                     error_msg = (
                         f"HTTP {response.status_code} when fetching keys from {url}"
@@ -257,8 +263,9 @@ class SSHKeysAction(Action):
                 else:
                     raise DeployError(error_msg)
 
+        msg = f"Failed to fetch SSH keys from {url} after {max_retries + 1} attempts"
         raise DeployError(
-            f"Failed to fetch SSH keys from {url} after {max_retries + 1} attempts"
+            msg
         )
 
     def _parse_ssh_keys(self, response_text: str, source: str) -> List[str]:

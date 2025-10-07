@@ -84,23 +84,24 @@ class UpdateAndUpgradeAction(Action):
                     name="Update pacman repositories",
                 )
             else:
-                raise DeployError(f"Unsupported OS: {os_id} {os_id_like}")
+                msg = f"Unsupported OS: {os_id} {os_id_like}"
+                raise DeployError(msg)
+        elif os_id == "alpine":
+            operations.server.apk.update(
+                name="Update apk repositories",
+            )
+        elif os_id == "freebsd":
+            operations.server.shell(
+                name="Run freebsd-update",
+                commands=["freebsd-update fetch"],
+            )
+            operations.server.shell(
+                name="Run pkg update",
+                commands=["pkg update"],
+            )
         else:
-            if os_id == "alpine":
-                operations.server.apk.update(
-                    name="Update apk repositories",
-                )
-            elif os_id == "freebsd":
-                operations.server.shell(
-                    name="Run freebsd-update",
-                    commands=["freebsd-update fetch"],
-                )
-                operations.server.shell(
-                    name="Run pkg update",
-                    commands=["pkg update"],
-                )
-            else:
-                raise DeployError(f"Unsupported OS: {os_id} {os_id_like}")
+            msg = f"Unsupported OS: {os_id} {os_id_like}"
+            raise DeployError(msg)
 
     def _deploy_upgrade(self):
         """Upgrade system packages based on the detected OS."""
@@ -121,16 +122,17 @@ class UpdateAndUpgradeAction(Action):
                     name="Upgrade pacman repositories",
                 )
             else:
-                raise DeployError(f"Unsupported OS: {os_id} {os_id_like}")
+                msg = f"Unsupported OS: {os_id} {os_id_like}"
+                raise DeployError(msg)
+        elif os_id == "alpine":
+            operations.server.apk.upgrade(
+                name="Upgrade apk repositories",
+            )
+        elif os_id == "freebsd":
+            operations.server.shell(
+                name="Run pkg upgrade",
+                commands=["pkg upgrade"],
+            )
         else:
-            if os_id == "alpine":
-                operations.server.apk.upgrade(
-                    name="Upgrade apk repositories",
-                )
-            elif os_id == "freebsd":
-                operations.server.shell(
-                    name="Run pkg upgrade",
-                    commands=["pkg upgrade"],
-                )
-            else:
-                raise DeployError(f"Unsupported OS: {os_id} {os_id_like}")
+            msg = f"Unsupported OS: {os_id} {os_id_like}"
+            raise DeployError(msg)

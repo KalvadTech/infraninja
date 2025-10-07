@@ -1,14 +1,15 @@
 #!/usr/bin/env python3
 # tests/inventory/test_coolify.py
 
-import sys
 import json
+import sys
 import unittest
 from pathlib import Path
-from unittest.mock import patch, MagicMock
+from unittest.mock import MagicMock, patch
+
+import requests
 
 from infraninja.inventories.coolify import Coolify, CoolifyAPIError, CoolifySSHError
-import requests
 
 sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 

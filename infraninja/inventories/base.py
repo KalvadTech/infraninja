@@ -93,16 +93,19 @@ class Inventory(ABC):
             ValueError: If required metadata is missing or invalid
         """
         if not self.slug:
-            raise ValueError(f"{self.__class__.__name__} must define 'slug'")
+            msg = f"{self.__class__.__name__} must define 'slug'"
+            raise ValueError(msg)
 
         if not self.name or "en" not in self.name:
+            msg = f"{self.__class__.__name__} must define 'name' with at least 'en' key"
             raise ValueError(
-                f"{self.__class__.__name__} must define 'name' with at least 'en' key"
+                msg
             )
 
         if not self.description or "en" not in self.description:
+            msg = f"{self.__class__.__name__} must define 'description' with at least 'en' key"
             raise ValueError(
-                f"{self.__class__.__name__} must define 'description' with at least 'en' key"
+                msg
             )
 
     @abstractmethod

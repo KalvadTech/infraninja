@@ -1,5 +1,5 @@
 # filepath: /home/xoity/Desktop/work/infraninja/tests/common/test_acl.py
-from unittest.mock import patch, MagicMock, call
+from unittest.mock import MagicMock, call, patch
 
 from infraninja.security.common.acl import acl_setup
 

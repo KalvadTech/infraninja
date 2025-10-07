@@ -91,4 +91,5 @@ def system_update():
 
     # Unsupported OS
     else:
-        raise ValueError(f"Unsupported OS: {distro_name} (ID: {distro_id})")
+        msg = f"Unsupported OS: {distro_name} (ID: {distro_id})"
+        raise ValueError(msg)
