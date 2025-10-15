@@ -251,8 +251,9 @@ class CommonPackageInstaller:
         """
         distro_family = self._get_distro_family()
         if not distro_family:
+            msg = f"Unsupported OS: {host.get_fact(LinuxDistribution).get('name', 'Unknown')}"
             raise ValueError(
-                f"Unsupported OS: {host.get_fact(LinuxDistribution).get('name', 'Unknown')}"
+                msg
             )
 
         host.noop(f"Installing common security packages for {distro_family} family")

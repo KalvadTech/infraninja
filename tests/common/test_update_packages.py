@@ -101,23 +101,18 @@ def test_system_update_for_distros(test_case):
     mocks = {}
 
     # We need to mock the state and config in pyinfra's context
-    with patch("pyinfra.context.state", MagicMock(config=MagicMock())), patch(
-        "pyinfra.context.host", MagicMock()
-    ), patch("infraninja.security.common.update_packages.host") as mock_host, patch(
-        "infraninja.security.common.update_packages.apt"
-    ) as mock_apt, patch(
-        "infraninja.security.common.update_packages.apk"
-    ) as mock_apk, patch(
-        "infraninja.security.common.update_packages.dnf"
-    ) as mock_dnf, patch(
-        "infraninja.security.common.update_packages.yum"
-    ) as mock_yum, patch(
-        "infraninja.security.common.update_packages.pacman"
-    ) as mock_pacman, patch(
-        "infraninja.security.common.update_packages.zypper"
-    ) as mock_zypper, patch(
-        "infraninja.security.common.update_packages.xbps"
-    ) as mock_xbps:
+    with (
+        patch("pyinfra.context.state", MagicMock(config=MagicMock())),
+        patch("pyinfra.context.host", MagicMock()),
+        patch("infraninja.security.common.update_packages.host") as mock_host,
+        patch("infraninja.security.common.update_packages.apt") as mock_apt,
+        patch("infraninja.security.common.update_packages.apk") as mock_apk,
+        patch("infraninja.security.common.update_packages.dnf") as mock_dnf,
+        patch("infraninja.security.common.update_packages.yum") as mock_yum,
+        patch("infraninja.security.common.update_packages.pacman") as mock_pacman,
+        patch("infraninja.security.common.update_packages.zypper") as mock_zypper,
+        patch("infraninja.security.common.update_packages.xbps") as mock_xbps,
+    ):
         # Store all mocks for later verification
         mocks = {
             "apt.update": mock_apt.update,
@@ -167,9 +162,11 @@ def test_system_update_unsupported_os():
     Test system_update raises an error for unsupported OS.
     """
     # Mock pyinfra state and context
-    with patch("pyinfra.context.state", MagicMock(config=MagicMock())), patch(
-        "pyinfra.context.host", MagicMock()
-    ), patch("infraninja.security.common.update_packages.host") as mock_host:
+    with (
+        patch("pyinfra.context.state", MagicMock(config=MagicMock())),
+        patch("pyinfra.context.host", MagicMock()),
+        patch("infraninja.security.common.update_packages.host") as mock_host,
+    ):
         # Configure host.get_fact to return an unsupported distro
         mock_host.get_fact.return_value = {
             "name": "Unsupported OS",

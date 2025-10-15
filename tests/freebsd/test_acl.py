@@ -19,11 +19,12 @@ class TestFreeBSDACLSetup(unittest.TestCase):
         """
         Test acl_setup function with successful execution on FreeBSD.
         """
-        with patch("pyinfra.context.state", MagicMock(config=MagicMock())), patch(
-            "pyinfra.context.host", MagicMock()
-        ), patch("infraninja.security.freebsd.acl.host") as mock_host, patch(
-            "infraninja.security.freebsd.acl.server"
-        ) as mock_server:
+        with (
+            patch("pyinfra.context.state", MagicMock(config=MagicMock())),
+            patch("pyinfra.context.host", MagicMock()),
+            patch("infraninja.security.freebsd.acl.host") as mock_host,
+            patch("infraninja.security.freebsd.acl.server") as mock_server,
+        ):
             # Configure host.get_fact to return FreeBSD distro info
             mock_host.get_fact.side_effect = (
                 lambda fact_class, **kwargs: {
@@ -65,9 +66,11 @@ class TestFreeBSDACLSetup(unittest.TestCase):
         """
         Test acl_setup function raises error on non-FreeBSD systems.
         """
-        with patch("pyinfra.context.state", MagicMock(config=MagicMock())), patch(
-            "pyinfra.context.host", MagicMock()
-        ), patch("infraninja.security.freebsd.acl.host") as mock_host:
+        with (
+            patch("pyinfra.context.state", MagicMock(config=MagicMock())),
+            patch("pyinfra.context.host", MagicMock()),
+            patch("infraninja.security.freebsd.acl.host") as mock_host,
+        ):
             # Configure host.get_fact to return a non-FreeBSD distro
             mock_host.get_fact.return_value = {
                 "name": "Ubuntu",
@@ -91,11 +94,12 @@ class TestFreeBSDACLSetup(unittest.TestCase):
         """
         Test acl_setup function when setfacl is not available.
         """
-        with patch("pyinfra.context.state", MagicMock(config=MagicMock())), patch(
-            "pyinfra.context.host", MagicMock()
-        ), patch("infraninja.security.freebsd.acl.host") as mock_host, patch(
-            "infraninja.security.freebsd.acl.server"
-        ) as mock_server:
+        with (
+            patch("pyinfra.context.state", MagicMock(config=MagicMock())),
+            patch("pyinfra.context.host", MagicMock()),
+            patch("infraninja.security.freebsd.acl.host") as mock_host,
+            patch("infraninja.security.freebsd.acl.server") as mock_server,
+        ):
             # Configure host.get_fact to return FreeBSD distro info
             mock_host.get_fact.return_value = {
                 "name": "FreeBSD",
@@ -131,11 +135,12 @@ class TestFreeBSDACLSetup(unittest.TestCase):
         """
         Test acl_setup function when ACL mount check fails and tunefs fails.
         """
-        with patch("pyinfra.context.state", MagicMock(config=MagicMock())), patch(
-            "pyinfra.context.host", MagicMock()
-        ), patch("infraninja.security.freebsd.acl.host") as mock_host, patch(
-            "infraninja.security.freebsd.acl.server"
-        ) as mock_server:
+        with (
+            patch("pyinfra.context.state", MagicMock(config=MagicMock())),
+            patch("pyinfra.context.host", MagicMock()),
+            patch("infraninja.security.freebsd.acl.host") as mock_host,
+            patch("infraninja.security.freebsd.acl.server") as mock_server,
+        ):
             # Configure host.get_fact to return FreeBSD distro info
             mock_host.get_fact.return_value = {
                 "name": "FreeBSD",
@@ -176,11 +181,12 @@ class TestFreeBSDACLSetup(unittest.TestCase):
         """
         Test acl_setup function when some target files don't exist.
         """
-        with patch("pyinfra.context.state", MagicMock(config=MagicMock())), patch(
-            "pyinfra.context.host", MagicMock()
-        ), patch("infraninja.security.freebsd.acl.host") as mock_host, patch(
-            "infraninja.security.freebsd.acl.server"
-        ) as mock_server:
+        with (
+            patch("pyinfra.context.state", MagicMock(config=MagicMock())),
+            patch("pyinfra.context.host", MagicMock()),
+            patch("infraninja.security.freebsd.acl.host") as mock_host,
+            patch("infraninja.security.freebsd.acl.server") as mock_server,
+        ):
             # Configure host.get_fact to return FreeBSD distro info and file existence
             def mock_get_fact(fact_class, **kwargs):
                 if "LinuxDistribution" in str(fact_class):

@@ -1,98 +1,80 @@
 # 🥷 InfraNinja ⚡ – Your Stealthy Infrastructure Ninja
 
-Welcome to **InfraNinja**! 🎉 This project contains a comprehensive set of PyInfra deployments 🥷 used by Kalvad teams 🛠️, making them publicly available for everyone via PyPI! 🚀
+Welcome to **InfraNinja**! 🎉 A modern infrastructure automation framework built on PyInfra, providing ninja-level deployments used by Kalvad teams 🛠️ and made publicly available via PyPI! 🚀
 
-These ninja-level deployments are designed to simplify infrastructure management and automate common tasks, helping you deploy services, configure security hardening, manage inventory, and more – fast and effortlessly! 💨
+InfraNinja simplifies infrastructure management through **Actions** (reusable deployment tasks) and **Inventories** (dynamic server management), helping you deploy services, configure security hardening, and automate common tasks – fast and effortlessly! 💨
 
 ## ⚡️ Features
 
-- 🌐 **Automated Deployments**: Deploy services like **Netdata** with precision and ease! 🥷
-- 🛡️ **Comprehensive Security**: Advanced security hardening including SSH configuration, kernel hardening, firewall setup, malware detection, and intrusion detection systems
-- 🧩 **Modular Architecture**: Reusable deployment modules organized by OS (Ubuntu, Alpine, FreeBSD) and functionality
-- 🔗 **Dynamic Inventory**: Integration with **Jinn API** and **Coolify** for automated server inventory management
-- 🛠️ **Multi-OS Support**: Compatible with Ubuntu, Alpine Linux, and FreeBSD
-- 📋 **Compliance Ready**: Includes UAE IA compliance modules
-- 📦 **PyPI Ready**: Available publicly on PyPI for smooth installation
+- 🎯 **Action-Based Architecture**: Execute pre-built deployment tasks with rich metadata (Netdata monitoring, SSH keys, system updates)
+- 🌐 **Dynamic Inventories**: Automated server discovery from Jinn API and Coolify with intelligent filtering
+- 🛡️ **Comprehensive Security**: 49+ security modules including SSH/kernel hardening, firewall setup, malware detection, and intrusion prevention
+- 🧩 **Multi-OS Support**: Ubuntu, Debian, Alpine Linux, FreeBSD, RHEL, CentOS, Fedora, and Arch Linux
+- 🌍 **Multilingual**: Actions support English, Arabic, and French translations
+- 📋 **Compliance Ready**: UAE IA compliance modules and security auditing tools
+- 📦 **PyPI Available**: Install with a simple `pip install infraninja`
 
 ## 🎯 Getting Started
 
-To get started with **InfraNinja**, you can install it directly from PyPI:
+Install InfraNinja directly from PyPI:
 
 ```bash
 pip install infraninja
 ```
 
-Then, bring ninja-style automation to your infrastructure with simple imports:
-
-```python
-from infraninja.netdata import deploy_netdata
-```
-
 ## 🚀 Quick Examples
 
-### Basic Netdata Deployment
+### Using Actions
 
-Deploy **Netdata** monitoring like a ninja 🥷:
+Actions are the primary way to execute deployment tasks:
 
 ```python
-from infraninja.netdata import deploy_netdata
+from infraninja import UpdateAndUpgradeAction
 
-deploy_netdata()
+# Update system packages
+update = UpdateAndUpgradeAction()
+update.execute()
 ```
 
-### Security Hardening
+### Using Inventories
 
-Comprehensive security hardening across different OS types:
-
-```python
-# SSH Hardening
-from infraninja.security.common.ssh_hardening import ssh_hardening
-ssh_hardening()
-
-# Kernel Security
-from infraninja.security.common.kernel_hardening import kernel_hardening  
-kernel_hardening()
-
-# Firewall Setup (Ubuntu)
-from infraninja.security.ubuntu.fail2ban_setup import fail2ban_setup
-fail2ban_setup()
-
-# For Alpine Linux
-from infraninja.security.alpine.fail2ban_setup import fail2ban_setup_alpine
-fail2ban_setup_alpine()
-```
-
-### Dynamic Inventory Management
-
-Use Jinn API for dynamic server inventory:
+Inventories provide dynamic server management from various sources:
 
 ```python
-from infraninja.inventory.jinn import Jinn
+from infraninja.inventories import Jinn, Coolify
 
-# Initialize with API credentials
+# Jinn API integration
 jinn = Jinn(
     api_url="https://jinn-api.kalvad.cloud",
     api_key="your-api-key",
     groups=["production", "web"],
     tags=["nginx", "database"]
 )
-
-# Get filtered servers
 servers = jinn.get_servers()
-```
 
-Use Coolify for container management:
-
-```python
-from infraninja.inventory.coolify import Coolify
-
+# Coolify integration
 coolify = Coolify(
     api_url="https://coolify.example.com/api",
     api_key="your-api-key",
     tags=["prod", "staging"]
 )
-
 servers = coolify.get_servers()
+```
+
+### Using with PyInfra
+
+Integrate actions with PyInfra deployments:
+
+```python
+from pyinfra import inventory
+from infraninja import NetdataAction
+
+# Define inventory
+inventory.add_host(name="server1", ssh_user="root")
+
+# Execute action across inventory
+action = NetdataAction()
+action.execute()
 ```
 
 ## 📜 Available Deployments
@@ -102,44 +84,6 @@ InfraNinja provides comprehensive deployment modules organized by functionality:
 ### 🔍 Monitoring & Observability
 
 - **Netdata**: Real-time performance monitoring and alerting
-
-### 🛡️ Security Modules
-
-#### Common Security (Cross-Platform)
-
-- **SSH Hardening**: Secure SSH configuration with multiple security options
-- **Kernel Hardening**: System-level security hardening
-- **Firewall Management**: IPTables and NFTables configuration
-- **Network Security**: ARP poisoning protection, secure routing controls
-- **Audit & Compliance**: System auditing, UAE IA compliance modules
-
-#### Ubuntu-Specific Security
-
-- **Fail2Ban**: Intrusion prevention system
-- **AppArmor**: Mandatory access controls
-- **ClamAV**: Antivirus scanning
-- **Lynis**: Security auditing tool
-- **Suricata**: Network threat detection
-- **Chkrootkit**: Rootkit detection
-
-#### Alpine Linux Security
-
-- **Fail2Ban**: Lightweight intrusion prevention
-- **ClamAV**: Antivirus for Alpine
-- **Suricata**: IDS for Alpine systems
-- **Security Tools**: Alpine-optimized security utilities
-
-### 🏗️ Infrastructure Management
-
-- **Jinn Integration**: Dynamic inventory management via Jinn API
-- **Coolify Integration**: Container orchestration platform integration
-- **SSH Key Management**: Automated SSH key deployment and management
-- **System Updates**: Multi-distribution package updates
-
-### 🎛️ Utilities
-
-- **MOTD Customization**: Dynamic message of the day
-- **Template System**: Jinja2 templates for configuration files
 
 ## 🔧 Development & Testing
 
@@ -155,17 +99,21 @@ pip install -r requirements.txt
 
 ### Testing Your Deployments
 
-Test your deployments locally using PyInfra:
+Test deployments using the Vagrant-based test environment:
 
 ```bash
-# Test with local inventory
-pyinfra @local your_deployment.py
+# Start test VMs
+cd deploy
+vagrant up
 
-# Test with dynamic inventory
-pyinfra inventory.py your_deployment.py
+# Test with Ubuntu VM
+pyinfra @vagrant/ubuntu deploy.py
 
-# Test specific modules
-pyinfra @vagrant/ubuntu infraninja.security.common.ssh_hardening
+# Test with Alpine VM
+pyinfra @vagrant/alpine deploy.py
+
+# Test with dynamic inventories
+pyinfra jinn.py deploy.py
 ```
 
 ### Running the Test Suite
@@ -192,7 +140,10 @@ python -m build
 
 ### Using the Test Environment
 
-The project includes a Vagrant-based test environment in the `deploy/` directory:
+The project includes a comprehensive test environment in the `deploy/` directory with:
+- Vagrant VMs (Ubuntu 22.04, Alpine 3.19)
+- Example inventory scripts (Jinn, Coolify)
+- Sample deployment scripts
 
 ```bash
 cd deploy
@@ -200,12 +151,7 @@ vagrant up
 vagrant ssh ubuntu   # or vagrant ssh alpine
 ```
 
-## 📈 Project Status
-
-- **Current Version**: 0.2.1
-- **Python Support**: >=3.8
-- **License**: MIT License
-- **Stability**: Production Ready
+See [deploy/README.md](deploy/README.md) for detailed testing instructions.
 
 ## 🤝 Contributions
 
@@ -213,15 +159,18 @@ Contributions are welcome! 🎉 If you spot any bugs 🐛 or have ideas 💡 for
 
 ## 👨‍💻 Maintainers
 
-- **Mohammad Abu-khader** 🥷 <mohammad@kalvad.com>
-- **Loïc Tosser** 🥷
+- **Mohammad Abu-khader** <mohammad@kalvad.com>
+- **Pierre Guillemot** <pierre@kalvad.com>
+- **Loïc Tosser** <loic@kalvad.com>
 - The skilled ninja team at **KalvadTech** 🛠️
 
 ## 🌟 Community & Support
 
 - **Repository**: [GitHub - KalvadTech/infraninja](https://github.com/KalvadTech/infraninja)
+- **PyPI Package**: [pypi.org/project/infraninja](https://pypi.org/project/infraninja/)
 - **Issues**: [Report bugs and request features](https://github.com/KalvadTech/infraninja/issues)
-- **Discussions**: Share your ninja deployments with the community
+- **Documentation**: See `docs/` directory and READMEs in subdirectories
+- **Changelog**: See [CHANGELOG.md](CHANGELOG.md) for version history
 
 ## 📝 License
 

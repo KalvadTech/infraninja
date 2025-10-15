@@ -9,13 +9,13 @@ def test_freebsd_ssh_hardener_default_config():
     """
     Test SSHHardener with default SSH configuration.
     """
-    with patch("pyinfra.context.state", MagicMock(config=MagicMock())), patch(
-        "pyinfra.context.host", MagicMock()
-    ), patch("infraninja.security.freebsd.ssh_hardening.host") as mock_host, patch(
-        "infraninja.security.freebsd.ssh_hardening.server"
-    ) as mock_server, patch(
-        "infraninja.security.freebsd.ssh_hardening.service"
-    ) as mock_service:
+    with (
+        patch("pyinfra.context.state", MagicMock(config=MagicMock())),
+        patch("pyinfra.context.host", MagicMock()),
+        patch("infraninja.security.freebsd.ssh_hardening.host") as mock_host,
+        patch("infraninja.security.freebsd.ssh_hardening.server") as mock_server,
+        patch("infraninja.security.freebsd.ssh_hardening.service") as mock_service,
+    ):
         # Configure mock_host.get_fact to return empty results (options don't exist)
         mock_host.get_fact.return_value = []
 
@@ -66,13 +66,13 @@ def test_freebsd_ssh_hardener_custom_config():
         "Protocol": "2",
     }
 
-    with patch("pyinfra.context.state", MagicMock(config=MagicMock())), patch(
-        "pyinfra.context.host", MagicMock()
-    ), patch("infraninja.security.freebsd.ssh_hardening.host") as mock_host, patch(
-        "infraninja.security.freebsd.ssh_hardening.server"
-    ) as mock_server, patch(
-        "infraninja.security.freebsd.ssh_hardening.service"
-    ) as mock_service:
+    with (
+        patch("pyinfra.context.state", MagicMock(config=MagicMock())),
+        patch("pyinfra.context.host", MagicMock()),
+        patch("infraninja.security.freebsd.ssh_hardening.host") as mock_host,
+        patch("infraninja.security.freebsd.ssh_hardening.server") as mock_server,
+        patch("infraninja.security.freebsd.ssh_hardening.service") as mock_service,
+    ):
         # Configure mock_host.get_fact to return empty results (options don't exist)
         mock_host.get_fact.return_value = []
 
@@ -107,15 +107,14 @@ def test_freebsd_ssh_hardener_existing_config_correct():
     """
     Test SSHHardener when existing config already has correct values.
     """
-    with patch("pyinfra.context.state", MagicMock(config=MagicMock())), patch(
-        "pyinfra.context.host", MagicMock()
-    ), patch("infraninja.security.freebsd.ssh_hardening.host") as mock_host, patch(
-        "infraninja.security.freebsd.ssh_hardening.server"
-    ) as mock_server, patch(
-        "infraninja.security.freebsd.ssh_hardening.files"
-    ) as mock_files, patch(
-        "infraninja.security.freebsd.ssh_hardening.service"
-    ) as mock_service:
+    with (
+        patch("pyinfra.context.state", MagicMock(config=MagicMock())),
+        patch("pyinfra.context.host", MagicMock()),
+        patch("infraninja.security.freebsd.ssh_hardening.host") as mock_host,
+        patch("infraninja.security.freebsd.ssh_hardening.server") as mock_server,
+        patch("infraninja.security.freebsd.ssh_hardening.files") as mock_files,
+        patch("infraninja.security.freebsd.ssh_hardening.service") as mock_service,
+    ):
         # Configure mock_host.get_fact to return existing correct config
         def get_fact_side_effect(fact_class, **kwargs):
             pattern = kwargs.get("pattern", "")
@@ -148,13 +147,13 @@ def test_freebsd_ssh_hardener_existing_config_incorrect():
     """
     Test SSHHardener when existing config has incorrect values that need updating.
     """
-    with patch("pyinfra.context.state", MagicMock(config=MagicMock())), patch(
-        "pyinfra.context.host", MagicMock()
-    ), patch("infraninja.security.freebsd.ssh_hardening.host") as mock_host, patch(
-        "infraninja.security.freebsd.ssh_hardening.files"
-    ) as mock_files, patch(
-        "infraninja.security.freebsd.ssh_hardening.service"
-    ) as mock_service:
+    with (
+        patch("pyinfra.context.state", MagicMock(config=MagicMock())),
+        patch("pyinfra.context.host", MagicMock()),
+        patch("infraninja.security.freebsd.ssh_hardening.host") as mock_host,
+        patch("infraninja.security.freebsd.ssh_hardening.files") as mock_files,
+        patch("infraninja.security.freebsd.ssh_hardening.service") as mock_service,
+    ):
         # Configure mock_host.get_fact to return existing incorrect config
         def get_fact_side_effect(fact_class, **kwargs):
             pattern = kwargs.get("pattern", "")
@@ -202,15 +201,14 @@ def test_freebsd_ssh_hardener_mixed_config_scenarios():
     Test SSHHardener with mixed scenarios: some options exist and correct,
     some exist and incorrect, some don't exist.
     """
-    with patch("pyinfra.context.state", MagicMock(config=MagicMock())), patch(
-        "pyinfra.context.host", MagicMock()
-    ), patch("infraninja.security.freebsd.ssh_hardening.host") as mock_host, patch(
-        "infraninja.security.freebsd.ssh_hardening.files"
-    ) as mock_files, patch(
-        "infraninja.security.freebsd.ssh_hardening.server"
-    ) as mock_server, patch(
-        "infraninja.security.freebsd.ssh_hardening.service"
-    ) as mock_service:
+    with (
+        patch("pyinfra.context.state", MagicMock(config=MagicMock())),
+        patch("pyinfra.context.host", MagicMock()),
+        patch("infraninja.security.freebsd.ssh_hardening.host") as mock_host,
+        patch("infraninja.security.freebsd.ssh_hardening.files") as mock_files,
+        patch("infraninja.security.freebsd.ssh_hardening.server") as mock_server,
+        patch("infraninja.security.freebsd.ssh_hardening.service") as mock_service,
+    ):
         # Configure mock_host.get_fact for mixed scenarios
         def get_fact_side_effect(fact_class, **kwargs):
             pattern = kwargs.get("pattern", "")
@@ -261,7 +259,7 @@ def test_freebsd_ssh_hardener_default_config_values():
     }
 
     # Verify the default config matches expectations
-    assert SSHHardener.DEFAULT_SSH_CONFIG == expected_default_config
+    assert expected_default_config == SSHHardener.DEFAULT_SSH_CONFIG
 
 
 def test_freebsd_ssh_hardener_config_independence():
@@ -317,15 +315,14 @@ def test_freebsd_ssh_hardener_config_line_comparison(
     """
     Test SSH config line comparison logic with various existing line formats.
     """
-    with patch("pyinfra.context.state", MagicMock(config=MagicMock())), patch(
-        "pyinfra.context.host", MagicMock()
-    ), patch("infraninja.security.freebsd.ssh_hardening.host") as mock_host, patch(
-        "infraninja.security.freebsd.ssh_hardening.files"
-    ) as mock_files, patch(
-        "infraninja.security.freebsd.ssh_hardening.server"
-    ) as mock_server, patch(
-        "infraninja.security.freebsd.ssh_hardening.service"
-    ) as mock_service:
+    with (
+        patch("pyinfra.context.state", MagicMock(config=MagicMock())),
+        patch("pyinfra.context.host", MagicMock()),
+        patch("infraninja.security.freebsd.ssh_hardening.host") as mock_host,
+        patch("infraninja.security.freebsd.ssh_hardening.files") as mock_files,
+        patch("infraninja.security.freebsd.ssh_hardening.server"),
+        patch("infraninja.security.freebsd.ssh_hardening.service") as mock_service,
+    ):
         # Extract option name from desired_value parameter
         option_name = (
             "PermitRootLogin"
@@ -367,15 +364,14 @@ def test_freebsd_ssh_hardener_service_restart_parameters():
     """
     Test that SSH service restart is called with correct parameters.
     """
-    with patch("pyinfra.context.state", MagicMock(config=MagicMock())), patch(
-        "pyinfra.context.host", MagicMock()
-    ), patch("infraninja.security.freebsd.ssh_hardening.host") as mock_host, patch(
-        "infraninja.security.freebsd.ssh_hardening.files"
-    ) as mock_files, patch(
-        "infraninja.security.freebsd.ssh_hardening.server"
-    ) as mock_server, patch(
-        "infraninja.security.freebsd.ssh_hardening.service"
-    ) as mock_service:
+    with (
+        patch("pyinfra.context.state", MagicMock(config=MagicMock())),
+        patch("pyinfra.context.host", MagicMock()),
+        patch("infraninja.security.freebsd.ssh_hardening.host") as mock_host,
+        patch("infraninja.security.freebsd.ssh_hardening.files"),
+        patch("infraninja.security.freebsd.ssh_hardening.server") as mock_server,
+        patch("infraninja.security.freebsd.ssh_hardening.service") as mock_service,
+    ):
         # Configure mocks to simulate config changes
         mock_host.get_fact.return_value = []  # Options don't exist
 
@@ -403,15 +399,14 @@ def test_freebsd_ssh_hardener_no_changes_no_restart():
     """
     Test that SSH service is not restarted when no config changes are made.
     """
-    with patch("pyinfra.context.state", MagicMock(config=MagicMock())), patch(
-        "pyinfra.context.host", MagicMock()
-    ), patch("infraninja.security.freebsd.ssh_hardening.host") as mock_host, patch(
-        "infraninja.security.freebsd.ssh_hardening.files"
-    ) as mock_files, patch(
-        "infraninja.security.freebsd.ssh_hardening.server"
-    ) as mock_server, patch(
-        "infraninja.security.freebsd.ssh_hardening.service"
-    ) as mock_service:
+    with (
+        patch("pyinfra.context.state", MagicMock(config=MagicMock())),
+        patch("pyinfra.context.host", MagicMock()),
+        patch("infraninja.security.freebsd.ssh_hardening.host") as mock_host,
+        patch("infraninja.security.freebsd.ssh_hardening.files") as mock_files,
+        patch("infraninja.security.freebsd.ssh_hardening.server") as mock_server,
+        patch("infraninja.security.freebsd.ssh_hardening.service") as mock_service,
+    ):
         # Configure mocks to simulate no changes needed
         def get_fact_side_effect(fact_class, **kwargs):
             pattern = kwargs.get("pattern", "")
@@ -444,15 +439,15 @@ def test_freebsd_ssh_hardener_print_statements():
     """
     Test that print statements are called with correct messages.
     """
-    with patch("pyinfra.context.state", MagicMock(config=MagicMock())), patch(
-        "pyinfra.context.host", MagicMock()
-    ), patch("infraninja.security.freebsd.ssh_hardening.host") as mock_host, patch(
-        "infraninja.security.freebsd.ssh_hardening.files"
-    ) as mock_files, patch(
-        "infraninja.security.freebsd.ssh_hardening.server"
-    ) as mock_server, patch(
-        "infraninja.security.freebsd.ssh_hardening.service"
-    ) as mock_service, patch("builtins.print") as mock_print:
+    with (
+        patch("pyinfra.context.state", MagicMock(config=MagicMock())),
+        patch("pyinfra.context.host", MagicMock()),
+        patch("infraninja.security.freebsd.ssh_hardening.host") as mock_host,
+        patch("infraninja.security.freebsd.ssh_hardening.files") as mock_files,
+        patch("infraninja.security.freebsd.ssh_hardening.server") as mock_server,
+        patch("infraninja.security.freebsd.ssh_hardening.service"),
+        patch("builtins.print") as mock_print,
+    ):
         # Configure mocks for mixed scenarios
         def get_fact_side_effect(fact_class, **kwargs):
             pattern = kwargs.get("pattern", "")
@@ -508,15 +503,14 @@ def test_freebsd_ssh_hardener_file_operations_parameters():
     """
     Test that file operations are called with correct parameters.
     """
-    with patch("pyinfra.context.state", MagicMock(config=MagicMock())), patch(
-        "pyinfra.context.host", MagicMock()
-    ), patch("infraninja.security.freebsd.ssh_hardening.host") as mock_host, patch(
-        "infraninja.security.freebsd.ssh_hardening.files"
-    ) as mock_files, patch(
-        "infraninja.security.freebsd.ssh_hardening.server"
-    ) as mock_server, patch(
-        "infraninja.security.freebsd.ssh_hardening.service"
-    ) as mock_service:
+    with (
+        patch("pyinfra.context.state", MagicMock(config=MagicMock())),
+        patch("pyinfra.context.host", MagicMock()),
+        patch("infraninja.security.freebsd.ssh_hardening.host") as mock_host,
+        patch("infraninja.security.freebsd.ssh_hardening.files") as mock_files,
+        patch("infraninja.security.freebsd.ssh_hardening.server"),
+        patch("infraninja.security.freebsd.ssh_hardening.service"),
+    ):
         # Configure mocks for replace scenario
         mock_host.get_fact.return_value = ["PermitRootLogin yes"]
 

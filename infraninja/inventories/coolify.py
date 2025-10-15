@@ -2,7 +2,6 @@
 
 import json
 import logging
-import sys
 import os
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple, Union
@@ -10,7 +9,7 @@ from typing import Any, Dict, List, Optional, Tuple, Union
 import requests
 from requests.exceptions import RequestException
 
-sys.path.append(str(Path(__file__).parent.parent))
+from infraninja.inventories.base import Inventory
 
 logging.basicConfig(
     level=logging.INFO,
@@ -37,7 +36,16 @@ class CoolifySSHError(CoolifyError):
     pass
 
 
-class Coolify:
+class Coolify(Inventory):
+    """Coolify inventory implementation."""
+
+    slug = "coolify"
+    name = {"en": "Coolify Inventory", "ar": "مخزون Coolify"}
+    description = {
+        "en": "Fetch servers from Coolify API",
+        "ar": "جلب الخوادم من واجهة برمجة تطبيقات Coolify",
+    }
+
     def __init__(
         self,
         ssh_key_path: Optional[Union[str, Path]] = None,
@@ -59,34 +67,23 @@ class Coolify:
             CoolifySSHError: If SSH key path does not exist
             CoolifyAPIError: If API key is not set
         """
-        # Set SSH configuration
-        self.ssh_config_dir: Path = (
-            Path(ssh_config_dir).expanduser()
-            if ssh_config_dir
-            else Path.home() / ".ssh/config.d"
-        )
-        self.main_ssh_config: Path = Path.home() / ".ssh/config"
-        self.ssh_key_path: Path = (
-            Path(ssh_key_path).expanduser()
-            if ssh_key_path
-            else Path.home() / ".ssh/id_rsa"
-        )
+        # Initialize base class
+        super().__init__(ssh_key_path=ssh_key_path, ssh_config_dir=ssh_config_dir)
 
-        # Create SSH config directory if it doesn't exist
-        self.ssh_config_dir.mkdir(parents=True, exist_ok=True)
-
+        # Validate SSH key exists
         if not self.ssh_key_path.exists():
-            raise CoolifySSHError(f"SSH key path does not exist: {self.ssh_key_path}")
+            msg = f"SSH key path does not exist: {self.ssh_key_path}"
+            raise CoolifySSHError(msg)
 
         # Set API configuration
         self.api_url: str = api_url.rstrip("/")
         self.api_key: Optional[str] = api_key
         if not self.api_key:
-            raise CoolifyAPIError("API key is not set")
+            msg = "API key is not set"
+            raise CoolifyAPIError(msg)
 
         # Set filtering options
         self.tags: Optional[List[str]] = tags
-        self.servers: List[Tuple[str, Dict[str, Any]]] = []
 
         # Load initial configuration
         self.load_servers()
@@ -124,7 +121,8 @@ class Coolify:
             elif method.upper() == "POST":
                 response = requests.post(url, headers=headers, json=data, timeout=30)
             else:
-                raise CoolifyAPIError(f"Unsupported HTTP method: {method}")
+                msg = f"Unsupported HTTP method: {method}"
+                raise CoolifyAPIError(msg)
 
             # Log response status
             logger.info(f"API response status: {response.status_code}")
@@ -144,14 +142,17 @@ class Coolify:
                 logger.error(
                     f"Response text: {response.text[:1000]}..."
                 )  # Log first 1000 chars
-                raise CoolifyAPIError(f"Failed to parse API response: {str(e)}")
+                msg = f"Failed to parse API response: {str(e)}"
+                raise CoolifyAPIError(msg)
 
         except RequestException as e:
             logger.error(f"Request exception: {str(e)}")
-            raise CoolifyAPIError(f"API request failed: {str(e)}")
+            msg = f"API request failed: {str(e)}"
+            raise CoolifyAPIError(msg)
         except Exception as e:
             logger.exception(f"Unexpected error in API request: {str(e)}")
-            raise CoolifyAPIError(f"API request failed: {str(e)}")
+            msg = f"API request failed: {str(e)}"
+            raise CoolifyAPIError(msg)
 
     def _filter_server(self, server: Dict[str, Any]) -> bool:
         """Filter a server based on tags or other criteria.
@@ -207,7 +208,8 @@ class Coolify:
             logger.error(f"Failed to load servers: {str(e)}")
             raise
         except Exception as e:
-            raise CoolifyAPIError(f"An unexpected error occurred: {str(e)}")
+            msg = f"An unexpected error occurred: {str(e)}"
+            raise CoolifyAPIError(msg)
 
     def format_host_list(
         self, filtered_servers: List[Dict[str, Any]]
@@ -238,9 +240,7 @@ class Coolify:
 
             # Skip localhost entries
             if (
-                server_name.lower() == "localhost"
-                or ip_address == "127.0.0.1"
-                or ip_address == "::1"
+                server_name.lower() == "localhost" or ip_address in {"127.0.0.1", "::1"}
             ):
                 continue
 
@@ -306,7 +306,8 @@ class Coolify:
             logger.info(f"SSH config saved to {ssh_config_file}")
         except Exception as e:
             logger.error(f"Failed to save SSH config: {str(e)}")
-            raise CoolifySSHError(f"Failed to save SSH config: {str(e)}")
+            msg = f"Failed to save SSH config: {str(e)}"
+            raise CoolifySSHError(msg)
 
     def _update_main_ssh_config(self) -> None:
         """Update the main SSH config file to include Coolify configs.
@@ -346,7 +347,8 @@ class Coolify:
 
         except Exception as e:
             logger.error(f"Failed to update main SSH config: {str(e)}")
-            raise CoolifySSHError(f"Failed to update main SSH config: {str(e)}")
+            msg = f"Failed to update main SSH config: {str(e)}"
+            raise CoolifySSHError(msg)
 
     def refresh_ssh_config(self) -> None:
         """Generate and save new SSH configuration.

@@ -1,7 +1,9 @@
+import contextlib
+
 from pyinfra import host
 from pyinfra.api import deploy
 from pyinfra.facts.apk import ApkPackages
-from pyinfra.facts.server import LinuxName, LinuxDistribution
+from pyinfra.facts.server import LinuxDistribution, LinuxName
 from pyinfra.operations import apk, server
 
 # Define defaults for each security tool and related packages
@@ -52,7 +54,6 @@ def install_security_tools():
     is_alpine = any("alpine" in str(name).lower() for name in [linux_name, linux_dist])
 
     if not is_alpine:
-        print("[ERROR] This script requires Alpine Linux")
         return False
 
     # Verify APK is available
@@ -60,15 +61,12 @@ def install_security_tools():
         name="Check if APK exists",
         commands=["command -v apk"],
     ):
-        print("[ERROR] APK package manager not found")
         return False
 
     # Get current package state
     installed_packages = []
-    try:
+    with contextlib.suppress(Exception):
         installed_packages = host.get_fact(ApkPackages)
-    except Exception:
-        print("[WARNING] Could not determine installed packages")
 
     # Loop over each tool in the host data
     for _, tool_data in host.data.security_tools.items():
@@ -77,7 +75,6 @@ def install_security_tools():
 
         for package in tool_data["packages"]:
             if package in installed_packages:
-                print(f"[INFO] Package {package} is already installed")
                 continue
 
             # Attempt to install the package

@@ -34,7 +34,8 @@ def acl_setup():
     distro = host.get_fact(LinuxDistribution)
     distro_name = str(distro.get("name", "")).lower() if distro else ""
     if distro_name != "freebsd":
-        raise ValueError("This deployment is designed for FreeBSD systems only")
+        msg = "This deployment is designed for FreeBSD systems only"
+        raise ValueError(msg)
 
     # Check if setfacl is available on FreeBSD
     setfacl_check = server.shell(

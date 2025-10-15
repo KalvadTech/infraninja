@@ -31,11 +31,9 @@ def kernel_hardening():
     linux_name = host.get_fact(LinuxName)
 
     if not linux_name:
-        print("[ERROR] This script requires a Linux system")
         return False
 
     if linux_name.lower() == "freebsd":
-        print("[Warning] This script is not compatible with FreeBSD, skipping.")
         return False
 
     # Verify sysctl is available
@@ -43,7 +41,6 @@ def kernel_hardening():
         name="Check if sysctl exists",
         commands=["command -v sysctl"],
     ):
-        print("[ERROR] sysctl command not found")
         return False
 
     # Create sysctl config directory if it doesn't exist

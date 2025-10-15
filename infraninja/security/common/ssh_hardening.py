@@ -3,8 +3,6 @@ from pyinfra.context import host
 from pyinfra.facts.files import FindInFile
 from pyinfra.operations import files, server
 
-#
-
 
 class SSHHardener:
     """
@@ -67,7 +65,6 @@ class SSHHardener:
                 pattern=rf"^{option}.*$",
             )
 
-            print(f"Checking for {option} in /etc/ssh/sshd_config: {matching_lines}")
 
             if matching_lines:
                 # Option exists, check if value matches desired value
@@ -85,11 +82,8 @@ class SSHHardener:
                     )
                     if change.changed:
                         config_changed = True
-                        print(
-                            f"Updated {option}: '{existing_line}' -> '{desired_line}'"
-                        )
                 else:
-                    print(f"{option} already set to correct value: {value}")
+                    pass
             else:
                 # Option doesn't exist, append it to the end of the file
                 change = server.shell(
@@ -98,7 +92,6 @@ class SSHHardener:
                 )
                 if change.changed:
                     config_changed = True
-                    print(f"Added new option {option}: {value}")
 
         if config_changed:
             # Restart SSH service to apply changes

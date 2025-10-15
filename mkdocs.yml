@@ -1,0 +1,78 @@
+site_name: InfraNinja Documentation
+site_description: Ninja-level deployments for infrastructure automation
+site_author: KalvadTech
+repo_url: https://github.com/KalvadTech/infraninja
+repo_name: KalvadTech/infraninja
+
+theme:
+  name: material
+  palette:
+    # Light mode
+    - scheme: default
+      primary: deep purple
+      accent: purple
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
+    # Dark mode
+    - scheme: slate
+      primary: deep purple
+      accent: purple
+      toggle:
+        icon: material/brightness-4
+        name: Switch to light mode
+  features:
+    - navigation.instant
+    - navigation.tracking
+    - navigation.tabs
+    - navigation.sections
+    - navigation.expand
+    - navigation.top
+    - search.suggest
+    - search.highlight
+    - content.code.copy
+    - content.code.annotate
+  icon:
+    repo: fontawesome/brands/github
+
+extra_css:
+  - stylesheets/extra.css
+
+markdown_extensions:
+  - pymdownx.highlight:
+      anchor_linenums: true
+      line_spans: __span
+      pygments_lang_class: true
+  - pymdownx.inlinehilite
+  - pymdownx.snippets
+  - pymdownx.superfences
+  - pymdownx.tabbed:
+      alternate_style: true
+  - pymdownx.emoji:
+      emoji_index: !!python/name:material.extensions.emoji.twemoji
+      emoji_generator: !!python/name:material.extensions.emoji.to_svg
+  - admonition
+  - pymdownx.details
+  - tables
+  - attr_list
+  - md_in_html
+
+plugins:
+  - search
+  - tags
+
+nav:
+  - Home: index.md
+  - Actions:
+      - Overview: actions/index.md
+  - Inventories:
+      - Overview: inventories/index.md
+
+extra:
+  social:
+    - icon: fontawesome/brands/github
+      link: https://github.com/KalvadTech/infraninja
+    - icon: fontawesome/brands/python
+      link: https://pypi.org/project/infraninja/
+
+copyright: Copyright &copy; 2025 KalvadTech
