@@ -5,6 +5,34 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.4.0] - 2025-10-31
+
+Merged PR #30: Created info fetching task and has custom facts
+
+### Features
+
+- **System Information Fetching Module**: New `info_fetch` deployment module for comprehensive system information gathering
+- **Custom Facts**: Added custom pyinfra facts for enhanced system data collection:
+  - `OsRelease`: Parse and retrieve OS release information from `/etc/os-release`
+  - `MemInfo`: Memory usage statistics with flexible measurements (percent, GB, MB) and occurrence types (usage, total)
+  - `CPUInfo`: CPU information and statistics
+  - `DiskInfo`: Disk usage and partition information
+  - `NetworkInfo`: Network interface and connectivity details
+- **Integrated System Facts**: Utilizes pyinfra's built-in facts including:
+  - Hostname, OS, Linux distribution name
+  - Users and Groups
+  - Kernel modules and Sysctl parameters
+  - Mount points and filesystem information
+  - SELinux status and security limits
+- **JSON Serialization**: Safe serialization with datetime handling via custom `DateTimeEncoder`
+- **Comprehensive Data Collection**: Single deployment to gather complete system inventory across multiple dimensions
+
+### Developer Experience
+
+- Modular fact system for easy extension and customization
+- Type-safe fact processing with error handling
+- Consistent JSON output format for integration with monitoring and inventory systems
+
 ## [0.3.0] - 2025-09-16
 
 Merged PR #25: freeBSD more tasks
