@@ -1,22 +1,14 @@
-name: Run Ruff Linter
-
-on: [push, pull_request]
-
+name: Ruff
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+  push:
 jobs:
-  lint:
-    runs-on: ubuntu-latest
-
+  build:
+    runs-on: self-hosted
     steps:
-      - name: Check out repository
-        uses: actions/checkout@v4
-
-      - name: Install uv
-        uses: astral-sh/setup-uv@v5
+      - uses: actions/checkout@v6
+      - name: Install the latest version of ruff
+        uses: astral-sh/ruff-action@v3
         with:
-          enable-cache: true
-
-      - name: Set up Python
-        run: uv python install 3.13
-
-      - name: Run Ruff
-        run: uvx ruff check --exclude tests/
+          version: "latest"

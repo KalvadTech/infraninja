@@ -149,7 +149,9 @@ class SSHHardeningAction(Action):
 
         if os_id == "freebsd":
             # FreeBSD requires specific service command syntax
-            from pyinfra.operations.freebsd import service as freebsd_service  # noqa: PLC0415
+            from pyinfra.operations.freebsd import (
+                service as freebsd_service,  # noqa: PLC0415
+            )
 
             freebsd_service.service(
                 name="Restart SSH service (FreeBSD)",

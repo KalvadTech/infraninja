@@ -1,9 +1,8 @@
 """Netdata monitoring deployment action"""
 
 from importlib.resources import files as resource_files
-from typing import Any, Dict
+from typing import Any
 
-from pyinfra import host
 from pyinfra.operations import files, server
 
 from infraninja.actions.base import Action
