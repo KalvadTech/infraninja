@@ -12,6 +12,13 @@ from infraninja.actions.base import Action
 
 logger = logging.getLogger(__name__)
 
+# HTTP status codes
+HTTP_OK = 200
+HTTP_NOT_FOUND = 404
+
+# SSH key validation
+MIN_SSH_KEY_PARTS = 2
+
 
 class SSHKeysAction(Action):
     """
@@ -61,7 +68,7 @@ class SSHKeysAction(Action):
         "opensuse",
     ]
 
-    def execute(
+    def execute(  # noqa: PLR0913
         self,
         user: str,
         urls: Optional[List[str]] = None,
@@ -94,9 +101,7 @@ class SSHKeysAction(Action):
         # Validate required parameters
         if not user or not isinstance(user, str) or not user.strip():
             msg = "'user' parameter is required and must be a non-empty string"
-            raise DeployError(
-                msg
-            )
+            raise DeployError(msg)
 
         if not urls and not ssh_keys:
             msg = "At least one of 'urls' or 'ssh_keys' must be provided"
@@ -163,16 +168,16 @@ class SSHKeysAction(Action):
         valid_keys = []
 
         for i, key in enumerate(keys):
-            key = key.strip()
-            if not key:
+            stripped_key = key.strip()
+            if not stripped_key:
                 logger.warning(f"Skipping empty SSH key at position {i}")
                 continue
 
-            if self._is_valid_ssh_key_format(key):
-                valid_keys.append(key)
+            if self._is_valid_ssh_key_format(stripped_key):
+                valid_keys.append(stripped_key)
             else:
                 logger.warning(
-                    f"Skipping invalid SSH key at position {i}: {key[:50]}..."
+                    f"Skipping invalid SSH key at position {i}: {stripped_key[:50]}..."
                 )
 
         logger.info(
@@ -203,13 +208,15 @@ class SSHKeysAction(Action):
                 logger.warning(f"Skipping invalid URL: {url}")
                 continue
 
-            url = url.strip()
-            logger.info(f"Fetching SSH keys from URL: {url}")
+            stripped_url = url.strip()
+            logger.info(f"Fetching SSH keys from URL: {stripped_url}")
             url_keys = self._fetch_url_keys_with_retry(
-                url, timeout, max_retries, retry_delay
+                stripped_url, timeout, max_retries, retry_delay
             )
             keys.extend(url_keys)
-            logger.info(f"Successfully fetched {len(url_keys)} keys from {url}")
+            logger.info(
+                f"Successfully fetched {len(url_keys)} keys from {stripped_url}"
+            )
 
         logger.info(f"Total SSH keys fetched from URLs: {len(keys)}")
         return keys
@@ -229,9 +236,9 @@ class SSHKeysAction(Action):
                     headers={"User-Agent": "infraninja/1.0", "Accept": "text/plain"},
                 )
 
-                if response.status_code == 200:
+                if response.status_code == HTTP_OK:
                     return self._parse_ssh_keys(response.text, url)
-                elif response.status_code == 404:
+                elif response.status_code == HTTP_NOT_FOUND:
                     msg = f"URL not found: '{url}'"
                     raise DeployError(msg)
                 else:
@@ -264,27 +271,25 @@ class SSHKeysAction(Action):
                     raise DeployError(error_msg)
 
         msg = f"Failed to fetch SSH keys from {url} after {max_retries + 1} attempts"
-        raise DeployError(
-            msg
-        )
+        raise DeployError(msg)
 
     def _parse_ssh_keys(self, response_text: str, source: str) -> List[str]:
         """Parse SSH keys from URL response text."""
         keys = []
 
         for line_num, line in enumerate(response_text.split("\n"), 1):
-            line = line.strip()
+            stripped_line = line.strip()
 
-            if not line:
+            if not stripped_line:
                 continue
 
-            if not self._is_valid_ssh_key_format(line):
+            if not self._is_valid_ssh_key_format(stripped_line):
                 logger.warning(
                     f"Skipping invalid SSH key format from {source} (line {line_num})"
                 )
                 continue
 
-            keys.append(line)
+            keys.append(stripped_line)
 
         return keys
 
@@ -295,7 +300,7 @@ class SSHKeysAction(Action):
 
         parts = key.strip().split()
 
-        if len(parts) < 2:
+        if len(parts) < MIN_SSH_KEY_PARTS:
             return False
 
         key_type = parts[0].lower()

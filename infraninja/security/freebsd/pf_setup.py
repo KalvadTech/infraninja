@@ -24,9 +24,7 @@ def pf_setup():
 
     if "freebsd" not in distro_name and distro_name:
         msg = f"This deployment is designed for FreeBSD systems only. Detected: {distro_name}"
-        raise ValueError(
-            msg
-        )
+        raise ValueError(msg)
 
     # Check if PF is available
     pf_exists = host.get_fact(Command, command="kldstat -q -m pf || echo not_loaded")

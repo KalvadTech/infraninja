@@ -46,7 +46,7 @@ class Jinn(Inventory):
         "ar": "جلب الخوادم من واجهة برمجة تطبيقات جن",
     }
 
-    def __init__(
+    def __init__(  # noqa: PLR0913
         self,
         ssh_key_path: Optional[Union[str, Path]] = None,
         api_url: str = "https://jinn-api.kalvad.cloud",
@@ -143,7 +143,7 @@ class Jinn(Inventory):
             headers = {"Authentication": self.api_key}
             endpoint = f"{self.api_url.rstrip('/')}/inventory/project/"
 
-            response = requests.get(endpoint, headers=headers)
+            response = requests.get(endpoint, headers=headers, timeout=30)
             response.raise_for_status()
             self.project_name = response.json().get("name_en")
             return self.project_name
@@ -167,7 +167,7 @@ class Jinn(Inventory):
             headers = {"Authentication": self.api_key}
             endpoint = f"{self.api_url.rstrip('/')}/inventory/groups/"
 
-            response = requests.get(endpoint, headers=headers)
+            response = requests.get(endpoint, headers=headers, timeout=30)
             response.raise_for_status()
             groups = [
                 group.get("name_en") for group in response.json().get("result", [])

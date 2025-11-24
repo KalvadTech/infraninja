@@ -22,7 +22,7 @@ def list_actions() -> Dict[str, Dict]:
             for slug, metadata in actions.items():
                 print(f"{slug}: {metadata['name']['en']}")
     """
-    from infraninja import actions as actions_module
+    from infraninja import actions as actions_module  # noqa: PLC0415
 
     actions_dict = {}
 
@@ -35,7 +35,7 @@ def list_actions() -> Dict[str, Dict]:
                 action_instance = obj()
                 metadata = action_instance.get_metadata()
                 actions_dict[metadata["slug"]] = metadata
-            except Exception:
+            except Exception:  # noqa: S112
                 # Skip actions that can't be instantiated without parameters
                 continue
 

@@ -65,7 +65,6 @@ class SSHHardener:
                 pattern=rf"^{option}.*$",
             )
 
-
             if matching_lines:
                 # Option exists, check if value matches desired value
                 existing_line = matching_lines[0]

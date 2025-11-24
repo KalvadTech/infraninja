@@ -19,6 +19,9 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
+# HTTP status codes
+HTTP_OK = 200
+
 
 class SSHKeyManagerError(Exception):
     """Custom exception for SSHKeyManager errors."""
@@ -108,9 +111,7 @@ class SSHKeyManager:
                 if "URLHERE" in self.api_url:
                     logger.error(f"URL contains placeholder 'URLHERE': {self.api_url}")
                     msg = f"Invalid API URL with placeholder: {self.api_url}. Please provide a valid URL."
-                    raise SSHKeyManagerError(
-                        msg
-                    )
+                    raise SSHKeyManagerError(msg)
 
             # Store the API key
             self.api_key: Optional[str] = api_key
@@ -180,9 +181,7 @@ class SSHKeyManager:
         """
         if not SSHKeyManager._session_key:
             msg = "Cannot make authenticated request: No session key available"
-            raise SSHKeyManagerError(
-                msg
-            )
+            raise SSHKeyManagerError(msg)
 
         headers = {
             "Authorization": f"Bearer {SSHKeyManager._session_key}",
@@ -195,11 +194,9 @@ class SSHKeyManager:
             response = requests.request(
                 method, endpoint, headers=headers, cookies=cookies, timeout=30, **kwargs
             )
-            if response.status_code != 200:
+            if response.status_code != HTTP_OK:
                 msg = f"API request failed with status code {response.status_code}: {response.text[:100]}"
-                raise SSHKeyManagerError(
-                    msg
-                )
+                raise SSHKeyManagerError(msg)
             return response
 
         except Exception as e:
@@ -253,11 +250,9 @@ class SSHKeyManager:
                 timeout=30,
             )
 
-            if response.status_code != 200:
+            if response.status_code != HTTP_OK:
                 msg = f"Login failed with status code {response.status_code}: {response.text[:100]}"
-                raise SSHKeyManagerError(
-                    msg
-                )
+                raise SSHKeyManagerError(msg)
 
             response_data = response.json()
             # Store session key at class level
@@ -265,9 +260,7 @@ class SSHKeyManager:
 
             if not SSHKeyManager._session_key:
                 msg = "Login succeeded but no session key in response"
-                raise SSHKeyManagerError(
-                    msg
-                )
+                raise SSHKeyManagerError(msg)
 
             return True
 
@@ -340,9 +333,7 @@ class SSHKeyManager:
 
         except KeyError as e:
             msg = f"Missing expected field in SSH keys response: {e}"
-            raise SSHKeyManagerError(
-                msg
-            )
+            raise SSHKeyManagerError(msg)
         except json.JSONDecodeError as e:
             msg = f"Failed to parse SSH keys response as JSON: {e}"
             raise SSHKeyManagerError(msg)
@@ -381,9 +372,7 @@ class SSHKeyManager:
             users = host.get_fact(Users)
             if not users or current_user not in users:
                 msg = f"Failed to retrieve details for user: {current_user}"
-                raise PyinfraError(
-                    msg
-                )
+                raise PyinfraError(msg)
 
             user_details = users[current_user]
 

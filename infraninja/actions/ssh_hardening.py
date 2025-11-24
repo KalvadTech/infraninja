@@ -149,8 +149,8 @@ class SSHHardeningAction(Action):
 
         if os_id == "freebsd":
             # FreeBSD requires specific service command syntax
-            from pyinfra.operations.freebsd import (
-                service as freebsd_service,  # noqa: PLC0415
+            from pyinfra.operations.freebsd import (  # noqa: PLC0415
+                service as freebsd_service,
             )
 
             freebsd_service.service(

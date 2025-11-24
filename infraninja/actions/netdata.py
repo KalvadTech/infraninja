@@ -50,9 +50,9 @@ class NetdataAction(Action):
         "arch",
     ]
 
-    def execute(
+    def execute(  # noqa: PLR0913
         self,
-        claim_token: str = "XXXXX",
+        claim_token: str = "XXXXX",  # noqa: S107
         claim_rooms: str = "XXXXX",
         claim_url: str = "https://app.netdata.cloud",
         reclaim: bool = False,

@@ -98,15 +98,11 @@ class Inventory(ABC):
 
         if not self.name or "en" not in self.name:
             msg = f"{self.__class__.__name__} must define 'name' with at least 'en' key"
-            raise ValueError(
-                msg
-            )
+            raise ValueError(msg)
 
         if not self.description or "en" not in self.description:
             msg = f"{self.__class__.__name__} must define 'description' with at least 'en' key"
-            raise ValueError(
-                msg
-            )
+            raise ValueError(msg)
 
     @abstractmethod
     def load_servers(self, **kwargs) -> None:

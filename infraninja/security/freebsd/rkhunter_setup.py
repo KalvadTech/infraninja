@@ -80,7 +80,7 @@ def rkhunter_setup():
     # Create secure rkhunter temporary directory
     files.directory(
         name="Create rkhunter temporary directory",
-        path="/var/tmp/rkhunter",
+        path="/var/tmp/rkhunter",  # noqa: S108
         present=True,
         mode="700",
         user="root",

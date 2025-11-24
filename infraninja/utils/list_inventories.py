@@ -22,7 +22,7 @@ def list_inventories() -> Dict[str, Dict]:
             for slug, metadata in inventories.items():
                 print(f"{slug}: {metadata['name']['en']}")
     """
-    from infraninja import inventories as inventories_module
+    from infraninja import inventories as inventories_module  # noqa: PLC0415
 
     inventories_dict = {}
 
@@ -39,7 +39,7 @@ def list_inventories() -> Dict[str, Dict]:
                 }
                 if metadata["slug"]:  # Only add if slug is defined
                     inventories_dict[metadata["slug"]] = metadata
-            except Exception:
+            except Exception:  # noqa: S112
                 # Skip inventories that don't have required attributes
                 continue
 

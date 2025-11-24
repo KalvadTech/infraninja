@@ -158,7 +158,7 @@ class CommonPackageInstaller:
         self.zypper_repos = zypper_repos or []
 
     @staticmethod
-    def _get_distro_family():
+    def _get_distro_family():  # noqa: PLR0911
         """
         Determine the Linux distribution family for package selection.
 
@@ -252,9 +252,7 @@ class CommonPackageInstaller:
         distro_family = self._get_distro_family()
         if not distro_family:
             msg = f"Unsupported OS: {host.get_fact(LinuxDistribution).get('name', 'Unknown')}"
-            raise ValueError(
-                msg
-            )
+            raise ValueError(msg)
 
         host.noop(f"Installing common security packages for {distro_family} family")
 

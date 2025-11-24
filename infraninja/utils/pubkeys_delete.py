@@ -18,6 +18,12 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
+# HTTP status codes
+HTTP_OK = 200
+
+# SSH key validation
+MIN_SSH_KEY_PARTS = 2
+
 
 class SSHKeyDeleteError(Exception):
     """Custom exception for SSH key deletion errors."""
@@ -109,9 +115,7 @@ class SSHKeyDeleter:
                 if "URLHERE" in self.api_url:
                     logger.error(f"URL contains placeholder 'URLHERE': {self.api_url}")
                     msg = f"Invalid API URL with placeholder: {self.api_url}. Please provide a valid URL."
-                    raise SSHKeyDeleteError(
-                        msg
-                    )
+                    raise SSHKeyDeleteError(msg)
 
             # Store the API key
             self.api_key: Optional[str] = api_key
@@ -181,9 +185,7 @@ class SSHKeyDeleter:
         """
         if not SSHKeyDeleter._session_key:
             msg = "Cannot make authenticated request: No session key available"
-            raise SSHKeyDeleteError(
-                msg
-            )
+            raise SSHKeyDeleteError(msg)
 
         headers = {
             "Content-Type": "application/json",
@@ -195,11 +197,9 @@ class SSHKeyDeleter:
             response = requests.request(
                 method, endpoint, headers=headers, cookies=cookies, timeout=30, **kwargs
             )
-            if response.status_code != 200:
+            if response.status_code != HTTP_OK:
                 msg = f"API request failed with status code {response.status_code}: {response.text[:100]}"
-                raise SSHKeyDeleteError(
-                    msg
-                )
+                raise SSHKeyDeleteError(msg)
             return response
 
         except Exception as e:
@@ -253,11 +253,9 @@ class SSHKeyDeleter:
                 timeout=30,
             )
 
-            if response.status_code != 200:
+            if response.status_code != HTTP_OK:
                 msg = f"Login failed with status code {response.status_code}: {response.text[:100]}"
-                raise SSHKeyDeleteError(
-                    msg
-                )
+                raise SSHKeyDeleteError(msg)
 
             response_data = response.json()
             # Store session key at class level
@@ -265,9 +263,7 @@ class SSHKeyDeleter:
 
             if not SSHKeyDeleter._session_key:
                 msg = "Login succeeded but no session key in response"
-                raise SSHKeyDeleteError(
-                    msg
-                )
+                raise SSHKeyDeleteError(msg)
 
             return True
 
@@ -350,7 +346,7 @@ class SSHKeyDeleter:
             msg = f"Unexpected error parsing SSH keys response: {e}"
             raise SSHKeyDeleteError(msg)
 
-    def filter_keys_for_deletion(
+    def filter_keys_for_deletion(  # noqa: C901, PLR0912
         self,
         all_keys: List[Dict[str, str]],
         filter_criteria: Optional[Dict[str, Any]] = None,
@@ -403,7 +399,7 @@ class SSHKeyDeleter:
 
         # Filter by key patterns if provided
         if "key_patterns" in filter_criteria:
-            import re
+            import re  # noqa: PLC0415
 
             patterns = filter_criteria["key_patterns"]
             if not isinstance(patterns, list):
@@ -457,7 +453,7 @@ class SSHKeyDeleter:
                 return True
 
             # Check if user can sudo by testing a simple sudo command
-            from pyinfra.facts.server import Command
+            from pyinfra.facts.server import Command  # noqa: PLC0415
 
             sudo_check = host.get_fact(
                 Command, "sudo -n true 2>/dev/null && echo 'success' || echo 'failed'"
@@ -495,7 +491,7 @@ class SSHKeyDeleter:
             escaped = escaped.replace(char, f"\\{char}")
         return escaped
 
-    def _remove_key_from_authorized_keys(self, user: str, key_to_delete: str) -> bool:
+    def _remove_key_from_authorized_keys(self, user: str, key_to_delete: str) -> bool:  # noqa: C901, PLR0912
         """
         Remove a specific SSH key from a user's authorized_keys file using pyinfra's server.user_authorized_keys.
 
@@ -534,7 +530,7 @@ class SSHKeyDeleter:
             authorized_keys_path = f"{home_dir}/.ssh/authorized_keys"
 
             # Check if authorized_keys file exists
-            from pyinfra.facts.files import File
+            from pyinfra.facts.files import File  # noqa: PLC0415
 
             file_info = host.get_fact(File, authorized_keys_path)
             if not file_info:
@@ -542,7 +538,7 @@ class SSHKeyDeleter:
                 return False
 
             # Read current authorized_keys content using cat command
-            from pyinfra.facts.server import Command
+            from pyinfra.facts.server import Command  # noqa: PLC0415
 
             cat_result = host.get_fact(
                 Command, f"cat {authorized_keys_path} 2>/dev/null || echo ''"
@@ -562,26 +558,26 @@ class SSHKeyDeleter:
 
             # Extract the key part (ignore key type and comment) for comparison
             key_parts = key_to_delete.strip().split()
-            if len(key_parts) < 2:
+            if len(key_parts) < MIN_SSH_KEY_PARTS:
                 msg = f"Invalid SSH key format: {key_to_delete}"
                 raise SSHKeyDeleteError(msg)
 
             key_to_delete_data = key_parts[1]  # The actual key data
 
             for line in current_lines:
-                line = line.strip()
-                if not line or line.startswith("#"):
-                    remaining_keys.append(line)
+                stripped_line = line.strip()
+                if not stripped_line or stripped_line.startswith("#"):
+                    remaining_keys.append(stripped_line)
                     continue
 
                 # Check if this line contains the key to delete
-                line_parts = line.split()
-                if len(line_parts) >= 2:
+                line_parts = stripped_line.split()
+                if len(line_parts) >= MIN_SSH_KEY_PARTS:
                     line_key_data = line_parts[1]
                     if line_key_data != key_to_delete_data:
-                        remaining_keys.append(line)
+                        remaining_keys.append(stripped_line)
                 else:
-                    remaining_keys.append(line)
+                    remaining_keys.append(stripped_line)
 
             # Update the user's authorized_keys with only the remaining keys
             server.user_authorized_keys(
@@ -602,9 +598,7 @@ class SSHKeyDeleter:
 
         except Exception as e:
             msg = f"Error removing key from {user}'s authorized_keys: {str(e)}"
-            raise SSHKeyDeleteError(
-                msg
-            )
+            raise SSHKeyDeleteError(msg)
 
     @deploy("Delete SSH keys from users' authorized_keys files")
     def delete_ssh_keys_for_users(
@@ -634,9 +628,7 @@ class SSHKeyDeleter:
                     "Root access required to modify other users' authorized_keys files. "
                     "Please run as root or ensure sudo access."
                 )
-                raise SSHKeyDeleteError(
-                    msg
-                )
+                raise SSHKeyDeleteError(msg)
 
             # Get all SSH keys from the API
             all_keys = self.fetch_ssh_keys(force_refresh)
@@ -703,9 +695,7 @@ class SSHKeyDeleter:
                     "Root access required to modify other users' authorized_keys files. "
                     "Please run as root or ensure sudo access."
                 )
-                raise SSHKeyDeleteError(
-                    msg
-                )
+                raise SSHKeyDeleteError(msg)
 
             logger.info(f"Deleting specific key for {len(users)} users")
 

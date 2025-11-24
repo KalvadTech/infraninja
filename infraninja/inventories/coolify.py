@@ -17,6 +17,9 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
+# HTTP status codes
+HTTP_BAD_REQUEST = 400
+
 
 class CoolifyError(Exception):
     """Base exception for Coolify-related errors."""
@@ -128,7 +131,7 @@ class Coolify(Inventory):
             logger.info(f"API response status: {response.status_code}")
 
             # If response is not successful, log and raise an error
-            if response.status_code >= 400:
+            if response.status_code >= HTTP_BAD_REQUEST:
                 logger.error(
                     f"API request failed with status {response.status_code}: {response.text}"
                 )
@@ -239,9 +242,7 @@ class Coolify(Inventory):
                     continue
 
             # Skip localhost entries
-            if (
-                server_name.lower() == "localhost" or ip_address in {"127.0.0.1", "::1"}
-            ):
+            if server_name.lower() == "localhost" or ip_address in {"127.0.0.1", "::1"}:
                 continue
 
             # Create server entry for PyInfra

@@ -32,9 +32,6 @@ class FreeBSDSecurityInstaller:
         "lynis": ["security/lynis"],
         "rkhunter": ["security/rkhunter"],
         "chkrootkit": ["security/chkrootkit"],
-        # Note: Some packages may not be available or have different names
-        # "ossec": ["security/ossec-hids"],  # May not be available
-        # "portaudit": [],  # Deprecated, replaced by pkg audit
     }
 
     def __init__(self, packages=None):
@@ -59,9 +56,7 @@ class FreeBSDSecurityInstaller:
 
         if "freebsd" not in distro_name and distro_name:
             msg = f"This deployment is designed for FreeBSD systems only. Detected: {distro_name}"
-            raise ValueError(
-                msg
-            )
+            raise ValueError(msg)
         return True
 
     def _configure_tool(self, tool_name):
