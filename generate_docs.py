@@ -5,6 +5,7 @@ This script performs a two-step process:
 1. Extract metadata from all actions and inventories
 2. Generate Markdown files following MkDocs structure
 """
+# ruff: noqa: T201
 
 import inspect
 import json
@@ -243,7 +244,7 @@ def generate_action_markdown(action: Dict[str, Any], lang: str = "en") -> str:
     return md
 
 
-def generate_inventory_markdown(inventory: Dict[str, Any], lang: str = "en") -> str:
+def generate_inventory_markdown(inventory: Dict[str, Any], lang: str = "en") -> str:  # noqa: C901, PLR0915
     """Generate markdown content for a single inventory in specified language."""
     metadata = inventory["metadata"]
 
@@ -341,7 +342,7 @@ def generate_inventory_markdown(inventory: Dict[str, Any], lang: str = "en") -> 
     return md
 
 
-def generate_mkdocs_structure(data: Dict[str, List[Dict]]) -> None:
+def generate_mkdocs_structure(data: Dict[str, List[Dict]]) -> None:  # noqa: PLR0915
     """Step 2: Generate MkDocs markdown files."""
     print("\nStep 2: Generating MkDocs structure...")
 

@@ -160,7 +160,7 @@ class TestCoolify(unittest.TestCase):
         # Patch Coolify.load_servers for __init__ tests to avoid API calls during basic init checks
         # Store the patcher object to control it (stop/start)
         self.patcher_coolify_load_servers = patch(
-            "infraninja.inventory.coolify.Coolify.load_servers", MagicMock()
+            "infraninja.inventories.coolify.Coolify.load_servers", MagicMock()
         )
         self.mock_coolify_load_servers_method = (
             self.patcher_coolify_load_servers.start()
@@ -315,7 +315,7 @@ class TestCoolify(unittest.TestCase):
             coolify._filter_server(server_staging_db)
         )  # Should pass if no tags
 
-    @patch("infraninja.inventory.coolify.Coolify._make_api_request")
+    @patch("infraninja.inventories.coolify.Coolify._make_api_request")
     def test_load_servers_success(self, mock_make_request):
         """Test successful server loading."""
         self.patcher_coolify_load_servers.stop()
@@ -336,7 +336,7 @@ class TestCoolify(unittest.TestCase):
 
         mock_make_request.assert_called_once_with("api/v1/servers")
 
-    @patch("infraninja.inventory.coolify.Coolify._make_api_request")
+    @patch("infraninja.inventories.coolify.Coolify._make_api_request")
     def test_load_servers_api_error(self, mock_make_request):
         """Test server loading with an API error."""
         self.patcher_coolify_load_servers.stop()
@@ -346,7 +346,7 @@ class TestCoolify(unittest.TestCase):
         with self.assertRaises(CoolifyAPIError):
             Coolify(api_key=self.api_key, api_url=self.api_url)
 
-    @patch("infraninja.inventory.coolify.Coolify._make_api_request")
+    @patch("infraninja.inventories.coolify.Coolify._make_api_request")
     def test_load_servers_no_servers_found(self, mock_make_request):
         """Test server loading when API returns no servers."""
         self.patcher_coolify_load_servers.stop()
@@ -400,7 +400,7 @@ class TestCoolify(unittest.TestCase):
         non_existent_attrs = coolify.get_server_by_name("non-existent-server")
         self.assertIsNone(non_existent_attrs)
 
-    @patch("infraninja.inventory.coolify.Coolify.load_servers")
+    @patch("infraninja.inventories.coolify.Coolify.load_servers")
     def test_get_servers_by_tag(self, mock_load_servers_method_for_test):
         """Test get_servers_by_tag method."""
         # The @patch replaces Coolify.load_servers for this test's scope.
