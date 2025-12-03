@@ -9,7 +9,7 @@ from pyinfra.facts.server import OsRelease
 from infraninja.actions.base import Action
 
 
-class UpdateAndUpgradeAction(Action):
+class UpdateAndUpgrade(Action):
     """
     Update and upgrade system packages across multiple Linux distributions.
 
@@ -20,9 +20,9 @@ class UpdateAndUpgradeAction(Action):
     Example:
         .. code:: python
 
-            from infraninja.actions.update_and_upgrade import UpdateAndUpgradeAction
+            from infraninja.actions.update_and_upgrade import UpdateAndUpgrade
 
-            action = UpdateAndUpgradeAction()
+            action = UpdateAndUpgrade()
             action.execute()
     """
 

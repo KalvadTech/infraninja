@@ -6,20 +6,28 @@ InfraNinja simplifies infrastructure management through **Actions** (reusable de
 
 ## ⚡️ Features
 
-- 🎯 **Action-Based Architecture**: Execute pre-built deployment tasks with rich metadata (Netdata monitoring, SSH keys, system updates)
+- 🎯 **Action-Based Architecture**: Execute pre-built deployment tasks with rich metadata (Netdata monitoring, SSH hardening, SSH keys, system updates)
 - 🌐 **Dynamic Inventories**: Automated server discovery from Jinn API and Coolify with intelligent filtering
-- 🛡️ **Comprehensive Security**: 49+ security modules including SSH/kernel hardening, firewall setup, malware detection, and intrusion prevention
+- 🛡️ **Comprehensive Security**: 30+ security modules including SSH/kernel hardening, firewall setup (IPTables, NFTables, PF), malware detection (chkrootkit, rkhunter), and intrusion prevention (Fail2Ban, Suricata)
 - 🧩 **Multi-OS Support**: Ubuntu, Debian, Alpine Linux, FreeBSD, RHEL, CentOS, Fedora, and Arch Linux
 - 🌍 **Multilingual**: Actions support English, Arabic, and French translations
-- 📋 **Compliance Ready**: UAE IA compliance modules and security auditing tools
+- 📋 **Compliance Ready**: UAE IA compliance modules and security auditing tools (Lynis, Auditd)
 - 📦 **PyPI Available**: Install with a simple `pip install infraninja`
 
 ## 🎯 Getting Started
+
+**Requirements:** Python 3.10+
 
 Install InfraNinja directly from PyPI:
 
 ```bash
 pip install infraninja
+```
+
+Or using uv:
+
+```bash
+uv add infraninja
 ```
 
 ## 🚀 Quick Examples
@@ -29,10 +37,10 @@ pip install infraninja
 Actions are the primary way to execute deployment tasks:
 
 ```python
-from infraninja import UpdateAndUpgradeAction
+from infraninja import UpdateAndUpgrade
 
 # Update system packages
-update = UpdateAndUpgradeAction()
+update = UpdateAndUpgrade()
 update.execute()
 ```
 
@@ -67,23 +75,54 @@ Integrate actions with PyInfra deployments:
 
 ```python
 from pyinfra import inventory
-from infraninja import NetdataAction
+from infraninja import Netdata
 
 # Define inventory
 inventory.add_host(name="server1", ssh_user="root")
 
 # Execute action across inventory
-action = NetdataAction()
+action = Netdata()
 action.execute()
 ```
 
-## 📜 Available Deployments
+## 📜 Available Actions
 
-InfraNinja provides comprehensive deployment modules organized by functionality:
+InfraNinja provides comprehensive deployment actions organized by functionality:
 
 ### 🔍 Monitoring & Observability
 
-- **Netdata**: Real-time performance monitoring and alerting
+- **Netdata**: Real-time performance monitoring and alerting with Netdata Cloud integration
+
+### 🛡️ Security & Hardening
+
+- **SSHHardening**: Comprehensive SSH server hardening with security best practices
+- **SSHKeys**: SSH key management and deployment
+
+### 🔄 System Maintenance
+
+- **UpdateAndUpgrade**: System package updates across multiple distributions
+
+## 🔐 Security Modules
+
+InfraNinja includes extensive security hardening modules organized by OS:
+
+### Cross-Platform (Common)
+- ACL management, ARP poisoning protection, Auditd setup
+- Chkrootkit malware detection, Fail2Ban intrusion prevention
+- IPTables/NFTables firewall setup, Kernel hardening
+- SSH hardening, SMTP hardening, Service management
+
+### FreeBSD
+- PF firewall setup, BSM auditing, rkhunter rootkit scanner
+- Lynis security auditing, Fail2Ban, SSH hardening
+
+### Alpine Linux
+- ClamAV antivirus, Suricata IDS, Lynis auditing
+- IPTables setup, Fail2Ban
+
+### Ubuntu/Debian
+- AppArmor configuration, ClamAV antivirus, Suricata IDS
+- NTP hardening, Routing controls, Lynis auditing
 
 ## 🔧 Development & Testing
 
@@ -94,7 +133,13 @@ Want to add your own ninja-style improvements? Here's how to get started:
 ```bash
 git clone https://github.com/KalvadTech/infraninja.git
 cd infraninja
-pip install -r requirements.txt
+uv sync
+```
+
+Or using pip:
+
+```bash
+pip install -e ".[dev]"
 ```
 
 ### Testing Your Deployments
@@ -120,14 +165,14 @@ pyinfra jinn.py deploy.py
 
 ```bash
 # Run all tests
-pytest
+uv run pytest
 
 # Run specific test modules
-pytest tests/inventory/
-pytest tests/common/
+uv run pytest tests/inventory/
+uv run pytest tests/common/
 
 # Run with coverage
-pytest --cov=infraninja tests/
+uv run pytest --cov=infraninja tests/
 ```
 
 ### Building the Package
@@ -135,7 +180,7 @@ pytest --cov=infraninja tests/
 Create a distribution package:
 
 ```bash
-python -m build
+uv build
 ```
 
 ### Using the Test Environment

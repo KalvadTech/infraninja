@@ -5,14 +5,16 @@ __version__ = "1.0.0"
 # Import actions as the main entry point
 from infraninja.actions import (
     Action,
-    NetdataAction,
-    SSHKeysAction,
-    UpdateAndUpgradeAction,
+    Netdata,
+    SSHHardening,
+    SSHKeys,
+    UpdateAndUpgrade,
 )
 
 __all__ = [
     "Action",
-    "NetdataAction",
-    "SSHKeysAction",
-    "UpdateAndUpgradeAction",
+    "Netdata",
+    "SSHHardening",
+    "SSHKeys",
+    "UpdateAndUpgrade",
 ]

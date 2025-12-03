@@ -8,7 +8,7 @@ from pyinfra.operations import files, server
 from infraninja.actions.base import Action
 
 
-class NetdataAction(Action):
+class Netdata(Action):
     """
     Deploy Netdata real-time monitoring and observability platform.
 
@@ -18,9 +18,9 @@ class NetdataAction(Action):
     Example:
         .. code:: python
 
-            from infraninja.actions.netdata import NetdataAction
+            from infraninja.actions.netdata import Netdata
 
-            action = NetdataAction()
+            action = Netdata()
             action.execute()
     """
 

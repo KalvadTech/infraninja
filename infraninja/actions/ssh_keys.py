@@ -20,7 +20,7 @@ HTTP_NOT_FOUND = 404
 MIN_SSH_KEY_PARTS = 2
 
 
-class SSHKeysAction(Action):
+class SSHKeys(Action):
     """
     Deploy and manage SSH keys for a single system user.
 
@@ -30,9 +30,9 @@ class SSHKeysAction(Action):
     Example:
         .. code:: python
 
-            from infraninja.actions.ssh_keys import SSHKeysAction
+            from infraninja.actions.ssh_keys import SSHKeys
 
-            action = SSHKeysAction()
+            action = SSHKeys()
             action.execute(
                 user="deploy",
                 urls=["https://github.com/username.keys"],

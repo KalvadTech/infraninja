@@ -10,7 +10,7 @@ from pyinfra.operations import files, server
 from infraninja.actions.base import Action
 
 
-class SSHHardeningAction(Action):
+class SSHHardening(Action):
     """
     Comprehensive SSH hardening across multiple operating systems.
 
@@ -21,14 +21,14 @@ class SSHHardeningAction(Action):
     Example:
         .. code:: python
 
-            from infraninja.actions.ssh_hardening import SSHHardeningAction
+            from infraninja.actions.ssh_hardening import SSHHardening
 
             # Use default configuration
-            action = SSHHardeningAction()
+            action = SSHHardening()
             action.execute()
 
             # With custom configuration
-            action = SSHHardeningAction(
+            action = SSHHardening(
                 permit_root_login="no",
                 password_authentication="no",
                 x11_forwarding="no"

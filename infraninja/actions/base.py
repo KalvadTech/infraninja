@@ -24,7 +24,7 @@ class Action(ABC):
     Example:
         .. code:: python
 
-            class NetdataAction(Action):
+            class Netdata(Action):
                 slug = "deploy-netdata"
                 name = {"en": "Deploy Netdata", "ar": "نشر Netdata"}
                 tags = ["monitoring", "observability"]
