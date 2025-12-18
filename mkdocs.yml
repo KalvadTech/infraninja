@@ -65,8 +65,17 @@ nav:
   - Home: index.md
   - Actions:
       - Overview: actions/index.md
+      - Standard Actions:
+          - Deploy Netdata Monitoring: actions/deploy-netdata.md
+          - SSH Hardening: actions/ssh-hardening.md
+          - Deploy SSH Keys: actions/deploy-ssh-keys.md
+          - Update and Upgrade System: actions/update-and-upgrade.md
+      - Composite Actions:
+          - Full Server Setup: actions/full-setup.md
   - Inventories:
       - Overview: inventories/index.md
+      - Jinn Inventory: inventories/jinn.md
+      - Coolify Inventory: inventories/coolify.md
 
 extra:
   social:

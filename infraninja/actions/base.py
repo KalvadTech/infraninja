@@ -1,7 +1,8 @@
 """Base Action class for InfraNinja"""
 
 from abc import ABC, abstractmethod
-from typing import Any, Dict, List
+from dataclasses import dataclass, field
+from typing import Any, Dict, List, Type
 
 
 class Action(ABC):
@@ -153,3 +154,157 @@ class Action(ABC):
     def __str__(self) -> str:
         """User-friendly string representation."""
         return f"{self.get_name()} ({self.slug})"
+
+
+@dataclass
+class ActionResult:
+    """Result of an action execution."""
+
+    action: str
+    success: bool = True
+    changed: bool = False
+    message: str = ""
+    data: Dict[str, Any] = field(default_factory=dict)
+
+
+@dataclass
+class CompositeResult:
+    """Result of a composite action execution."""
+
+    success: bool = True
+    results: List[ActionResult] = field(default_factory=list)
+
+    @property
+    def changed(self) -> bool:
+        """Returns True if any sub-action made changes."""
+        return any(r.changed for r in self.results)
+
+    def add(self, result: ActionResult) -> None:
+        """Add a sub-action result."""
+        self.results.append(result)
+        if not result.success:
+            self.success = False
+
+
+class Composite(Action):
+    """
+    Base class for composite actions that execute multiple sub-actions.
+
+    Composite actions group related actions together and execute them
+    in sequence. They inherit all metadata capabilities from Action.
+
+    Attributes:
+        actions: List of Action classes to execute in order
+        stop_on_failure: If True, stop execution when a sub-action fails
+
+    Example:
+        .. code:: python
+
+            from infraninja.actions.base import Composite
+            from infraninja.actions.update_and_upgrade import UpdateAndUpgrade
+            from infraninja.actions.ssh_hardening import SSHHardening
+            from infraninja.actions.netdata import Netdata
+
+            class FullSetup(Composite):
+                slug = "full-setup"
+                name = {"en": "Full Server Setup"}
+                description = {"en": "Complete server setup with updates, hardening, and monitoring"}
+                category = "setup"
+
+                actions = [
+                    UpdateAndUpgrade,
+                    SSHHardening,
+                    Netdata,
+                ]
+
+            # Execute all sub-actions
+            setup = FullSetup()
+            result = setup.execute()
+
+            # Pass specific params to sub-actions
+            result = setup.execute(
+                SSHHardening={"permit_root_login": "no"},
+                Netdata={"claim_token": "xxx"},
+            )
+    """
+
+    actions: List[Type[Action]] = []
+    stop_on_failure: bool = True
+
+    def __init__(self, **kwargs):
+        """
+        Initialize the composite action.
+
+        Args:
+            **kwargs: Parameters passed to parent Action
+        """
+        # Auto-compute os_available as intersection of all sub-actions
+        if not self.os_available and self.actions:
+            self._compute_os_available()
+
+        super().__init__(**kwargs)
+
+    def _compute_os_available(self) -> None:
+        """Compute supported OS as intersection of all sub-actions."""
+        if not self.actions:
+            return
+
+        # Start with first action's OS list
+        os_set = set(self.actions[0].os_available)
+
+        # Intersect with remaining actions
+        for action_class in self.actions[1:]:
+            os_set &= set(action_class.os_available)
+
+        self.os_available = sorted(os_set)
+
+    def execute(self, **kwargs) -> CompositeResult:
+        """
+        Execute all sub-actions in sequence.
+
+        Args:
+            **kwargs: Dict of {ActionClassName: {param: value}} for sub-action params
+
+        Returns:
+            CompositeResult with results from all sub-actions
+        """
+        result = CompositeResult()
+
+        for action_class in self.actions:
+            action_name = action_class.__name__
+
+            # Get params for this specific action
+            action_params = kwargs.get(action_name, {})
+
+            # Instantiate and execute
+            action = action_class(**action_params)
+
+            try:
+                action_result = action.execute()
+                result.add(
+                    ActionResult(
+                        action=action_name,
+                        success=True,
+                        changed=bool(action_result),
+                        data={"result": action_result},
+                    )
+                )
+            except Exception as e:
+                result.add(
+                    ActionResult(
+                        action=action_name,
+                        success=False,
+                        message=str(e),
+                    )
+                )
+                if self.stop_on_failure:
+                    break
+
+        return result
+
+    def get_metadata(self) -> Dict[str, Any]:
+        """Get metadata including sub-actions info."""
+        metadata = super().get_metadata()
+        metadata["actions"] = [a.__name__ for a in self.actions]
+        metadata["is_composite"] = True
+        return metadata
