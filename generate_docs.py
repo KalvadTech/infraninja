@@ -13,40 +13,43 @@ import shutil
 from pathlib import Path
 from typing import Any
 
-# Import all actions and inventories
-from infraninja.actions import (
-    Composite,
-    FullSetup,
-    Netdata,
-    SSHHardening,
-    SSHKeys,
-    UpdateAndUpgrade,
-)
-from infraninja.inventories import Coolify, Jinn
+import infraninja.actions as actions_module
+import infraninja.inventories as inventories_module
+from infraninja.actions import Action, Composite
+from infraninja.inventories import Inventory
 
 
 def get_action_classes() -> list[type]:
-    """Get all standard action classes (excluding Composite actions)."""
+    """Get all standard action classes (excluding Composite actions) from __all__."""
     return [
-        Netdata,
-        SSHHardening,
-        SSHKeys,
-        UpdateAndUpgrade,
+        getattr(actions_module, name)
+        for name in actions_module.__all__
+        if isinstance(getattr(actions_module, name), type)
+        and issubclass(getattr(actions_module, name), Action)
+        and not issubclass(getattr(actions_module, name), Composite)
+        and getattr(actions_module, name) is not Action
     ]
 
 
 def get_composite_classes() -> list[type]:
-    """Get all composite action classes."""
+    """Get all composite action classes from __all__."""
     return [
-        FullSetup,
+        getattr(actions_module, name)
+        for name in actions_module.__all__
+        if isinstance(getattr(actions_module, name), type)
+        and issubclass(getattr(actions_module, name), Composite)
+        and getattr(actions_module, name) is not Composite
     ]
 
 
 def get_inventory_classes() -> list[type]:
-    """Get all inventory classes (excluding base Inventory class)."""
+    """Get all inventory classes from __all__."""
     return [
-        Jinn,
-        Coolify,
+        getattr(inventories_module, name)
+        for name in inventories_module.__all__
+        if isinstance(getattr(inventories_module, name), type)
+        and issubclass(getattr(inventories_module, name), Inventory)
+        and getattr(inventories_module, name) is not Inventory
     ]
 
 

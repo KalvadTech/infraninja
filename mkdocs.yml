@@ -74,9 +74,8 @@ nav:
           - Full Server Setup: actions/full-setup.md
   - Inventories:
       - Overview: inventories/index.md
-      - Jinn Inventory: inventories/jinn.md
       - Coolify Inventory: inventories/coolify.md
-
+      - Jinn Inventory: inventories/jinn.md
 extra:
   social:
     - icon: fontawesome/brands/github
