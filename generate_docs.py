@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
-"""Generate MkDocs documentation for InfraNinja actions and inventories.
+"""Generate MkDocs documentation for InfraNinja actions, inventories, and facts.
 
 This script performs a two-step process:
-1. Extract metadata from all actions and inventories
+1. Extract metadata from all actions, inventories, and facts
 2. Generate Markdown files following MkDocs structure
 """
 # ruff: noqa: T201
@@ -14,8 +14,10 @@ from pathlib import Path
 from typing import Any
 
 import infraninja.actions as actions_module
+import infraninja.facts as facts_module
 import infraninja.inventories as inventories_module
 from infraninja.actions import Action, Composite
+from infraninja.facts import CompositeFact, Fact
 from infraninja.inventories import Inventory
 
 
@@ -50,6 +52,29 @@ def get_inventory_classes() -> list[type]:
         if isinstance(getattr(inventories_module, name), type)
         and issubclass(getattr(inventories_module, name), Inventory)
         and getattr(inventories_module, name) is not Inventory
+    ]
+
+
+def get_fact_classes() -> list[type]:
+    """Get all standard fact classes (excluding CompositeFact) from __all__."""
+    return [
+        getattr(facts_module, name)
+        for name in facts_module.__all__
+        if isinstance(getattr(facts_module, name), type)
+        and issubclass(getattr(facts_module, name), Fact)
+        and not issubclass(getattr(facts_module, name), CompositeFact)
+        and getattr(facts_module, name) is not Fact
+    ]
+
+
+def get_composite_fact_classes() -> list[type]:
+    """Get all composite fact classes from __all__."""
+    return [
+        getattr(facts_module, name)
+        for name in facts_module.__all__
+        if isinstance(getattr(facts_module, name), type)
+        and issubclass(getattr(facts_module, name), CompositeFact)
+        and getattr(facts_module, name) is not CompositeFact
     ]
 
 
@@ -151,6 +176,31 @@ def extract_inventory_info(inventory_class: type) -> dict[str, Any]:
     }
 
 
+def extract_fact_info(fact_class: type) -> dict[str, Any]:
+    """Extract complete information from a fact class."""
+    instance = fact_class()
+    metadata = instance.get_metadata()
+
+    execute_method = extract_function_signature(fact_class.execute)
+    init_method = extract_init_signature(fact_class)
+    is_composite = issubclass(fact_class, CompositeFact)
+
+    info = {
+        "type": "composite_fact" if is_composite else "fact",
+        "class_name": fact_class.__name__,
+        "metadata": metadata,
+        "init": init_method,
+        "execute": execute_method,
+        "docstring": inspect.getdoc(fact_class) or "",
+    }
+
+    if is_composite:
+        info["sub_facts"] = [f.__name__ for f in fact_class.facts]
+        info["stop_on_failure"] = fact_class.stop_on_failure
+
+    return info
+
+
 def extract_all_data() -> dict[str, list[dict]]:
     """Step 1: Extract all metadata from actions and inventories."""
     print("Step 1: Extracting metadata...")
@@ -185,10 +235,32 @@ def extract_all_data() -> dict[str, list[dict]]:
         except Exception as e:
             print(f"  ✗ {inventory_class.__name__}: {e}")
 
+    print("\n=== Extracting standard facts ===")
+    facts_data = []
+    for fact_class in get_fact_classes():
+        try:
+            fact_info = extract_fact_info(fact_class)
+            facts_data.append(fact_info)
+            print(f"  ✓ {fact_class.__name__}")
+        except Exception as e:
+            print(f"  ✗ {fact_class.__name__}: {e}")
+
+    print("\n=== Extracting composite facts ===")
+    composite_facts_data = []
+    for fact_class in get_composite_fact_classes():
+        try:
+            fact_info = extract_fact_info(fact_class)
+            composite_facts_data.append(fact_info)
+            print(f"  ✓ {fact_class.__name__}")
+        except Exception as e:
+            print(f"  ✗ {fact_class.__name__}: {e}")
+
     return {
         "actions": actions_data,
         "composites": composites_data,
         "inventories": inventories_data,
+        "facts": facts_data,
+        "composite_facts": composite_facts_data,
     }
 
 
@@ -489,6 +561,102 @@ def generate_inventory_markdown(inventory: dict[str, Any], lang: str = "en") -> 
     return md
 
 
+def generate_fact_usage_example(fact: dict[str, Any]) -> str:
+    """Generate a usage example for a fact."""
+    class_name = fact["class_name"]
+    is_composite = fact["type"] == "composite_fact"
+
+    md = "## Usage\n\n```python\n"
+    md += f"from infraninja.facts import {class_name}\n\n"
+    md += f"fact = {class_name}()\n"
+    md += "result = fact.execute()\n\n"
+
+    if is_composite:
+        md += "# Access merged data from all sub-facts\n"
+        md += "print(result.data)\n"
+    else:
+        md += "if result.success:\n"
+        md += "    print(result.data)\n"
+
+    md += "```\n\n"
+    return md
+
+
+def generate_fact_markdown(fact: dict[str, Any], lang: str = "en") -> str:
+    """Generate markdown content for a single fact in specified language."""
+    metadata = fact["metadata"]
+    is_composite = fact["type"] == "composite_fact"
+
+    title = metadata["name"].get(lang, metadata["name"].get("en", "Unknown"))
+    description = metadata["description"].get(
+        lang, metadata["description"].get("en", "")
+    )
+
+    md = f'# <i class="{metadata["logo"]}" style="color: {metadata["color"]}"></i> {title}\n\n'
+
+    md += '<div class="meta-badges">\n'
+    md += f'  <span class="badge badge-category" style="background-color: {metadata["color"]}">'
+    md += f'<i class="fas fa-folder"></i> {metadata["category"]}</span>\n'
+    md += f'  <span class="badge badge-slug"><i class="fas fa-tag"></i> {metadata["slug"]}</span>\n'
+    md += '  <span class="badge badge-fact" style="background-color: #3498DB">'
+    md += '<i class="fas fa-search"></i> fact</span>\n'
+    if is_composite:
+        md += '  <span class="badge badge-composite" style="background-color: #9B59B6">'
+        md += '<i class="fas fa-layer-group"></i> composite</span>\n'
+    md += "</div>\n\n"
+
+    md += generate_fact_usage_example(fact)
+
+    md += "## Description\n\n"
+    md += f"{description}\n\n"
+
+    if is_composite and "sub_facts" in fact:
+        md += "## Sub-Facts\n\n"
+        md += "This composite fact gathers the following facts in order:\n\n"
+        md += "| Order | Fact | Description |\n"
+        md += "|-------|------|-------------|\n"
+        for i, sub in enumerate(fact["sub_facts"], 1):
+            md += f"| {i} | `{sub}` | - |\n"
+        md += "\n"
+
+    if metadata["tags"]:
+        md += "## Tags\n\n"
+        md += '<div class="tags-container">\n'
+        for tag in metadata["tags"]:
+            md += f'  <span class="tag"><i class="fas fa-hashtag"></i> {tag}</span>\n'
+        md += "</div>\n\n"
+
+    if metadata["os_available"]:
+        md += "## Supported Operating Systems\n\n"
+        md += '<div class="os-grid">\n'
+        os_icons = {
+            "ubuntu": "fab fa-ubuntu",
+            "debian": "fab fa-debian",
+            "alpine": "fab fa-linux",
+            "freebsd": "fab fa-freebsd",
+            "rhel": "fab fa-redhat",
+            "centos": "fab fa-centos",
+            "fedora": "fab fa-fedora",
+            "arch": "fab fa-linux",
+            "opensuse": "fab fa-suse",
+        }
+        for os in metadata["os_available"]:
+            icon = os_icons.get(os, "fab fa-linux")
+            md += f'  <div class="os-badge"><i class="{icon}"></i> {os.title()}</div>\n'
+        md += "</div>\n\n"
+
+    execute = fact["execute"]
+    md += "## Execute Method\n\n"
+    return_type = "CompositeFactResult" if is_composite else "FactResult"
+    md += f"```python\nexecute() -> {return_type}\n```\n\n"
+
+    if execute["docstring"]:
+        md += "### Documentation\n\n"
+        md += f"```\n{execute['docstring']}\n```\n\n"
+
+    return md
+
+
 def generate_mkdocs_structure(data: dict[str, list[dict]]) -> None:
     """Step 2: Generate MkDocs markdown files."""
     print("\nStep 2: Generating MkDocs structure...")
@@ -500,14 +668,18 @@ def generate_mkdocs_structure(data: dict[str, list[dict]]) -> None:
     # Clean up old generated content
     actions_dir = docs_dir / "actions"
     inventories_dir = docs_dir / "inventories"
+    facts_dir = docs_dir / "facts"
 
     if actions_dir.exists():
         shutil.rmtree(actions_dir)
     if inventories_dir.exists():
         shutil.rmtree(inventories_dir)
+    if facts_dir.exists():
+        shutil.rmtree(facts_dir)
 
     actions_dir.mkdir(exist_ok=True)
     inventories_dir.mkdir(exist_ok=True)
+    facts_dir.mkdir(exist_ok=True)
 
     # Generate main index.md
     print("\n=== Generating main index ===")
@@ -741,6 +913,52 @@ class MySetup(Composite):
     (inventories_dir / "index.md").write_text(inventories_index)
     print("  ✓ inventories/index.md")
 
+    # Generate facts index
+    print("\n=== Generating facts ===")
+    facts_index = "# Facts\n\n"
+    facts_index += "InfraNinja provides the following read-only fact-gathering modules:\n\n"
+
+    facts_index += "## Standard Facts\n\n"
+    facts_index += "| Name | Class | Slug | Category | Supported OS |\n"
+    facts_index += "|------|-------|------|----------|-------------|\n"
+
+    for fact in data["facts"]:
+        metadata = fact["metadata"]
+        name = metadata["name"].get("en", "Unknown")
+        class_name = fact["class_name"]
+        slug = metadata["slug"]
+        category = metadata["category"]
+        os_count = len(metadata["os_available"])
+
+        facts_index += f"| [{name}]({slug}.md) | `{class_name}` | `{slug}` | {category} | {os_count} OS |\n"
+
+        fact_md = generate_fact_markdown(fact, "en")
+        (facts_dir / f"{slug}.md").write_text(fact_md)
+        print(f"  ✓ facts/{slug}.md")
+
+    if data["composite_facts"]:
+        facts_index += "\n## Composite Facts\n\n"
+        facts_index += "Composite facts gather multiple facts in sequence and merge results.\n\n"
+        facts_index += "| Name | Class | Slug | Category | Sub-Facts |\n"
+        facts_index += "|------|-------|------|----------|----------|\n"
+
+        for fact in data["composite_facts"]:
+            metadata = fact["metadata"]
+            name = metadata["name"].get("en", "Unknown")
+            class_name = fact["class_name"]
+            slug = metadata["slug"]
+            category = metadata["category"]
+            sub_facts = ", ".join(fact.get("sub_facts", []))
+
+            facts_index += f"| [{name}]({slug}.md) | `{class_name}` | `{slug}` | {category} | {sub_facts} |\n"
+
+            fact_md = generate_fact_markdown(fact, "en")
+            (facts_dir / f"{slug}.md").write_text(fact_md)
+            print(f"  ✓ facts/{slug}.md (composite)")
+
+    (facts_dir / "index.md").write_text(facts_index)
+    print("  ✓ facts/index.md")
+
     # Save JSON data for reference
     json_file = docs_dir.parent / "data.json"
     json_file.write_text(json.dumps(data, indent=2, default=str))
@@ -920,6 +1138,21 @@ def update_mkdocs_nav(data: dict[str, list[dict]]) -> None:
         slug = inv["metadata"]["slug"]
         nav_section += f"      - {name}: inventories/{slug}.md\n"
 
+    nav_section += "  - Facts:\n"
+    nav_section += "      - Overview: facts/index.md\n"
+    if data.get("facts"):
+        nav_section += "      - Standard Facts:\n"
+        for fact in data["facts"]:
+            name = fact["metadata"]["name"].get("en", "Unknown")
+            slug = fact["metadata"]["slug"]
+            nav_section += f"          - {name}: facts/{slug}.md\n"
+    if data.get("composite_facts"):
+        nav_section += "      - Composite Facts:\n"
+        for fact in data["composite_facts"]:
+            name = fact["metadata"]["name"].get("en", "Unknown")
+            slug = fact["metadata"]["slug"]
+            nav_section += f"          - {name}: facts/{slug}.md\n"
+
     # Read and update mkdocs.yml
     content = mkdocs_path.read_text()
 
@@ -954,6 +1187,8 @@ def main():
     print(f"  - {len(data['actions'])} standard actions")
     print(f"  - {len(data['composites'])} composite actions")
     print(f"  - {len(data['inventories'])} inventories")
+    print(f"  - {len(data['facts'])} standard facts")
+    print(f"  - {len(data['composite_facts'])} composite facts")
     print("\nNext steps:")
     print("  1. Install MkDocs: pip install mkdocs mkdocs-material")
     print("  2. Serve locally: mkdocs serve")

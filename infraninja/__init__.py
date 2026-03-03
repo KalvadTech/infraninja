@@ -15,14 +15,32 @@ from infraninja.actions import (
     UpdateAndUpgrade,
 )
 
+# Import facts for read-only server information gathering
+from infraninja.facts import (
+    CompositeFact,
+    CompositeFactResult,
+    Fact,
+    FactResult,
+    FullFacts,
+    Hardware,
+    SystemInfo,
+)
+
 __all__ = [
     "Action",
     "ActionResult",
     "Composite",
     "CompositeResult",
+    "CompositeFact",
+    "CompositeFactResult",
+    "Fact",
+    "FactResult",
+    "FullFacts",
     "FullSetup",
+    "Hardware",
     "Netdata",
     "SSHHardening",
     "SSHKeys",
+    "SystemInfo",
     "UpdateAndUpgrade",
 ]

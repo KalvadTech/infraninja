@@ -76,6 +76,13 @@ nav:
       - Overview: inventories/index.md
       - Coolify Inventory: inventories/coolify.md
       - Jinn Inventory: inventories/jinn.md
+  - Facts:
+      - Overview: facts/index.md
+      - Standard Facts:
+          - Hardware Information: facts/hardware.md
+          - System Information: facts/system-info.md
+      - Composite Facts:
+          - Full System Facts: facts/full-facts.md
 extra:
   social:
     - icon: fontawesome/brands/github
