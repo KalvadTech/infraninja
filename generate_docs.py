@@ -379,12 +379,15 @@ def generate_action_markdown(action: dict[str, Any], lang: str = "en") -> str:
     else:
         md += generate_usage_example(action)
 
+    md += "---\n\n"
+
     # Description
     md += "## Description\n\n"
     md += f"{description}\n\n"
 
     # Sub-actions for composite
     if is_composite and "sub_actions" in action:
+        md += "---\n\n"
         md += "## Sub-Actions\n\n"
         md += "This composite action executes the following actions in order:\n\n"
         md += "| Order | Action | Description |\n"
@@ -395,6 +398,7 @@ def generate_action_markdown(action: dict[str, Any], lang: str = "en") -> str:
 
     # Tags
     if metadata["tags"]:
+        md += "---\n\n"
         md += "## Tags\n\n"
         md += '<div class="tags-container">\n'
         for tag in metadata["tags"]:
@@ -403,6 +407,7 @@ def generate_action_markdown(action: dict[str, Any], lang: str = "en") -> str:
 
     # OS Support with icons
     if metadata["os_available"]:
+        md += "---\n\n"
         md += "## Supported Operating Systems\n\n"
         md += '<div class="os-grid">\n'
         os_icons = {
@@ -420,6 +425,8 @@ def generate_action_markdown(action: dict[str, Any], lang: str = "en") -> str:
             icon = os_icons.get(os, "fab fa-linux")
             md += f'  <div class="os-badge"><i class="{icon}"></i> {os.title()}</div>\n'
         md += "</div>\n\n"
+
+    md += "---\n\n"
 
     # Constructor parameters (if any)
     init = action.get("init", {})
@@ -491,6 +498,8 @@ def generate_inventory_markdown(inventory: dict[str, Any], lang: str = "en") -> 
     md += "servers = inventory.get_servers()\n"
     md += "```\n\n"
 
+    md += "---\n\n"
+
     # Description
     md += "## Description\n\n"
     md += f"{description}\n\n"
@@ -498,6 +507,8 @@ def generate_inventory_markdown(inventory: dict[str, Any], lang: str = "en") -> 
     # Class docstring
     if inventory["docstring"]:
         md += f"_{inventory['docstring']}_\n\n"
+
+    md += "---\n\n"
 
     # __init__ method
     init = inventory["init"]
@@ -524,6 +535,8 @@ def generate_inventory_markdown(inventory: dict[str, Any], lang: str = "en") -> 
         md += "### Documentation\n\n"
         md += f"```\n{init['docstring']}\n```\n\n"
 
+    md += "---\n\n"
+
     # load_servers method
     load_servers = inventory["load_servers"]
     md += "## Load Servers\n\n"
@@ -549,6 +562,8 @@ def generate_inventory_markdown(inventory: dict[str, Any], lang: str = "en") -> 
 
     if load_servers["docstring"]:
         md += f"```\n{load_servers['docstring']}\n```\n\n"
+
+    md += "---\n\n"
 
     # get_servers method
     get_servers = inventory["get_servers"]
@@ -607,10 +622,13 @@ def generate_fact_markdown(fact: dict[str, Any], lang: str = "en") -> str:
 
     md += generate_fact_usage_example(fact)
 
+    md += "---\n\n"
+
     md += "## Description\n\n"
     md += f"{description}\n\n"
 
     if is_composite and "sub_facts" in fact:
+        md += "---\n\n"
         md += "## Sub-Facts\n\n"
         md += "This composite fact gathers the following facts in order:\n\n"
         md += "| Order | Fact | Description |\n"
@@ -620,6 +638,7 @@ def generate_fact_markdown(fact: dict[str, Any], lang: str = "en") -> str:
         md += "\n"
 
     if metadata["tags"]:
+        md += "---\n\n"
         md += "## Tags\n\n"
         md += '<div class="tags-container">\n'
         for tag in metadata["tags"]:
@@ -627,6 +646,7 @@ def generate_fact_markdown(fact: dict[str, Any], lang: str = "en") -> str:
         md += "</div>\n\n"
 
     if metadata["os_available"]:
+        md += "---\n\n"
         md += "## Supported Operating Systems\n\n"
         md += '<div class="os-grid">\n'
         os_icons = {
@@ -644,6 +664,8 @@ def generate_fact_markdown(fact: dict[str, Any], lang: str = "en") -> str:
             icon = os_icons.get(os, "fab fa-linux")
             md += f'  <div class="os-badge"><i class="{icon}"></i> {os.title()}</div>\n'
         md += "</div>\n\n"
+
+    md += "---\n\n"
 
     execute = fact["execute"]
     md += "## Execute Method\n\n"
@@ -683,117 +705,135 @@ def generate_mkdocs_structure(data: dict[str, list[dict]]) -> None:
 
     # Generate main index.md
     print("\n=== Generating main index ===")
-    index_content = """# InfraNinja Documentation
 
-Welcome to InfraNinja - Ninja-level deployments for infrastructure automation.
+    n_actions = len(data["actions"])
+    n_composites = len(data["composites"])
+    n_inventories = len(data["inventories"])
+    n_facts = len(data["facts"]) + len(data["composite_facts"])
 
-## What is InfraNinja?
+    index_content = f"""<div class="hero-section" markdown>
 
-InfraNinja is a powerful infrastructure automation framework built on top of PyInfra. It provides:
+# InfraNinja
 
-- **Actions**: Pre-built deployment tasks for common infrastructure components
-- **Composite Actions**: Meta-actions that combine multiple actions into workflows
-- **Inventories**: Dynamic server inventory management from various sources
-- **Extensible**: Easy to create custom actions and inventories
+Ninja-level deployments for infrastructure automation
 
-## Key Concepts
+<div class="hero-buttons">
+  <a href="actions/" class="md-button md-button--primary">Browse Actions</a>
+  <a href="https://github.com/KalvadTech/infraninja" class="md-button">GitHub</a>
+</div>
 
-### Actions
+</div>
 
-Actions are reusable deployment tasks that can be executed across your infrastructure. Each action encapsulates:
+<div class="stats-bar">
+  <div class="stat-item">
+    <span class="stat-number">{n_actions}</span>
+    <span class="stat-label">Actions</span>
+  </div>
+  <div class="stat-item">
+    <span class="stat-number">{n_composites}</span>
+    <span class="stat-label">Composites</span>
+  </div>
+  <div class="stat-item">
+    <span class="stat-number">{n_inventories}</span>
+    <span class="stat-label">Inventories</span>
+  </div>
+  <div class="stat-item">
+    <span class="stat-number">{n_facts}</span>
+    <span class="stat-label">Facts</span>
+  </div>
+</div>
 
-- Installation and configuration logic
-- OS-specific implementations
-- Templating and customization options
-- Metadata (name, description, tags, supported OS)
+<div class="feature-grid" markdown>
 
-Browse available actions: [Actions](actions/index.md)
+<a class="feature-card" href="actions/">
+  <i class="fas fa-bolt"></i>
+  <h3>Actions</h3>
+  <p>Pre-built deployment tasks for common infrastructure components</p>
+</a>
 
-### Composite Actions
+<a class="feature-card" href="actions/#composite-actions">
+  <i class="fas fa-layer-group"></i>
+  <h3>Composites</h3>
+  <p>Meta-actions that combine multiple actions into workflows</p>
+</a>
 
-Composite actions group multiple actions together and execute them in sequence. They:
+<a class="feature-card" href="inventories/">
+  <i class="fas fa-server"></i>
+  <h3>Inventories</h3>
+  <p>Dynamic server inventory management from various sources</p>
+</a>
 
-- Inherit all metadata capabilities from regular actions
-- Auto-compute supported OS as intersection of sub-actions
-- Support passing parameters to specific sub-actions
-- Can stop on failure or continue execution
+<a class="feature-card" href="facts/">
+  <i class="fas fa-search"></i>
+  <h3>Facts</h3>
+  <p>Read-only modules to gather system and hardware information</p>
+</a>
 
-### Inventories
-
-Inventories provide dynamic server management from various sources like APIs and cloud providers. Features include:
-
-- Automatic SSH configuration generation
-- Server filtering by tags/groups
-- Multi-source support (Jinn, Coolify, etc.)
-- Metadata extraction
-
-Browse available inventories: [Inventories](inventories/index.md)
+</div>
 
 ## Getting Started
 
-### Simple Action
+=== "Simple Action"
 
-```python
-from infraninja import Netdata
+    ```python
+    from infraninja import UpdateAndUpgrade
 
-# Deploy Netdata monitoring
-action = Netdata()
-action.execute()
-```
+    # Update system packages
+    action = UpdateAndUpgrade()
+    action.execute()
+    ```
 
-### With Inventory
+=== "With Inventory"
 
-```python
-from infraninja import UpdateAndUpgrade
-from infraninja.inventories import Jinn
+    ```python
+    from infraninja import UpdateAndUpgrade
+    from infraninja.inventories import Jinn
 
-# Initialize inventory
-inventory = Jinn(
-    api_key="your-api-key",
-    groups=["production"]
-)
+    inventory = Jinn(
+        api_key="your-api-key",
+        groups=["production"]
+    )
 
-# Deploy action
-action = UpdateAndUpgrade()
-action.execute()
-```
+    action = UpdateAndUpgrade()
+    action.execute()
+    ```
 
-### Composite Action
+=== "Composite"
 
-```python
-from infraninja import FullSetup
+    ```python
+    from infraninja import FullSetup
 
-# Execute multiple actions in sequence
-setup = FullSetup()
-result = setup.execute(
-    SSHHardening={"permit_root_login": "no"},
-    Netdata={"claim_token": "xxx"},
-)
+    setup = FullSetup()
+    result = setup.execute(
+        SSHHardening={{"permit_root_login": "no"}},
+    )
 
-# Check results
-for r in result.results:
-    print(f"{r.action}: {'OK' if r.success else 'FAILED'}")
-```
+    for r in result.results:
+        print(f"{{r.action}}: {{'OK' if r.success else 'FAILED'}}")
+    ```
 
-## Project Structure
+=== "Gathering Facts"
 
-```
-infraninja/
-├── actions/          # Action implementations
-│   ├── base.py       # Action & Composite base classes
-│   ├── netdata.py    # Netdata monitoring
-│   ├── ssh_hardening.py
-│   ├── ssh_keys.py
-│   ├── update_and_upgrade.py
-│   └── full_setup.py # Composite action example
-├── inventories/      # Inventory implementations
-├── security/         # Security hardening modules
-└── templates/        # Configuration templates
-```
+    ```python
+    from infraninja.facts import HardwareFact
 
-## Contributing
+    fact = HardwareFact()
+    result = fact.execute()
+    print(result.data)
+    ```
 
-InfraNinja is open source and welcomes contributions! Visit our repository to learn more.
+!!! info "Project Structure"
+
+    ```
+    infraninja/
+    ├── actions/          # Action implementations
+    │   ├── base.py       # Action & Composite base classes
+    │   └── ...           # Individual action modules
+    ├── facts/            # Fact-gathering modules
+    ├── inventories/      # Inventory implementations
+    ├── security/         # Security hardening modules
+    └── templates/        # Configuration templates
+    ```
 """
 
     (docs_dir / "index.md").write_text(index_content)
@@ -805,10 +845,9 @@ InfraNinja is open source and welcomes contributions! Visit our repository to le
     actions_index = "# Actions\n\n"
     actions_index += "InfraNinja provides the following pre-built actions:\n\n"
 
-    # Standard actions table
+    # Standard actions as card grid
     actions_index += "## Standard Actions\n\n"
-    actions_index += "| Name | Class | Slug | Category | Supported OS |\n"
-    actions_index += "|------|-------|------|----------|-------------|\n"
+    actions_index += '<div class="item-card-grid">\n'
 
     for action in data["actions"]:
         metadata = action["metadata"]
@@ -817,20 +856,35 @@ InfraNinja is open source and welcomes contributions! Visit our repository to le
         slug = metadata["slug"]
         category = metadata["category"]
         os_count = len(metadata["os_available"])
+        desc = metadata["description"].get("en", "")
+        # Truncate description
+        short_desc = (desc[:100] + "...") if len(desc) > 100 else desc
+        tags = metadata.get("tags", [])
 
-        actions_index += f"| [{name}]({slug}.md) | `{class_name}` | `{slug}` | {category} | {os_count} OS |\n"
+        actions_index += f'<a class="item-card" href="{slug}/">\n'
+        actions_index += f'  <div class="item-card-header"><i class="{metadata["logo"]}"></i> <strong>{name}</strong></div>\n'
+        actions_index += f'  <div class="item-card-class">{class_name}</div>\n'
+        actions_index += f'  <div class="item-card-desc">{short_desc}</div>\n'
+        actions_index += f'  <div class="item-card-footer">\n'
+        actions_index += f'    <span class="mini-badge"><i class="fas fa-folder"></i> {category}</span>\n'
+        actions_index += f'    <span class="mini-badge"><i class="fab fa-linux"></i> {os_count} OS</span>\n'
+        for tag in tags[:3]:
+            actions_index += f'    <span class="mini-badge"><i class="fas fa-hashtag"></i> {tag}</span>\n'
+        actions_index += f'  </div>\n'
+        actions_index += f'</a>\n'
 
         # Generate individual action page
         action_md = generate_action_markdown(action, "en")
         (actions_dir / f"{slug}.md").write_text(action_md)
         print(f"  ✓ actions/{slug}.md")
 
-    # Composite actions table
+    actions_index += '</div>\n\n'
+
+    # Composite actions as card grid
     if data["composites"]:
-        actions_index += "\n## Composite Actions\n\n"
+        actions_index += "## Composite Actions\n\n"
         actions_index += "Composite actions execute multiple actions in sequence.\n\n"
-        actions_index += "| Name | Class | Slug | Category | Sub-Actions |\n"
-        actions_index += "|------|-------|------|----------|-------------|\n"
+        actions_index += '<div class="item-card-grid">\n'
 
         for action in data["composites"]:
             metadata = action["metadata"]
@@ -838,14 +892,26 @@ InfraNinja is open source and welcomes contributions! Visit our repository to le
             class_name = action["class_name"]
             slug = metadata["slug"]
             category = metadata["category"]
-            sub_actions = ", ".join(action.get("sub_actions", []))
+            sub_actions = action.get("sub_actions", [])
+            desc = metadata["description"].get("en", "")
+            short_desc = (desc[:100] + "...") if len(desc) > 100 else desc
 
-            actions_index += f"| [{name}]({slug}.md) | `{class_name}` | `{slug}` | {category} | {sub_actions} |\n"
+            actions_index += f'<a class="item-card" href="{slug}/">\n'
+            actions_index += f'  <div class="item-card-header"><i class="fas fa-layer-group"></i> <strong>{name}</strong></div>\n'
+            actions_index += f'  <div class="item-card-class">{class_name}</div>\n'
+            actions_index += f'  <div class="item-card-desc">{short_desc}</div>\n'
+            actions_index += f'  <div class="item-card-footer">\n'
+            actions_index += f'    <span class="mini-badge"><i class="fas fa-folder"></i> {category}</span>\n'
+            actions_index += f'    <span class="mini-badge"><i class="fas fa-layer-group"></i> {len(sub_actions)} sub-actions</span>\n'
+            actions_index += f'  </div>\n'
+            actions_index += f'</a>\n'
 
             # Generate individual composite action page
             action_md = generate_action_markdown(action, "en")
             (actions_dir / f"{slug}.md").write_text(action_md)
             print(f"  ✓ actions/{slug}.md (composite)")
+
+        actions_index += '</div>\n'
 
     # Creating custom actions section
     actions_index += """
@@ -871,7 +937,7 @@ class MyAction(Action):
 ### Composite Action
 
 ```python
-from infraninja.actions import Composite, Netdata, SSHHardening
+from infraninja.actions import Composite, SSHHardening, SSHKeys
 
 class MySetup(Composite):
     slug = "my-setup"
@@ -881,7 +947,7 @@ class MySetup(Composite):
 
     actions = [
         SSHHardening,
-        Netdata,
+        SSHKeys,
     ]
 ```
 """
@@ -893,8 +959,7 @@ class MySetup(Composite):
     print("\n=== Generating inventories ===")
     inventories_index = "# Inventories\n\n"
     inventories_index += "InfraNinja supports the following inventory sources:\n\n"
-    inventories_index += "| Name | Class | Slug | Description |\n"
-    inventories_index += "|------|-------|------|-------------|\n"
+    inventories_index += '<div class="item-card-grid">\n'
 
     for inventory in data["inventories"]:
         metadata = inventory["metadata"]
@@ -902,13 +967,24 @@ class MySetup(Composite):
         class_name = inventory["class_name"]
         slug = metadata["slug"]
         desc = metadata["description"].get("en", "N/A")
+        short_desc = (desc[:100] + "...") if len(desc) > 100 else desc
 
-        inventories_index += f"| [{name}]({slug}.md) | `{class_name}` | `{slug}` | {desc} |\n"
+        inventories_index += f'<a class="item-card" href="{slug}/">\n'
+        inventories_index += f'  <div class="item-card-header"><i class="fas fa-server"></i> <strong>{name}</strong></div>\n'
+        inventories_index += f'  <div class="item-card-class">{class_name}</div>\n'
+        inventories_index += f'  <div class="item-card-desc">{short_desc}</div>\n'
+        inventories_index += f'  <div class="item-card-footer">\n'
+        inventories_index += f'    <span class="mini-badge"><i class="fas fa-database"></i> inventory</span>\n'
+        inventories_index += f'    <span class="mini-badge"><i class="fas fa-tag"></i> {slug}</span>\n'
+        inventories_index += f'  </div>\n'
+        inventories_index += f'</a>\n'
 
         # Generate individual inventory page
         inventory_md = generate_inventory_markdown(inventory, "en")
         (inventories_dir / f"{slug}.md").write_text(inventory_md)
         print(f"  ✓ inventories/{slug}.md")
+
+    inventories_index += '</div>\n'
 
     (inventories_dir / "index.md").write_text(inventories_index)
     print("  ✓ inventories/index.md")
@@ -919,8 +995,7 @@ class MySetup(Composite):
     facts_index += "InfraNinja provides the following read-only fact-gathering modules:\n\n"
 
     facts_index += "## Standard Facts\n\n"
-    facts_index += "| Name | Class | Slug | Category | Supported OS |\n"
-    facts_index += "|------|-------|------|----------|-------------|\n"
+    facts_index += '<div class="item-card-grid">\n'
 
     for fact in data["facts"]:
         metadata = fact["metadata"]
@@ -929,18 +1004,32 @@ class MySetup(Composite):
         slug = metadata["slug"]
         category = metadata["category"]
         os_count = len(metadata["os_available"])
+        desc = metadata["description"].get("en", "")
+        short_desc = (desc[:100] + "...") if len(desc) > 100 else desc
+        tags = metadata.get("tags", [])
 
-        facts_index += f"| [{name}]({slug}.md) | `{class_name}` | `{slug}` | {category} | {os_count} OS |\n"
+        facts_index += f'<a class="item-card" href="{slug}/">\n'
+        facts_index += f'  <div class="item-card-header"><i class="{metadata["logo"]}"></i> <strong>{name}</strong></div>\n'
+        facts_index += f'  <div class="item-card-class">{class_name}</div>\n'
+        facts_index += f'  <div class="item-card-desc">{short_desc}</div>\n'
+        facts_index += f'  <div class="item-card-footer">\n'
+        facts_index += f'    <span class="mini-badge"><i class="fas fa-folder"></i> {category}</span>\n'
+        facts_index += f'    <span class="mini-badge"><i class="fab fa-linux"></i> {os_count} OS</span>\n'
+        for tag in tags[:3]:
+            facts_index += f'    <span class="mini-badge"><i class="fas fa-hashtag"></i> {tag}</span>\n'
+        facts_index += f'  </div>\n'
+        facts_index += f'</a>\n'
 
         fact_md = generate_fact_markdown(fact, "en")
         (facts_dir / f"{slug}.md").write_text(fact_md)
         print(f"  ✓ facts/{slug}.md")
 
+    facts_index += '</div>\n\n'
+
     if data["composite_facts"]:
-        facts_index += "\n## Composite Facts\n\n"
+        facts_index += "## Composite Facts\n\n"
         facts_index += "Composite facts gather multiple facts in sequence and merge results.\n\n"
-        facts_index += "| Name | Class | Slug | Category | Sub-Facts |\n"
-        facts_index += "|------|-------|------|----------|----------|\n"
+        facts_index += '<div class="item-card-grid">\n'
 
         for fact in data["composite_facts"]:
             metadata = fact["metadata"]
@@ -948,13 +1037,25 @@ class MySetup(Composite):
             class_name = fact["class_name"]
             slug = metadata["slug"]
             category = metadata["category"]
-            sub_facts = ", ".join(fact.get("sub_facts", []))
+            sub_facts = fact.get("sub_facts", [])
+            desc = metadata["description"].get("en", "")
+            short_desc = (desc[:100] + "...") if len(desc) > 100 else desc
 
-            facts_index += f"| [{name}]({slug}.md) | `{class_name}` | `{slug}` | {category} | {sub_facts} |\n"
+            facts_index += f'<a class="item-card" href="{slug}/">\n'
+            facts_index += f'  <div class="item-card-header"><i class="fas fa-layer-group"></i> <strong>{name}</strong></div>\n'
+            facts_index += f'  <div class="item-card-class">{class_name}</div>\n'
+            facts_index += f'  <div class="item-card-desc">{short_desc}</div>\n'
+            facts_index += f'  <div class="item-card-footer">\n'
+            facts_index += f'    <span class="mini-badge"><i class="fas fa-folder"></i> {category}</span>\n'
+            facts_index += f'    <span class="mini-badge"><i class="fas fa-layer-group"></i> {len(sub_facts)} sub-facts</span>\n'
+            facts_index += f'  </div>\n'
+            facts_index += f'</a>\n'
 
             fact_md = generate_fact_markdown(fact, "en")
             (facts_dir / f"{slug}.md").write_text(fact_md)
             print(f"  ✓ facts/{slug}.md (composite)")
+
+        facts_index += '</div>\n'
 
     (facts_dir / "index.md").write_text(facts_index)
     print("  ✓ facts/index.md")
@@ -965,129 +1066,344 @@ class MySetup(Composite):
     print("\n  ✓ data.json (reference)")
 
     # Generate custom CSS for styling
-    css_content = """/* Custom styling for InfraNinja documentation */
+    css_content = """/* ── InfraNinja – Design Tokens ─────────────────────────── */
+:root {
+  --nin-primary: #7c3aed;
+  --nin-primary-light: #a78bfa;
+  --nin-primary-dark: #5b21b6;
+  --nin-accent: #c084fc;
+  --nin-surface: #ffffff;
+  --nin-surface-alt: #f5f3ff;
+  --nin-surface-raised: #ffffff;
+  --nin-text: #1e1b4b;
+  --nin-text-muted: #6b7280;
+  --nin-border: #e5e7eb;
+  --nin-shadow-sm: 0 1px 3px rgba(0,0,0,.08);
+  --nin-shadow-md: 0 4px 12px rgba(0,0,0,.1);
+  --nin-shadow-lg: 0 8px 24px rgba(0,0,0,.12);
+  --nin-radius: 12px;
+  --nin-radius-sm: 8px;
+}
 
+[data-md-color-scheme="slate"] {
+  --nin-primary: #a78bfa;
+  --nin-primary-light: #c4b5fd;
+  --nin-primary-dark: #7c3aed;
+  --nin-accent: #c084fc;
+  --nin-surface: #1e1e2e;
+  --nin-surface-alt: #27273a;
+  --nin-surface-raised: #2a2a3d;
+  --nin-text: #e2e0f0;
+  --nin-text-muted: #9ca3af;
+  --nin-border: #3f3f5a;
+  --nin-shadow-sm: 0 1px 3px rgba(0,0,0,.3);
+  --nin-shadow-md: 0 4px 12px rgba(0,0,0,.35);
+  --nin-shadow-lg: 0 8px 24px rgba(0,0,0,.4);
+}
+
+/* ── Content fade-in ───────────────────────────────────── */
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(16px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.md-content__inner { animation: fadeInUp .4s ease-out; }
+
+/* ── Typography ────────────────────────────────────────── */
+.md-content h1 {
+  font-weight: 800 !important;
+  letter-spacing: -0.02em;
+}
+.md-content h2 {
+  font-weight: 700 !important;
+  padding-bottom: .35em;
+  border-bottom: 2px solid var(--nin-border);
+  margin-top: 2em;
+}
+.md-content h3 {
+  font-weight: 600 !important;
+  color: var(--nin-text-muted);
+}
+
+/* ── Hero Section ──────────────────────────────────────── */
+.hero-section {
+  background: linear-gradient(135deg, var(--nin-primary-dark) 0%, var(--nin-primary) 50%, var(--nin-accent) 100%);
+  color: #fff;
+  padding: 4rem 2rem;
+  border-radius: var(--nin-radius);
+  text-align: center;
+  margin-bottom: 2rem;
+}
+.hero-section h1 {
+  font-size: 2.8rem;
+  font-weight: 800 !important;
+  margin: 0 0 .5rem;
+  color: #fff !important;
+  border: none !important;
+}
+.hero-section p {
+  font-size: 1.2rem;
+  opacity: .9;
+  max-width: 600px;
+  margin: 0 auto 1.5rem;
+}
+.hero-buttons { display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap; }
+.hero-buttons .md-button {
+  border-radius: var(--nin-radius-sm);
+  font-weight: 600;
+  padding: .65rem 1.6rem;
+}
+
+/* ── Stats Bar ─────────────────────────────────────────── */
+.stats-bar {
+  display: flex;
+  justify-content: center;
+  gap: 2rem;
+  padding: 1.5rem 1rem;
+  flex-wrap: wrap;
+  margin-bottom: 2rem;
+}
+.stat-item { text-align: center; }
+.stat-number {
+  display: block;
+  font-size: 2.2rem;
+  font-weight: 800;
+  color: var(--nin-primary);
+  line-height: 1.1;
+}
+.stat-label {
+  font-size: .85rem;
+  color: var(--nin-text-muted);
+  text-transform: uppercase;
+  letter-spacing: .06em;
+  font-weight: 600;
+}
+
+/* ── Feature Cards Grid ────────────────────────────────── */
+.feature-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 1.25rem;
+  margin: 2rem 0;
+}
+.feature-card {
+  background: var(--nin-surface-raised);
+  border: 1px solid var(--nin-border);
+  border-radius: var(--nin-radius);
+  padding: 1.5rem;
+  text-align: center;
+  box-shadow: var(--nin-shadow-sm);
+  transition: transform .2s ease, box-shadow .2s ease;
+  text-decoration: none !important;
+  color: var(--nin-text) !important;
+  display: block;
+}
+.feature-card:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--nin-shadow-lg);
+}
+.feature-card i {
+  font-size: 2rem;
+  color: var(--nin-primary);
+  margin-bottom: .75rem;
+  display: block;
+}
+.feature-card h3 {
+  margin: 0 0 .4rem;
+  font-size: 1.05rem;
+  color: var(--nin-text) !important;
+  border: none !important;
+  padding: 0 !important;
+}
+.feature-card p {
+  margin: 0;
+  font-size: .88rem;
+  color: var(--nin-text-muted);
+}
+
+/* ── Item Cards (index pages) ──────────────────────────── */
+.item-card-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 1.25rem;
+  margin: 1.5rem 0;
+}
+.item-card {
+  background: var(--nin-surface-raised);
+  border: 1px solid var(--nin-border);
+  border-left: 4px solid var(--nin-primary);
+  border-radius: var(--nin-radius-sm);
+  padding: 1.25rem 1.25rem 1rem;
+  text-decoration: none !important;
+  color: var(--nin-text) !important;
+  display: block;
+  box-shadow: var(--nin-shadow-sm);
+  transition: transform .2s ease, box-shadow .2s ease;
+}
+.item-card:hover {
+  transform: translateY(-3px);
+  box-shadow: var(--nin-shadow-md);
+}
+.item-card-header {
+  display: flex;
+  align-items: center;
+  gap: .6rem;
+  margin-bottom: .5rem;
+}
+.item-card-header i {
+  font-size: 1.3rem;
+  color: var(--nin-primary);
+}
+.item-card-header strong {
+  font-size: 1rem;
+}
+.item-card-class {
+  font-size: .78rem;
+  color: var(--nin-text-muted);
+  font-family: 'JetBrains Mono', monospace;
+}
+.item-card-desc {
+  font-size: .88rem;
+  color: var(--nin-text-muted);
+  margin: .4rem 0 .75rem;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.item-card-footer {
+  display: flex;
+  gap: .4rem;
+  flex-wrap: wrap;
+}
+.mini-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: .3rem;
+  font-size: .72rem;
+  padding: .2rem .55rem;
+  border-radius: 10px;
+  font-weight: 600;
+  background: var(--nin-surface-alt);
+  color: var(--nin-text-muted);
+  border: 1px solid var(--nin-border);
+}
+
+/* ── Badges (detail pages) ─────────────────────────────── */
 .meta-badges {
-    display: flex;
-    gap: 0.5rem;
-    margin: 1rem 0;
-    flex-wrap: wrap;
+  display: flex;
+  gap: .5rem;
+  margin: 1rem 0;
+  flex-wrap: wrap;
 }
-
 .badge {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.5rem;
-    padding: 0.5rem 1rem;
-    border-radius: 20px;
-    font-weight: 600;
-    color: white;
-    font-size: 0.9rem;
+  display: inline-flex;
+  align-items: center;
+  gap: .45rem;
+  padding: .45rem .9rem;
+  border-radius: 20px;
+  font-weight: 600;
+  color: #fff;
+  font-size: .82rem;
+  letter-spacing: .02em;
+  box-shadow: var(--nin-shadow-sm);
 }
+.badge i { font-size: .8rem; }
+.badge-slug { background-color: #64748b; }
+.badge-inventory { background-color: #10b981; }
+.badge-composite { background-color: #9333ea; }
+.badge-fact { background-color: #3b82f6; }
 
-.badge i {
-    font-size: 0.85rem;
-}
-
-.badge-slug {
-    background-color: #718096;
-}
-
-.badge-inventory {
-    background-color: #48bb78;
-}
-
-.badge-composite {
-    background-color: #9B59B6;
-}
-
+/* ── Tags ──────────────────────────────────────────────── */
 .tags-container {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.5rem;
-    margin: 1rem 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: .5rem;
+  margin: 1rem 0;
 }
-
 .tag {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.5rem;
-    background-color: #e2e8f0;
-    color: #2d3748;
-    padding: 0.4rem 0.8rem;
-    border-radius: 15px;
-    font-size: 0.85rem;
-    font-weight: 500;
+  display: inline-flex;
+  align-items: center;
+  gap: .4rem;
+  background: var(--nin-surface-alt);
+  color: var(--nin-text);
+  padding: .35rem .75rem;
+  border-radius: 15px;
+  font-size: .82rem;
+  font-weight: 500;
+  border: 1px solid transparent;
+  transition: border-color .2s;
 }
+.tag:hover { border-color: var(--nin-primary-light); }
+.tag i { font-size: .7rem; color: var(--nin-primary); }
 
-.tag i {
-    font-size: 0.75rem;
-    color: #667eea;
-}
-
+/* ── OS Grid ───────────────────────────────────────────── */
 .os-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-    gap: 1rem;
-    margin: 1rem 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: .75rem;
+  margin: 1rem 0;
 }
-
 .os-badge {
-    display: flex;
-    align-items: center;
-    gap: 0.75rem;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    color: white;
-    padding: 0.75rem 1rem;
-    border-radius: 8px;
-    font-weight: 600;
-    transition: transform 0.2s;
+  display: flex;
+  align-items: center;
+  gap: .65rem;
+  background: var(--nin-surface-raised);
+  border: 1px solid var(--nin-border);
+  color: var(--nin-text);
+  padding: .65rem 1rem;
+  border-radius: var(--nin-radius-sm);
+  font-weight: 600;
+  transition: transform .2s, box-shadow .2s;
+  box-shadow: var(--nin-shadow-sm);
 }
-
 .os-badge:hover {
-    transform: translateY(-2px);
+  transform: translateY(-2px);
+  box-shadow: var(--nin-shadow-md);
 }
-
 .os-badge i {
-    font-size: 1.5rem;
+  font-size: 1.4rem;
+  color: var(--nin-primary);
 }
 
-/* RTL support for Arabic */
-html[dir="rtl"] .meta-badges,
-html[dir="rtl"] .tags-container,
-html[dir="rtl"] .os-badge {
-    direction: rtl;
+/* ── Tables ────────────────────────────────────────────── */
+.md-typeset table:not([class]) {
+  border-collapse: collapse;
+  width: 100%;
+  margin: 1rem 0;
+  border-radius: var(--nin-radius-sm);
+  overflow: hidden;
+  box-shadow: var(--nin-shadow-sm);
+}
+.md-typeset table:not([class]) th {
+  background: var(--nin-surface-alt);
+  color: var(--nin-text);
+  padding: .75rem 1rem;
+  text-align: left;
+  font-weight: 700;
+  border-bottom: 2px solid var(--nin-primary);
+}
+.md-typeset table:not([class]) td {
+  padding: .65rem 1rem;
+  border-bottom: 1px solid var(--nin-border);
+}
+.md-typeset table:not([class]) tr:hover td {
+  background: var(--nin-surface-alt);
 }
 
-/* Table styling */
-table {
-    border-collapse: collapse;
-    width: 100%;
-    margin: 1rem 0;
+/* ── Code Blocks ───────────────────────────────────────── */
+.md-typeset pre {
+  border: 1px solid var(--nin-border);
+  border-radius: var(--nin-radius-sm);
 }
 
-table th {
-    background-color: #667eea;
-    color: white;
-    padding: 0.75rem;
-    text-align: left;
-}
-
-table td {
-    padding: 0.75rem;
-    border-bottom: 1px solid #e2e8f0;
-}
-
-table tr:hover {
-    background-color: #f7fafc;
-}
-
-/* Code blocks */
-code {
-    background-color: #f7fafc;
-    padding: 0.2rem 0.4rem;
-    border-radius: 4px;
-    font-size: 0.9em;
+/* ── Responsive ────────────────────────────────────────── */
+@media (max-width: 768px) {
+  .hero-section { padding: 2.5rem 1.25rem; }
+  .hero-section h1 { font-size: 1.8rem; }
+  .stats-bar { gap: 1rem; }
+  .stat-number { font-size: 1.6rem; }
+  .feature-grid { grid-template-columns: 1fr; }
+  .item-card-grid { grid-template-columns: 1fr; }
 }
 """
 

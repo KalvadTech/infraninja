@@ -6,7 +6,7 @@ InfraNinja simplifies infrastructure management through **Actions** (reusable de
 
 ## ⚡️ Features
 
-- 🎯 **Action-Based Architecture**: Execute pre-built deployment tasks with rich metadata (Netdata monitoring, SSH hardening, SSH keys, system updates)
+- 🎯 **Action-Based Architecture**: Execute pre-built deployment tasks with rich metadata (SSH hardening, SSH keys, system updates)
 - 🌐 **Dynamic Inventories**: Automated server discovery from Jinn API and Coolify with intelligent filtering
 - 🛡️ **Comprehensive Security**: 30+ security modules including SSH/kernel hardening, firewall setup (IPTables, NFTables, PF), malware detection (chkrootkit, rkhunter), and intrusion prevention (Fail2Ban, Suricata)
 - 🧩 **Multi-OS Support**: Ubuntu, Debian, Alpine Linux, FreeBSD, RHEL, CentOS, Fedora, and Arch Linux
@@ -75,23 +75,19 @@ Integrate actions with PyInfra deployments:
 
 ```python
 from pyinfra import inventory
-from infraninja import Netdata
+from infraninja import SSHHardening
 
 # Define inventory
 inventory.add_host(name="server1", ssh_user="root")
 
 # Execute action across inventory
-action = Netdata()
+action = SSHHardening()
 action.execute()
 ```
 
 ## 📜 Available Actions
 
 InfraNinja provides comprehensive deployment actions organized by functionality:
-
-### 🔍 Monitoring & Observability
-
-- **Netdata**: Real-time performance monitoring and alerting with Netdata Cloud integration
 
 ### 🛡️ Security & Hardening
 

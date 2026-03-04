@@ -5,6 +5,25 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.5.0] - 2026-03-04
+
+### Features
+
+- Backported all security modules to the Action framework with 23 new Action wrappers:
+  ACLSetup, ARPProtection, AuditdSetup, ChkrootkitSetup, SecurityPackageInstall,
+  DisableServices, Fail2BanSetup, IPTablesSetup, KernelHardening,
+  MediaAutorunProtection, NFTablesSetup, SmtpHardening, LynisSetup, PFSetup,
+  RkhunterSetup, ClamAVSetup, SuricataSetup, AppArmorSetup, NTPHardening,
+  RoutingControls, RedisAuthPatch, UAEComplianceAudit, RebootSystem
+- Added 5 composite actions for grouped execution:
+  SecurityHardening, FirewallSetup, MalwareProtection, SecurityAudit, FullSecuritySetup
+- OS-specific variants merged into single Actions with internal OS dispatch
+- All new actions auto-discovered by generate_docs.py and registered in __all__
+
+### Removed
+
+- Removed Netdata action (deprecated)
+
 ## [0.3.0] - 2025-09-16
 
 Merged PR #25: freeBSD more tasks

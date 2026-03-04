@@ -18,9 +18,13 @@ if result.success:
     print(result.data)
 ```
 
+---
+
 ## Description
 
 Gather system information including OS, hostname, kernel, and architecture
+
+---
 
 ## Tags
 
@@ -29,6 +33,8 @@ Gather system information including OS, hostname, kernel, and architecture
   <span class="tag"><i class="fas fa-hashtag"></i> os</span>
   <span class="tag"><i class="fas fa-hashtag"></i> info</span>
 </div>
+
+---
 
 ## Supported Operating Systems
 
@@ -42,6 +48,8 @@ Gather system information including OS, hostname, kernel, and architecture
   <div class="os-badge"><i class="fab fa-fedora"></i> Fedora</div>
   <div class="os-badge"><i class="fab fa-linux"></i> Arch</div>
 </div>
+
+---
 
 ## Execute Method
 

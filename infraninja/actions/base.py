@@ -13,10 +13,10 @@ class Action(ABC):
     Each action represents a deployable unit with metadata for UI/CLI presentation.
 
     Attributes:
-        slug: Unique identifier for the action (e.g., 'deploy-netdata')
-        name: Action name in multiple languages {'en': 'Deploy Netdata', 'ar': '...'}
+        slug: Unique identifier for the action (e.g., 'ssh-hardening')
+        name: Action name in multiple languages {'en': 'SSH Hardening', 'ar': '...'}
         tags: List of tags for categorization and filtering
-        category: Action category (e.g., 'monitoring', 'security', 'deployment')
+        category: Action category (e.g., 'security', 'deployment')
         color: Color code for UI display (hex color)
         logo: Font Awesome icon name (e.g., 'fa-server', 'fa-shield')
         description: Action description in multiple languages
@@ -25,16 +25,16 @@ class Action(ABC):
     Example:
         .. code:: python
 
-            class Netdata(Action):
-                slug = "deploy-netdata"
-                name = {"en": "Deploy Netdata", "ar": "نشر Netdata"}
-                tags = ["monitoring", "observability"]
-                category = "monitoring"
-                color = "#00AB44"
-                logo = "fa-chart-line"
+            class SSHHardening(Action):
+                slug = "ssh-hardening"
+                name = {"en": "SSH Hardening", "ar": "تقوية SSH"}
+                tags = ["security", "ssh", "hardening"]
+                category = "security"
+                color = "#E74C3C"
+                logo = "fa-shield"
                 description = {
-                    "en": "Deploy Netdata real-time monitoring",
-                    "ar": "نشر مراقبة Netdata في الوقت الفعلي"
+                    "en": "Harden SSH server configuration",
+                    "ar": "تقوية إعدادات خادم SSH"
                 }
                 os_available = ["ubuntu", "debian", "alpine", "freebsd", "rhel", "centos"]
 
@@ -203,18 +203,18 @@ class Composite(Action):
             from infraninja.actions.base import Composite
             from infraninja.actions.update_and_upgrade import UpdateAndUpgrade
             from infraninja.actions.ssh_hardening import SSHHardening
-            from infraninja.actions.netdata import Netdata
+            from infraninja.actions.ssh_keys import SSHKeys
 
             class FullSetup(Composite):
                 slug = "full-setup"
                 name = {"en": "Full Server Setup"}
-                description = {"en": "Complete server setup with updates, hardening, and monitoring"}
+                description = {"en": "Complete server setup with updates, hardening, and key deployment"}
                 category = "setup"
 
                 actions = [
                     UpdateAndUpgrade,
                     SSHHardening,
-                    Netdata,
+                    SSHKeys,
                 ]
 
             # Execute all sub-actions
@@ -224,7 +224,6 @@ class Composite(Action):
             # Pass specific params to sub-actions
             result = setup.execute(
                 SSHHardening={"permit_root_login": "no"},
-                Netdata={"claim_token": "xxx"},
             )
     """
 

@@ -1,19 +1,19 @@
 """Full server setup composite action."""
 
 from .base import Composite
-from .netdata import Netdata
 from .ssh_hardening import SSHHardening
+from .ssh_keys import SSHKeys
 from .update_and_upgrade import UpdateAndUpgrade
 
 
 class FullSetup(Composite):
     """
-    Complete server setup with updates, hardening, and monitoring.
+    Complete server setup with updates, hardening, and key deployment.
 
     Executes the following actions in order:
     1. UpdateAndUpgrade - Update system packages
     2. SSHHardening - Harden SSH configuration
-    3. Netdata - Deploy monitoring
+    3. SSHKeys - Deploy SSH keys
 
     Example:
         .. code:: python
@@ -27,7 +27,6 @@ class FullSetup(Composite):
             # Execute with custom params for sub-actions
             result = setup.execute(
                 SSHHardening={"permit_root_login": "no"},
-                Netdata={"claim_token": "your-token", "claim_rooms": "your-room"},
             )
 
             # Check results
@@ -43,18 +42,18 @@ class FullSetup(Composite):
         "ar": "إعداد الخادم الكامل",
         "fr": "Configuration complète du serveur",
     }
-    tags = ["setup", "hardening", "monitoring", "composite"]
+    tags = ["setup", "hardening", "ssh", "composite"]
     category = "setup"
     color = "#9B59B6"
     logo = "fa-server"
     description = {
-        "en": "Complete server setup including system updates, SSH hardening, and Netdata monitoring",
-        "ar": "إعداد الخادم الكامل بما في ذلك تحديثات النظام وتقوية SSH ومراقبة Netdata",
-        "fr": "Configuration complète du serveur incluant mises à jour, durcissement SSH et surveillance Netdata",
+        "en": "Complete server setup including system updates, SSH hardening, and SSH key deployment",
+        "ar": "إعداد الخادم الكامل بما في ذلك تحديثات النظام وتقوية SSH ونشر مفاتيح SSH",
+        "fr": "Configuration complète du serveur incluant mises à jour, durcissement SSH et déploiement de clés SSH",
     }
 
     actions = [
         UpdateAndUpgrade,
         SSHHardening,
-        Netdata,
+        SSHKeys,
     ]

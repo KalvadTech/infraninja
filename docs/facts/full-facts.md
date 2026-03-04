@@ -19,9 +19,13 @@ result = fact.execute()
 print(result.data)
 ```
 
+---
+
 ## Description
 
 Gather complete system and hardware information from the server
+
+---
 
 ## Sub-Facts
 
@@ -32,6 +36,8 @@ This composite fact gathers the following facts in order:
 | 1 | `SystemInfo` | - |
 | 2 | `Hardware` | - |
 
+---
+
 ## Tags
 
 <div class="tags-container">
@@ -40,6 +46,8 @@ This composite fact gathers the following facts in order:
   <span class="tag"><i class="fas fa-hashtag"></i> info</span>
   <span class="tag"><i class="fas fa-hashtag"></i> composite</span>
 </div>
+
+---
 
 ## Supported Operating Systems
 
@@ -53,6 +61,8 @@ This composite fact gathers the following facts in order:
   <div class="os-badge"><i class="fab fa-redhat"></i> Rhel</div>
   <div class="os-badge"><i class="fab fa-ubuntu"></i> Ubuntu</div>
 </div>
+
+---
 
 ## Execute Method
 

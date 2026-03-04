@@ -6,6 +6,9 @@ repo_name: KalvadTech/infraninja
 
 theme:
   name: material
+  font:
+    text: Inter
+    code: JetBrains Mono
   palette:
     # Light mode
     - scheme: default
@@ -23,19 +26,26 @@ theme:
         name: Switch to light mode
   features:
     - navigation.instant
+    - navigation.instant.progress
     - navigation.tracking
     - navigation.tabs
+    - navigation.tabs.sticky
     - navigation.sections
     - navigation.expand
+    - navigation.indexes
     - navigation.top
     - search.suggest
     - search.highlight
+    - search.share
     - content.code.copy
     - content.code.annotate
+    - content.tabs.link
+    - toc.follow
   icon:
     repo: fontawesome/brands/github
 
 extra_css:
+  - https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css
   - stylesheets/extra.css
 
 markdown_extensions:
@@ -53,6 +63,9 @@ markdown_extensions:
       emoji_generator: !!python/name:material.extensions.emoji.to_svg
   - admonition
   - pymdownx.details
+  - pymdownx.tasklist:
+      custom_checkbox: true
+  - def_list
   - tables
   - attr_list
   - md_in_html
@@ -66,12 +79,39 @@ nav:
   - Actions:
       - Overview: actions/index.md
       - Standard Actions:
-          - Deploy Netdata Monitoring: actions/deploy-netdata.md
+          - ACL Setup: actions/acl-setup.md
+          - AppArmor Setup: actions/apparmor-setup.md
+          - ARP Protection: actions/arp-protection.md
+          - Auditd Setup: actions/auditd-setup.md
+          - Chkrootkit Setup: actions/chkrootkit-setup.md
+          - ClamAV Setup: actions/clamav-setup.md
+          - Disable Services: actions/disable-services.md
+          - Fail2Ban Setup: actions/fail2ban-setup.md
+          - IPTables Setup: actions/iptables-setup.md
+          - Kernel Hardening: actions/kernel-hardening.md
+          - Lynis Setup: actions/lynis-setup.md
+          - Media Autorun Protection: actions/media-autorun-protection.md
+          - NFTables Setup: actions/nftables-setup.md
+          - NTP Hardening: actions/ntp-hardening.md
+          - PF Setup: actions/pf-setup.md
+          - Reboot System: actions/reboot-system.md
+          - Redis Auth Patch: actions/redis-auth-patch.md
+          - Rkhunter Setup: actions/rkhunter-setup.md
+          - Routing Controls: actions/routing-controls.md
+          - Security Package Install: actions/security-package-install.md
+          - SMTP Hardening: actions/smtp-hardening.md
           - SSH Hardening: actions/ssh-hardening.md
           - Deploy SSH Keys: actions/deploy-ssh-keys.md
+          - Suricata Setup: actions/suricata-setup.md
+          - UAE Compliance Audit: actions/uae-compliance-audit.md
           - Update and Upgrade System: actions/update-and-upgrade.md
       - Composite Actions:
+          - Firewall Setup: actions/firewall-setup.md
+          - Full Security Setup: actions/full-security-setup.md
           - Full Server Setup: actions/full-setup.md
+          - Malware Protection: actions/malware-protection.md
+          - Security Audit: actions/security-audit.md
+          - Security Hardening: actions/security-hardening.md
   - Inventories:
       - Overview: inventories/index.md
       - Coolify Inventory: inventories/coolify.md

@@ -18,9 +18,13 @@ if result.success:
     print(result.data)
 ```
 
+---
+
 ## Description
 
 Gather hardware information including CPUs, memory, block devices, and network devices
+
+---
 
 ## Tags
 
@@ -30,6 +34,8 @@ Gather hardware information including CPUs, memory, block devices, and network d
   <span class="tag"><i class="fas fa-hashtag"></i> memory</span>
   <span class="tag"><i class="fas fa-hashtag"></i> network</span>
 </div>
+
+---
 
 ## Supported Operating Systems
 
@@ -43,6 +49,8 @@ Gather hardware information including CPUs, memory, block devices, and network d
   <div class="os-badge"><i class="fab fa-fedora"></i> Fedora</div>
   <div class="os-badge"><i class="fab fa-linux"></i> Arch</div>
 </div>
+
+---
 
 ## Execute Method
 

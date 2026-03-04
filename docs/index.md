@@ -1,111 +1,123 @@
-# InfraNinja Documentation
+<div class="hero-section" markdown>
 
-Welcome to InfraNinja - Ninja-level deployments for infrastructure automation.
+# InfraNinja
 
-## What is InfraNinja?
+Ninja-level deployments for infrastructure automation
 
-InfraNinja is a powerful infrastructure automation framework built on top of PyInfra. It provides:
+<div class="hero-buttons">
+  <a href="actions/" class="md-button md-button--primary">Browse Actions</a>
+  <a href="https://github.com/KalvadTech/infraninja" class="md-button">GitHub</a>
+</div>
 
-- **Actions**: Pre-built deployment tasks for common infrastructure components
-- **Composite Actions**: Meta-actions that combine multiple actions into workflows
-- **Inventories**: Dynamic server inventory management from various sources
-- **Extensible**: Easy to create custom actions and inventories
+</div>
 
-## Key Concepts
+<div class="stats-bar">
+  <div class="stat-item">
+    <span class="stat-number">26</span>
+    <span class="stat-label">Actions</span>
+  </div>
+  <div class="stat-item">
+    <span class="stat-number">6</span>
+    <span class="stat-label">Composites</span>
+  </div>
+  <div class="stat-item">
+    <span class="stat-number">2</span>
+    <span class="stat-label">Inventories</span>
+  </div>
+  <div class="stat-item">
+    <span class="stat-number">3</span>
+    <span class="stat-label">Facts</span>
+  </div>
+</div>
 
-### Actions
+<div class="feature-grid" markdown>
 
-Actions are reusable deployment tasks that can be executed across your infrastructure. Each action encapsulates:
+<a class="feature-card" href="actions/">
+  <i class="fas fa-bolt"></i>
+  <h3>Actions</h3>
+  <p>Pre-built deployment tasks for common infrastructure components</p>
+</a>
 
-- Installation and configuration logic
-- OS-specific implementations
-- Templating and customization options
-- Metadata (name, description, tags, supported OS)
+<a class="feature-card" href="actions/#composite-actions">
+  <i class="fas fa-layer-group"></i>
+  <h3>Composites</h3>
+  <p>Meta-actions that combine multiple actions into workflows</p>
+</a>
 
-Browse available actions: [Actions](actions/index.md)
+<a class="feature-card" href="inventories/">
+  <i class="fas fa-server"></i>
+  <h3>Inventories</h3>
+  <p>Dynamic server inventory management from various sources</p>
+</a>
 
-### Composite Actions
+<a class="feature-card" href="facts/">
+  <i class="fas fa-search"></i>
+  <h3>Facts</h3>
+  <p>Read-only modules to gather system and hardware information</p>
+</a>
 
-Composite actions group multiple actions together and execute them in sequence. They:
-
-- Inherit all metadata capabilities from regular actions
-- Auto-compute supported OS as intersection of sub-actions
-- Support passing parameters to specific sub-actions
-- Can stop on failure or continue execution
-
-### Inventories
-
-Inventories provide dynamic server management from various sources like APIs and cloud providers. Features include:
-
-- Automatic SSH configuration generation
-- Server filtering by tags/groups
-- Multi-source support (Jinn, Coolify, etc.)
-- Metadata extraction
-
-Browse available inventories: [Inventories](inventories/index.md)
+</div>
 
 ## Getting Started
 
-### Simple Action
+=== "Simple Action"
 
-```python
-from infraninja import Netdata
+    ```python
+    from infraninja import UpdateAndUpgrade
 
-# Deploy Netdata monitoring
-action = Netdata()
-action.execute()
-```
+    # Update system packages
+    action = UpdateAndUpgrade()
+    action.execute()
+    ```
 
-### With Inventory
+=== "With Inventory"
 
-```python
-from infraninja import UpdateAndUpgrade
-from infraninja.inventories import Jinn
+    ```python
+    from infraninja import UpdateAndUpgrade
+    from infraninja.inventories import Jinn
 
-# Initialize inventory
-inventory = Jinn(
-    api_key="your-api-key",
-    groups=["production"]
-)
+    inventory = Jinn(
+        api_key="your-api-key",
+        groups=["production"]
+    )
 
-# Deploy action
-action = UpdateAndUpgrade()
-action.execute()
-```
+    action = UpdateAndUpgrade()
+    action.execute()
+    ```
 
-### Composite Action
+=== "Composite"
 
-```python
-from infraninja import FullSetup
+    ```python
+    from infraninja import FullSetup
 
-# Execute multiple actions in sequence
-setup = FullSetup()
-result = setup.execute(
-    SSHHardening={"permit_root_login": "no"},
-    Netdata={"claim_token": "xxx"},
-)
+    setup = FullSetup()
+    result = setup.execute(
+        SSHHardening={"permit_root_login": "no"},
+    )
 
-# Check results
-for r in result.results:
-    print(f"{r.action}: {'OK' if r.success else 'FAILED'}")
-```
+    for r in result.results:
+        print(f"{r.action}: {'OK' if r.success else 'FAILED'}")
+    ```
 
-## Project Structure
+=== "Gathering Facts"
 
-```
-infraninja/
-├── actions/          # Action implementations
-│   ├── base.py       # Action & Composite base classes
-│   ├── netdata.py    # Netdata monitoring
-│   ├── ssh_hardening.py
-│   ├── ssh_keys.py
-│   ├── update_and_upgrade.py
-│   └── full_setup.py # Composite action example
-├── inventories/      # Inventory implementations
-├── security/         # Security hardening modules
-└── templates/        # Configuration templates
-```
+    ```python
+    from infraninja.facts import HardwareFact
 
-## Contributing
+    fact = HardwareFact()
+    result = fact.execute()
+    print(result.data)
+    ```
 
-InfraNinja is open source and welcomes contributions! Visit our repository to learn more.
+!!! info "Project Structure"
+
+    ```
+    infraninja/
+    ├── actions/          # Action implementations
+    │   ├── base.py       # Action & Composite base classes
+    │   └── ...           # Individual action modules
+    ├── facts/            # Fact-gathering modules
+    ├── inventories/      # Inventory implementations
+    ├── security/         # Security hardening modules
+    └── templates/        # Configuration templates
+    ```

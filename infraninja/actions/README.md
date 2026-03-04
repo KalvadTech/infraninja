@@ -6,7 +6,7 @@ Actions are the main entry point for InfraNinja infrastructure automation. Each 
 
 Every action inherits from the base `Action` class and defines:
 
-- **slug**: Unique identifier (e.g., `deploy-netdata`)
+- **slug**: Unique identifier (e.g., `ssh-hardening`)
 - **name**: Multilingual name dictionary
 - **tags**: List of searchable tags
 - **category**: Action category
@@ -16,17 +16,15 @@ Every action inherits from the base `Action` class and defines:
 
 ## Available Actions
 
-### Monitoring
-
-#### NetdataAction
-- **Slug**: `deploy-netdata`
-- **Category**: monitoring
-- **Tags**: monitoring, observability, metrics, alerting
-- **Description**: Deploy Netdata real-time monitoring platform
-
 ### Security
 
-#### SSHKeysAction
+#### SSHHardening
+- **Slug**: `ssh-hardening`
+- **Category**: security
+- **Tags**: security, ssh, hardening
+- **Description**: Comprehensive SSH server hardening with security best practices
+
+#### SSHKeys
 - **Slug**: `deploy-ssh-keys`
 - **Category**: security
 - **Tags**: security, ssh, authentication, access-control
@@ -34,7 +32,7 @@ Every action inherits from the base `Action` class and defines:
 
 ### Maintenance
 
-#### UpdateAndUpgradeAction
+#### UpdateAndUpgrade
 - **Slug**: `update-and-upgrade`
 - **Category**: maintenance
 - **Tags**: system, updates, packages, maintenance
@@ -45,18 +43,18 @@ Every action inherits from the base `Action` class and defines:
 ### Basic Usage
 
 ```python
-from infraninja import NetdataAction, SSHKeysAction, UpdateAndUpgradeAction
+from infraninja import SSHHardening, SSHKeys, UpdateAndUpgrade
 
-# Deploy Netdata monitoring
-netdata = NetdataAction()
-netdata.execute()
+# Harden SSH configuration
+ssh = SSHHardening()
+ssh.execute()
 
 # Deploy SSH keys
-ssh_keys = SSHKeysAction()
+ssh_keys = SSHKeys()
 ssh_keys.execute(timeout=10, max_retries=3)
 
 # Update and upgrade system
-update = UpdateAndUpgradeAction()
+update = UpdateAndUpgrade()
 update.execute()
 ```
 
@@ -64,38 +62,38 @@ update.execute()
 
 ```python
 from pyinfra import inventory
-from infraninja import NetdataAction
+from infraninja import SSHHardening
 
 # Define your inventory
 inventory.add_host(name="server1", ssh_user="root")
 
 # Execute action
-action = NetdataAction()
+action = SSHHardening()
 action.execute()
 ```
 
 ### Getting Action Metadata
 
 ```python
-from infraninja import NetdataAction
+from infraninja import SSHHardening
 
-action = NetdataAction()
+action = SSHHardening()
 
 # Get full metadata
 metadata = action.get_metadata()
 print(metadata)
 # {
-#     'slug': 'deploy-netdata',
-#     'name': {'en': 'Deploy Netdata Monitoring', 'ar': '...', 'fr': '...'},
-#     'tags': ['monitoring', 'observability', 'metrics', 'alerting'],
-#     'category': 'monitoring',
-#     'color': '#00AB44',
-#     'logo': 'fa-chart-line',
+#     'slug': 'ssh-hardening',
+#     'name': {'en': 'SSH Hardening', 'ar': '...', 'fr': '...'},
+#     'tags': ['security', 'ssh', 'hardening'],
+#     'category': 'security',
+#     'color': '#E74C3C',
+#     'logo': 'fa-shield',
 #     'description': {...}
 # }
 
 # Get localized name
-print(action.get_name('en'))  # "Deploy Netdata Monitoring"
+print(action.get_name('en'))  # "SSH Hardening"
 print(action.get_name('ar'))  # Arabic translation
 
 # Get localized description
@@ -106,15 +104,15 @@ print(action.get_description('fr'))  # French description
 
 ```python
 from infraninja.actions import (
-    NetdataAction,
-    SSHKeysAction,
-    UpdateAndUpgradeAction,
+    SSHHardening,
+    SSHKeys,
+    UpdateAndUpgrade,
 )
 
 actions = [
-    NetdataAction(),
-    SSHKeysAction(),
-    UpdateAndUpgradeAction(),
+    SSHHardening(),
+    SSHKeys(),
+    UpdateAndUpgrade(),
 ]
 
 # Display action catalog
@@ -167,7 +165,6 @@ class CustomAction(Action):
 
 Common categories include:
 
-- **monitoring**: Observability and monitoring tools
 - **security**: Security hardening and access control
 - **maintenance**: System updates and maintenance
 - **deployment**: Application and service deployment
@@ -198,12 +195,12 @@ Example CLI integration:
 
 ```python
 import sys
-from infraninja.actions import NetdataAction, SSHKeysAction, UpdateAndUpgradeAction
+from infraninja.actions import SSHHardening, SSHKeys, UpdateAndUpgrade
 
 actions_registry = {
-    "netdata": NetdataAction,
-    "ssh-keys": SSHKeysAction,
-    "update": UpdateAndUpgradeAction,
+    "ssh-hardening": SSHHardening,
+    "ssh-keys": SSHKeys,
+    "update": UpdateAndUpgrade,
 }
 
 if __name__ == "__main__":
@@ -224,24 +221,24 @@ if __name__ == "__main__":
 
 ```python
 import pytest
-from infraninja.actions.netdata import NetdataAction
+from infraninja.actions.ssh_hardening import SSHHardening
 
-def test_netdata_action_metadata():
-    action = NetdataAction()
+def test_ssh_hardening_metadata():
+    action = SSHHardening()
 
-    assert action.slug == "deploy-netdata"
-    assert action.category == "monitoring"
-    assert "monitoring" in action.tags
-    assert action.get_name('en') == "Deploy Netdata Monitoring"
+    assert action.slug == "ssh-hardening"
+    assert action.category == "security"
+    assert "security" in action.tags
+    assert action.get_name('en') == "SSH Hardening"
 
     metadata = action.get_metadata()
     assert 'slug' in metadata
     assert 'name' in metadata
     assert 'en' in metadata['name']
 
-def test_netdata_action_validation():
+def test_ssh_hardening_validation():
     # Action should validate metadata on initialization
-    action = NetdataAction()
+    action = SSHHardening()
     # Should not raise any errors
     action._validate_metadata()
 ```
