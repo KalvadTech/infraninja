@@ -1,24 +1,22 @@
-# 🥷 InfraNinja ⚡ – Your Stealthy Infrastructure Ninja
+# InfraNinja
 
-Welcome to **InfraNinja**! 🎉 A modern infrastructure automation framework built on PyInfra, providing ninja-level deployments used by Kalvad teams 🛠️ and made publicly available via PyPI! 🚀
+A modern infrastructure automation framework built on PyInfra, providing reusable deployment tasks used by Kalvad teams and made publicly available via PyPI.
 
-InfraNinja simplifies infrastructure management through **Actions** (reusable deployment tasks) and **Inventories** (dynamic server management), helping you deploy services, configure security hardening, and automate common tasks – fast and effortlessly! 💨
+InfraNinja simplifies infrastructure management through **Actions** (reusable deployment tasks), **Facts** (read-only server information gathering), and **Inventories** (dynamic server management).
 
-## ⚡️ Features
+## Features
 
-- 🎯 **Action-Based Architecture**: Execute pre-built deployment tasks with rich metadata (SSH hardening, SSH keys, system updates)
-- 🌐 **Dynamic Inventories**: Automated server discovery from Jinn API and Coolify with intelligent filtering
-- 🛡️ **Comprehensive Security**: 30+ security modules including SSH/kernel hardening, firewall setup (IPTables, NFTables, PF), malware detection (chkrootkit, rkhunter), and intrusion prevention (Fail2Ban, Suricata)
-- 🧩 **Multi-OS Support**: Ubuntu, Debian, Alpine Linux, FreeBSD, RHEL, CentOS, Fedora, and Arch Linux
-- 🌍 **Multilingual**: Actions support English, Arabic, and French translations
-- 📋 **Compliance Ready**: UAE IA compliance modules and security auditing tools (Lynis, Auditd)
-- 📦 **PyPI Available**: Install with a simple `pip install infraninja`
+- **Action-Based Architecture**: 26 pre-built actions covering security hardening, firewall setup, malware protection, auditing, and system maintenance
+- **Composite Actions**: Group related actions together (e.g. `FullSecuritySetup` runs 7 sub-actions in sequence)
+- **Facts**: Gather read-only server information (hardware specs, OS details) without making changes
+- **Dynamic Inventories**: Automated server discovery from Jinn API and Coolify
+- **Multi-OS Support**: Ubuntu, Debian, Alpine Linux, FreeBSD, RHEL, CentOS, Fedora, and Arch Linux
+- **Multilingual**: Actions support English, Arabic, and French metadata
+- **Compliance**: UAE IA compliance modules and security auditing tools (Lynis, Auditd)
 
-## 🎯 Getting Started
+## Getting Started
 
 **Requirements:** Python 3.10+
-
-Install InfraNinja directly from PyPI:
 
 ```bash
 pip install infraninja
@@ -30,23 +28,47 @@ Or using uv:
 uv add infraninja
 ```
 
-## 🚀 Quick Examples
+## Quick Examples
 
 ### Using Actions
 
-Actions are the primary way to execute deployment tasks:
-
 ```python
-from infraninja import UpdateAndUpgrade
+from infraninja import SSHHardening, UpdateAndUpgrade
 
 # Update system packages
-update = UpdateAndUpgrade()
-update.execute()
+UpdateAndUpgrade().execute()
+
+# Harden SSH with custom settings
+SSHHardening(permit_root_login="no").execute()
+```
+
+### Composite Actions
+
+```python
+from infraninja import FullSecuritySetup
+
+# Run full security setup (updates, packages, hardening, firewall, fail2ban, malware, audit)
+result = FullSecuritySetup().execute()
+
+for action_result in result.results:
+    print(f"  {action_result.action}: {'OK' if action_result.success else 'FAILED'}")
+```
+
+### Gathering Facts
+
+```python
+from infraninja import Hardware, SystemInfo
+
+# Get hardware information
+hw = Hardware()
+hw.execute()
+
+# Get system information
+sys_info = SystemInfo()
+sys_info.execute()
 ```
 
 ### Using Inventories
-
-Inventories provide dynamic server management from various sources:
 
 ```python
 from infraninja.inventories import Jinn, Coolify
@@ -69,62 +91,73 @@ coolify = Coolify(
 servers = coolify.get_servers()
 ```
 
-### Using with PyInfra
+## Available Actions
 
-Integrate actions with PyInfra deployments:
+### Security & Hardening
 
-```python
-from pyinfra import inventory
-from infraninja import SSHHardening
+| Action | Description |
+|--------|-------------|
+| `SSHHardening` | SSH server hardening with security best practices |
+| `KernelHardening` | Kernel security parameters via sysctl |
+| `DisableServices` | Disable unnecessary services to reduce attack surface |
+| `MediaAutorunProtection` | Disable media autorun |
+| `ARPProtection` | ARP poisoning protection |
+| `ACLSetup` | Access Control Lists for file permissions |
+| `SmtpHardening` | SMTP server hardening |
+| `AppArmorSetup` | AppArmor mandatory access control (Ubuntu/Debian) |
+| `NTPHardening` | NTP configuration hardening with security patches |
+| `RoutingControls` | Network routing controls (Ubuntu/Debian) |
 
-# Define inventory
-inventory.add_host(name="server1", ssh_user="root")
+### Firewall
 
-# Execute action across inventory
-action = SSHHardening()
-action.execute()
-```
+| Action | Description |
+|--------|-------------|
+| `IPTablesSetup` | IPTables firewall rules |
+| `NFTablesSetup` | NFTables firewall rules |
+| `PFSetup` | PF packet filter (FreeBSD) |
 
-## 📜 Available Actions
+### Intrusion Prevention & Malware Detection
 
-InfraNinja provides comprehensive deployment actions organized by functionality:
+| Action | Description |
+|--------|-------------|
+| `Fail2BanSetup` | Fail2Ban intrusion prevention |
+| `ChkrootkitSetup` | Chkrootkit rootkit detection |
+| `RkhunterSetup` | Rkhunter rootkit detection (FreeBSD) |
+| `ClamAVSetup` | ClamAV antivirus |
+| `SuricataSetup` | Suricata IDS/IPS |
 
-### 🛡️ Security & Hardening
+### Auditing & Compliance
 
-- **SSHHardening**: Comprehensive SSH server hardening with security best practices
-- **SSHKeys**: SSH key management and deployment
+| Action | Description |
+|--------|-------------|
+| `AuditdSetup` | System auditing with auditd/BSM |
+| `LynisSetup` | Lynis security audit tool |
+| `UAEComplianceAudit` | UAE IA compliance audit (T3.6.3) |
 
-### 🔄 System Maintenance
+### System & Packages
 
-- **UpdateAndUpgrade**: System package updates across multiple distributions
+| Action | Description |
+|--------|-------------|
+| `UpdateAndUpgrade` | System package updates |
+| `SecurityPackageInstall` | Install security packages and tools |
+| `SSHKeys` | SSH key management and deployment |
+| `RedisAuthPatch` | Enable Redis authentication |
+| `RebootSystem` | Conditional system reboot |
 
-## 🔐 Security Modules
+### Composite Actions
 
-InfraNinja includes extensive security hardening modules organized by OS:
+| Action | Sub-Actions |
+|--------|-------------|
+| `SecurityHardening` | KernelHardening, SSHHardening, DisableServices, MediaAutorunProtection, ARPProtection |
+| `FirewallSetup` | IPTablesSetup, NFTablesSetup |
+| `MalwareProtection` | ChkrootkitSetup, RkhunterSetup, ClamAVSetup |
+| `SecurityAudit` | AuditdSetup, LynisSetup, UAEComplianceAudit |
+| `FullSecuritySetup` | UpdateAndUpgrade, SecurityPackageInstall, SecurityHardening, FirewallSetup, Fail2BanSetup, MalwareProtection, SecurityAudit |
+| `FullSetup` | UpdateAndUpgrade, SSHHardening, SSHKeys |
 
-### Cross-Platform (Common)
-- ACL management, ARP poisoning protection, Auditd setup
-- Chkrootkit malware detection, Fail2Ban intrusion prevention
-- IPTables/NFTables firewall setup, Kernel hardening
-- SSH hardening, SMTP hardening, Service management
+## Development
 
-### FreeBSD
-- PF firewall setup, BSM auditing, rkhunter rootkit scanner
-- Lynis security auditing, Fail2Ban, SSH hardening
-
-### Alpine Linux
-- ClamAV antivirus, Suricata IDS, Lynis auditing
-- IPTables setup, Fail2Ban
-
-### Ubuntu/Debian
-- AppArmor configuration, ClamAV antivirus, Suricata IDS
-- NTP hardening, Routing controls, Lynis auditing
-
-## 🔧 Development & Testing
-
-Want to add your own ninja-style improvements? Here's how to get started:
-
-### Setup Development Environment
+### Setup
 
 ```bash
 git clone https://github.com/KalvadTech/infraninja.git
@@ -132,93 +165,56 @@ cd infraninja
 uv sync
 ```
 
-Or using pip:
+### Running Tests
 
 ```bash
-pip install -e ".[dev]"
-```
-
-### Testing Your Deployments
-
-Test deployments using the Vagrant-based test environment:
-
-```bash
-# Start test VMs
-cd deploy
-vagrant up
-
-# Test with Ubuntu VM
-pyinfra @vagrant/ubuntu deploy.py
-
-# Test with Alpine VM
-pyinfra @vagrant/alpine deploy.py
-
-# Test with dynamic inventories
-pyinfra jinn.py deploy.py
-```
-
-### Running the Test Suite
-
-```bash
-# Run all tests
 uv run pytest
 
-# Run specific test modules
-uv run pytest tests/inventory/
-uv run pytest tests/common/
-
-# Run with coverage
+# With coverage
 uv run pytest --cov=infraninja tests/
 ```
 
 ### Building the Package
 
-Create a distribution package:
-
 ```bash
 uv build
 ```
 
-### Using the Test Environment
+### Building the Documentation
 
-The project includes a comprehensive test environment in the `deploy/` directory with:
-- Vagrant VMs (Ubuntu 22.04, Alpine 3.19)
-- Example inventory scripts (Jinn, Coolify)
-- Sample deployment scripts
+The documentation is generated from action/fact metadata using MkDocs:
 
 ```bash
-cd deploy
-vagrant up
-vagrant ssh ubuntu   # or vagrant ssh alpine
+# Install MkDocs and theme
+pip install mkdocs mkdocs-material
+
+# Regenerate docs from action metadata
+python generate_docs.py
+
+# Serve locally at http://127.0.0.1:8000
+mkdocs serve
+
+# Build static site to site/
+mkdocs build
 ```
 
-See [deploy/README.md](deploy/README.md) for detailed testing instructions.
+## Contributions
 
-## 🤝 Contributions
+Contributions are welcome! If you spot any bugs or have ideas for new features, feel free to open an issue or submit a pull request.
 
-Contributions are welcome! 🎉 If you spot any bugs 🐛 or have ideas 💡 for cool new features, feel free to open an issue or submit a pull request. The ninja squad would love to collaborate! 🤗
-
-## 👨‍💻 Maintainers
+## Maintainers
 
 - **Mohammad Abu-khader** <mohammad@kalvad.com>
 - **Pierre Guillemot** <pierre@kalvad.com>
-- **Loïc Tosser** <loic@kalvad.com>
-- The skilled ninja team at **KalvadTech** 🛠️
+- **Loic Tosser** <loic@kalvad.com>
 
-## 🌟 Community & Support
+## Community & Support
 
 - **Repository**: [GitHub - KalvadTech/infraninja](https://github.com/KalvadTech/infraninja)
 - **PyPI Package**: [pypi.org/project/infraninja](https://pypi.org/project/infraninja/)
 - **Issues**: [Report bugs and request features](https://github.com/KalvadTech/infraninja/issues)
-- **Documentation**: See `docs/` directory and READMEs in subdirectories
 - **Changelog**: See [CHANGELOG.md](CHANGELOG.md) for version history
 
-## 📝 License
+## License
 
-This project is licensed under the **MIT License**. 📝 Feel free to use it, modify it, and become an infrastructure ninja yourself! 🥷
-
----
-
-Stay stealthy and keep deploying like a ninja! 🥷💨🚀
-
----
+This project is licensed under the **MIT License**.
