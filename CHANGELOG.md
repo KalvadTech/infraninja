@@ -7,22 +7,46 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [0.5.0] - 2026-03-04
 
+### Architecture
+
+- Introduced **Action framework** (`Action`, `Composite`, `ActionResult`, `CompositeResult` base classes) as the primary entry point for all infrastructure automation tasks, replacing the old `deploys/` module structure
+- Introduced **Facts framework** (`Fact`, `CompositeFact`, `FactResult`, `CompositeFactResult` base classes) for read-only server information gathering
+- Introduced **Inventories framework** (`Inventory` base class) formalizing dynamic server discovery with `Jinn` and `Coolify` providers
+- All actions, facts, and inventories are now importable directly from `infraninja` and registered in `__all__`
+
 ### Features
 
-- Backported all security modules to the Action framework with 23 new Action wrappers:
-  ACLSetup, ARPProtection, AuditdSetup, ChkrootkitSetup, SecurityPackageInstall,
-  DisableServices, Fail2BanSetup, IPTablesSetup, KernelHardening,
-  MediaAutorunProtection, NFTablesSetup, SmtpHardening, LynisSetup, PFSetup,
-  RkhunterSetup, ClamAVSetup, SuricataSetup, AppArmorSetup, NTPHardening,
-  RoutingControls, RedisAuthPatch, UAEComplianceAudit, RebootSystem
-- Added 5 composite actions for grouped execution:
-  SecurityHardening, FirewallSetup, MalwareProtection, SecurityAudit, FullSecuritySetup
-- OS-specific variants merged into single Actions with internal OS dispatch
-- All new actions auto-discovered by generate_docs.py and registered in __all__
+- Added 26 Action classes wrapping all existing security modules with automatic OS dispatch:
+  SSHHardening, SSHKeys, UpdateAndUpgrade, ACLSetup, ARPProtection, AuditdSetup,
+  ChkrootkitSetup, SecurityPackageInstall, DisableServices, Fail2BanSetup,
+  IPTablesSetup, KernelHardening, MediaAutorunProtection, NFTablesSetup,
+  SmtpHardening, LynisSetup, PFSetup, RkhunterSetup, ClamAVSetup, SuricataSetup,
+  AppArmorSetup, NTPHardening, RoutingControls, RedisAuthPatch, UAEComplianceAudit,
+  RebootSystem
+- Added 6 composite actions for grouped execution:
+  SecurityHardening, FirewallSetup, MalwareProtection, SecurityAudit,
+  FullSecuritySetup, FullSetup
+- Added Facts module with `Hardware` and `SystemInfo` facts, and `FullFacts` composite
+- Added `generate_docs.py` for auto-generating MkDocs documentation from action/fact/inventory metadata
+- Added MkDocs configuration (`mkdocs.yml`) with Material theme and custom styling
+- Added `list_actions` and `list_inventories` CLI utilities
+
+### Improvements
+
+- Migrated build tooling from `requirements.txt` to `uv` with `pyproject.toml`
+- Upgraded dependencies: build 1.4.0, pyinfra 3.6.1, pytest 9.0.2
+- Expanded ruff linter rules (security, complexity, naming, import sorting)
+- Auto-discovery in `generate_docs.py` — new actions/facts only need to be added to `__init__.py`
+- Fixed Font Awesome 6 icon rendering in generated docs (missing `fas` prefix)
+- Refactored `pubkeys.py` and `pubkeys_delete.py` for cleaner SSH key management
+- Minor fixes across security modules (Alpine, FreeBSD, Ubuntu) for linter compliance and consistency
+- Updated CI workflows for pytest and ruff
 
 ### Removed
 
-- Removed Netdata action (deprecated)
+- Removed `infraninja/deploys/` module (replaced by `infraninja/actions/`)
+- Removed `infraninja/netdata.py` and Netdata template (deprecated)
+- Removed `requirements.txt` (replaced by `pyproject.toml`)
 
 ## [0.3.0] - 2025-09-16
 
