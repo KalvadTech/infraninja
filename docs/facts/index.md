@@ -6,7 +6,7 @@ InfraNinja provides the following read-only fact-gathering modules:
 
 <div class="item-card-grid">
 <a class="item-card" href="hardware/">
-  <div class="item-card-header"><i class="fa-microchip"></i> <strong>Hardware Information</strong></div>
+  <div class="item-card-header"><i class="fas fa-microchip"></i> <strong>Hardware Information</strong></div>
   <div class="item-card-class">Hardware</div>
   <div class="item-card-desc">Gather hardware information including CPUs, memory, block devices, and network devices</div>
   <div class="item-card-footer">
@@ -18,7 +18,7 @@ InfraNinja provides the following read-only fact-gathering modules:
   </div>
 </a>
 <a class="item-card" href="system-info/">
-  <div class="item-card-header"><i class="fa-info-circle"></i> <strong>System Information</strong></div>
+  <div class="item-card-header"><i class="fas fa-info-circle"></i> <strong>System Information</strong></div>
   <div class="item-card-class">SystemInfo</div>
   <div class="item-card-desc">Gather system information including OS, hostname, kernel, and architecture</div>
   <div class="item-card-footer">

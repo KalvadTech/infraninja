@@ -1,4 +1,4 @@
-# <i class="fa-info-circle" style="color: #3498DB"></i> System Information
+# <i class="fas fa-info-circle" style="color: #3498DB"></i> System Information
 
 <div class="meta-badges">
   <span class="badge badge-category" style="background-color: #3498DB"><i class="fas fa-folder"></i> system</span>

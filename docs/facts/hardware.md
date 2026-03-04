@@ -1,4 +1,4 @@
-# <i class="fa-microchip" style="color: #E67E22"></i> Hardware Information
+# <i class="fas fa-microchip" style="color: #E67E22"></i> Hardware Information
 
 <div class="meta-badges">
   <span class="badge badge-category" style="background-color: #E67E22"><i class="fas fa-folder"></i> hardware</span>

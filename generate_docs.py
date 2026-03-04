@@ -361,7 +361,9 @@ def generate_action_markdown(action: dict[str, Any], lang: str = "en") -> str:
     )
 
     # Header with icon and color styling
-    md = f'# <i class="{metadata["logo"]}" style="color: {metadata["color"]}"></i> {title}\n\n'
+    logo = metadata["logo"]
+    logo_class = logo if logo.startswith("fas ") or logo.startswith("fab ") or logo.startswith("far ") else f"fas {logo}"
+    md = f'# <i class="{logo_class}" style="color: {metadata["color"]}"></i> {title}\n\n'
 
     # Metadata badges
     md += '<div class="meta-badges">\n'
@@ -607,7 +609,9 @@ def generate_fact_markdown(fact: dict[str, Any], lang: str = "en") -> str:
         lang, metadata["description"].get("en", "")
     )
 
-    md = f'# <i class="{metadata["logo"]}" style="color: {metadata["color"]}"></i> {title}\n\n'
+    logo = metadata["logo"]
+    logo_class = logo if logo.startswith("fas ") or logo.startswith("fab ") or logo.startswith("far ") else f"fas {logo}"
+    md = f'# <i class="{logo_class}" style="color: {metadata["color"]}"></i> {title}\n\n'
 
     md += '<div class="meta-badges">\n'
     md += f'  <span class="badge badge-category" style="background-color: {metadata["color"]}">'
@@ -861,8 +865,10 @@ Ninja-level deployments for infrastructure automation
         short_desc = (desc[:100] + "...") if len(desc) > 100 else desc
         tags = metadata.get("tags", [])
 
+        logo = metadata["logo"]
+        logo_class = logo if logo.startswith("fas ") or logo.startswith("fab ") or logo.startswith("far ") else f"fas {logo}"
         actions_index += f'<a class="item-card" href="{slug}/">\n'
-        actions_index += f'  <div class="item-card-header"><i class="{metadata["logo"]}"></i> <strong>{name}</strong></div>\n'
+        actions_index += f'  <div class="item-card-header"><i class="{logo_class}"></i> <strong>{name}</strong></div>\n'
         actions_index += f'  <div class="item-card-class">{class_name}</div>\n'
         actions_index += f'  <div class="item-card-desc">{short_desc}</div>\n'
         actions_index += f'  <div class="item-card-footer">\n'
@@ -1008,8 +1014,10 @@ class MySetup(Composite):
         short_desc = (desc[:100] + "...") if len(desc) > 100 else desc
         tags = metadata.get("tags", [])
 
+        logo = metadata["logo"]
+        logo_class = logo if logo.startswith("fas ") or logo.startswith("fab ") or logo.startswith("far ") else f"fas {logo}"
         facts_index += f'<a class="item-card" href="{slug}/">\n'
-        facts_index += f'  <div class="item-card-header"><i class="{metadata["logo"]}"></i> <strong>{name}</strong></div>\n'
+        facts_index += f'  <div class="item-card-header"><i class="{logo_class}"></i> <strong>{name}</strong></div>\n'
         facts_index += f'  <div class="item-card-class">{class_name}</div>\n'
         facts_index += f'  <div class="item-card-desc">{short_desc}</div>\n'
         facts_index += f'  <div class="item-card-footer">\n'

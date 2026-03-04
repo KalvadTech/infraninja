@@ -1,4 +1,4 @@
-# <i class="fa-clipboard-list" style="color: #9B59B6"></i> Full System Facts
+# <i class="fas fa-clipboard-list" style="color: #9B59B6"></i> Full System Facts
 
 <div class="meta-badges">
   <span class="badge badge-category" style="background-color: #9B59B6"><i class="fas fa-folder"></i> system</span>
