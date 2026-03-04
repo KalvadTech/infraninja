@@ -10,7 +10,10 @@ from infraninja.actions.base import Action
 
 class SecurityPackageInstall(Action):
     slug = "security-package-install"
-    name = {"en": "Security Package Install", "fr": "Installation des paquets de sécurité"}
+    name = {
+        "en": "Security Package Install",
+        "fr": "Installation des paquets de sécurité",
+    }
     tags = ["security", "packages", "installation", "tools"]
     category = "security"
     color = "#2ECC71"

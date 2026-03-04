@@ -12,9 +12,7 @@ class PFSetup(Action):
     category = "security"
     color = "#E74C3C"
     logo = "fa-fire"
-    description = {
-        "en": "Configure PF packet filter firewall on FreeBSD systems"
-    }
+    description = {"en": "Configure PF packet filter firewall on FreeBSD systems"}
     os_available = ["freebsd"]
 
     def execute(self) -> Any:

@@ -7,7 +7,10 @@ from infraninja.actions.base import Action
 
 class MediaAutorunProtection(Action):
     slug = "media-autorun-protection"
-    name = {"en": "Media Autorun Protection", "fr": "Protection contre l'exécution automatique"}
+    name = {
+        "en": "Media Autorun Protection",
+        "fr": "Protection contre l'exécution automatique",
+    }
     tags = ["security", "media", "autorun", "usb"]
     category = "security"
     color = "#F39C12"

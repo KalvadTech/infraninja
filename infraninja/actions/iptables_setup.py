@@ -15,9 +15,7 @@ class IPTablesSetup(Action):
     category = "security"
     color = "#E74C3C"
     logo = "fa-fire"
-    description = {
-        "en": "Configure IPTables firewall rules for network security"
-    }
+    description = {"en": "Configure IPTables firewall rules for network security"}
     os_available = [
         "ubuntu",
         "debian",

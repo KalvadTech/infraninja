@@ -137,7 +137,10 @@ def deploy_info_fetch():
         try:
             network_data = json.loads(collected_facts["network_usage"])
             min_network_fields = 2
-            if isinstance(network_data, list) and len(network_data) >= min_network_fields:
+            if (
+                isinstance(network_data, list)
+                and len(network_data) >= min_network_fields
+            ):
                 network_received = float(network_data[0]) / 1024
                 network_transmitted = float(network_data[1]) / 1024
         except (json.JSONDecodeError, IndexError) as e:

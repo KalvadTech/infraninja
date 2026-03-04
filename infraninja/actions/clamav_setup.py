@@ -15,9 +15,7 @@ class ClamAVSetup(Action):
     category = "security"
     color = "#E74C3C"
     logo = "fa-shield-virus"
-    description = {
-        "en": "Install and configure ClamAV antivirus for malware scanning"
-    }
+    description = {"en": "Install and configure ClamAV antivirus for malware scanning"}
     os_available = ["ubuntu", "debian", "alpine"]
 
     def execute(self) -> Any:

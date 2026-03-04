@@ -15,9 +15,7 @@ class DisableServices(Action):
     category = "security"
     color = "#E67E22"
     logo = "fa-ban"
-    description = {
-        "en": "Disable unnecessary system services to reduce attack surface"
-    }
+    description = {"en": "Disable unnecessary system services to reduce attack surface"}
     os_available = [
         "ubuntu",
         "debian",

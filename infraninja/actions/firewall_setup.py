@@ -12,9 +12,7 @@ class FirewallSetup(Composite):
     category = "security"
     color = "#E74C3C"
     logo = "fa-fire"
-    description = {
-        "en": "Configure firewall rules using IPTables and NFTables"
-    }
+    description = {"en": "Configure firewall rules using IPTables and NFTables"}
     os_available = [
         "ubuntu",
         "debian",
