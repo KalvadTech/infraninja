@@ -1,7 +1,7 @@
 """Security audit composite action"""
 
-from .base import Composite
 from .auditd_setup import AuditdSetup
+from .base import Composite
 from .lynis_setup import LynisSetup
 from .uae_compliance_audit import UAEComplianceAudit
 

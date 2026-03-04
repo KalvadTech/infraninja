@@ -1,7 +1,7 @@
 """Security hardening composite action"""
 
-from .base import Composite
 from .arp_protection import ARPProtection
+from .base import Composite
 from .disable_services import DisableServices
 from .kernel_hardening import KernelHardening
 from .media_autorun_protection import MediaAutorunProtection

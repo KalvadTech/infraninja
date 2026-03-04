@@ -329,18 +329,18 @@ def generate_composite_usage(action: dict[str, Any]) -> str:
         md += "### With Custom Parameters\n\n"
         md += "Pass parameters to specific sub-actions using their class name:\n\n"
         md += "```python\n"
-        md += f"result = setup.execute(\n"
+        md += "result = setup.execute(\n"
         for sub in sub_actions[:2]:  # Show first 2 sub-actions as examples
             md += f"    {sub}={{\n"
-            md += f'        "param": "value",\n'
-            md += f"    }},\n"
+            md += '        "param": "value",\n'
+            md += "    },\n"
         md += ")\n"
         md += "```\n\n"
 
     # Checking results
     md += "### Checking Results\n\n```python\n"
-    md += f"print(f\"Success: {{result.success}}\")\n"
-    md += f"print(f\"Changed: {{result.changed}}\")\n\n"
+    md += "print(f\"Success: {result.success}\")\n"
+    md += "print(f\"Changed: {result.changed}\")\n\n"
     md += "for r in result.results:\n"
     md += '    status = "OK" if r.success else "FAILED"\n'
     md += '    print(f"  {r.action}: {status}")\n'
@@ -871,13 +871,13 @@ Ninja-level deployments for infrastructure automation
         actions_index += f'  <div class="item-card-header"><i class="{logo_class}"></i> <strong>{name}</strong></div>\n'
         actions_index += f'  <div class="item-card-class">{class_name}</div>\n'
         actions_index += f'  <div class="item-card-desc">{short_desc}</div>\n'
-        actions_index += f'  <div class="item-card-footer">\n'
+        actions_index += '  <div class="item-card-footer">\n'
         actions_index += f'    <span class="mini-badge"><i class="fas fa-folder"></i> {category}</span>\n'
         actions_index += f'    <span class="mini-badge"><i class="fab fa-linux"></i> {os_count} OS</span>\n'
         for tag in tags[:3]:
             actions_index += f'    <span class="mini-badge"><i class="fas fa-hashtag"></i> {tag}</span>\n'
-        actions_index += f'  </div>\n'
-        actions_index += f'</a>\n'
+        actions_index += '  </div>\n'
+        actions_index += '</a>\n'
 
         # Generate individual action page
         action_md = generate_action_markdown(action, "en")
@@ -906,11 +906,11 @@ Ninja-level deployments for infrastructure automation
             actions_index += f'  <div class="item-card-header"><i class="fas fa-layer-group"></i> <strong>{name}</strong></div>\n'
             actions_index += f'  <div class="item-card-class">{class_name}</div>\n'
             actions_index += f'  <div class="item-card-desc">{short_desc}</div>\n'
-            actions_index += f'  <div class="item-card-footer">\n'
+            actions_index += '  <div class="item-card-footer">\n'
             actions_index += f'    <span class="mini-badge"><i class="fas fa-folder"></i> {category}</span>\n'
             actions_index += f'    <span class="mini-badge"><i class="fas fa-layer-group"></i> {len(sub_actions)} sub-actions</span>\n'
-            actions_index += f'  </div>\n'
-            actions_index += f'</a>\n'
+            actions_index += '  </div>\n'
+            actions_index += '</a>\n'
 
             # Generate individual composite action page
             action_md = generate_action_markdown(action, "en")
@@ -979,11 +979,11 @@ class MySetup(Composite):
         inventories_index += f'  <div class="item-card-header"><i class="fas fa-server"></i> <strong>{name}</strong></div>\n'
         inventories_index += f'  <div class="item-card-class">{class_name}</div>\n'
         inventories_index += f'  <div class="item-card-desc">{short_desc}</div>\n'
-        inventories_index += f'  <div class="item-card-footer">\n'
-        inventories_index += f'    <span class="mini-badge"><i class="fas fa-database"></i> inventory</span>\n'
+        inventories_index += '  <div class="item-card-footer">\n'
+        inventories_index += '    <span class="mini-badge"><i class="fas fa-database"></i> inventory</span>\n'
         inventories_index += f'    <span class="mini-badge"><i class="fas fa-tag"></i> {slug}</span>\n'
-        inventories_index += f'  </div>\n'
-        inventories_index += f'</a>\n'
+        inventories_index += '  </div>\n'
+        inventories_index += '</a>\n'
 
         # Generate individual inventory page
         inventory_md = generate_inventory_markdown(inventory, "en")
@@ -1020,13 +1020,13 @@ class MySetup(Composite):
         facts_index += f'  <div class="item-card-header"><i class="{logo_class}"></i> <strong>{name}</strong></div>\n'
         facts_index += f'  <div class="item-card-class">{class_name}</div>\n'
         facts_index += f'  <div class="item-card-desc">{short_desc}</div>\n'
-        facts_index += f'  <div class="item-card-footer">\n'
+        facts_index += '  <div class="item-card-footer">\n'
         facts_index += f'    <span class="mini-badge"><i class="fas fa-folder"></i> {category}</span>\n'
         facts_index += f'    <span class="mini-badge"><i class="fab fa-linux"></i> {os_count} OS</span>\n'
         for tag in tags[:3]:
             facts_index += f'    <span class="mini-badge"><i class="fas fa-hashtag"></i> {tag}</span>\n'
-        facts_index += f'  </div>\n'
-        facts_index += f'</a>\n'
+        facts_index += '  </div>\n'
+        facts_index += '</a>\n'
 
         fact_md = generate_fact_markdown(fact, "en")
         (facts_dir / f"{slug}.md").write_text(fact_md)
@@ -1053,11 +1053,11 @@ class MySetup(Composite):
             facts_index += f'  <div class="item-card-header"><i class="fas fa-layer-group"></i> <strong>{name}</strong></div>\n'
             facts_index += f'  <div class="item-card-class">{class_name}</div>\n'
             facts_index += f'  <div class="item-card-desc">{short_desc}</div>\n'
-            facts_index += f'  <div class="item-card-footer">\n'
+            facts_index += '  <div class="item-card-footer">\n'
             facts_index += f'    <span class="mini-badge"><i class="fas fa-folder"></i> {category}</span>\n'
             facts_index += f'    <span class="mini-badge"><i class="fas fa-layer-group"></i> {len(sub_facts)} sub-facts</span>\n'
-            facts_index += f'  </div>\n'
-            facts_index += f'</a>\n'
+            facts_index += '  </div>\n'
+            facts_index += '</a>\n'
 
             fact_md = generate_fact_markdown(fact, "en")
             (facts_dir / f"{slug}.md").write_text(fact_md)
