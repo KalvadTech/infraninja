@@ -86,7 +86,7 @@ target-version = "py39"
 # Unlike Flake8, Ruff doesn't enable pycodestyle warnings (`W`) or
 # McCabe complexity (`C901`) by default.
 select = ["E4", "E7", "E9", "F", "ERA001", "S", "CPY", "DTZ", "EM", "EXE", "FIX", "T20", "SIM", "I", "C90", "N", "PL"]
-ignore = []
+ignore = ["PLC0415"]  # Deferred imports in execute() methods are intentional (pyinfra runtime context)
 # Allow fix for all enabled rules (when `--fix`) is provided.
 fixable = ["ALL"]
 unfixable = []
