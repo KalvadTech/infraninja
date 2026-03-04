@@ -19,9 +19,9 @@ classifiers = [
 ]
 license = { file = "LICENSE" }
 dependencies = [
-    "build==1.3.0",
-    "pyinfra==3.5.1",
-    "pytest==8.4.2",
+    "build==1.4.0",
+    "pyinfra==3.6.1",
+    "pytest==9.0.2",
     "requests",
 ]
 
