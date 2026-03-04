@@ -1,0 +1,133 @@
+site_name: InfraNinja Documentation
+site_description: Ninja-level deployments for infrastructure automation
+site_author: KalvadTech
+repo_url: https://github.com/KalvadTech/infraninja
+repo_name: KalvadTech/infraninja
+
+theme:
+  name: material
+  font:
+    text: Inter
+    code: JetBrains Mono
+  palette:
+    # Light mode
+    - scheme: default
+      primary: deep purple
+      accent: purple
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
+    # Dark mode
+    - scheme: slate
+      primary: deep purple
+      accent: purple
+      toggle:
+        icon: material/brightness-4
+        name: Switch to light mode
+  features:
+    - navigation.instant
+    - navigation.instant.progress
+    - navigation.tracking
+    - navigation.tabs
+    - navigation.tabs.sticky
+    - navigation.sections
+    - navigation.expand
+    - navigation.indexes
+    - navigation.top
+    - search.suggest
+    - search.highlight
+    - search.share
+    - content.code.copy
+    - content.code.annotate
+    - content.tabs.link
+    - toc.follow
+  icon:
+    repo: fontawesome/brands/github
+
+extra_css:
+  - https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css
+  - stylesheets/extra.css
+
+markdown_extensions:
+  - pymdownx.highlight:
+      anchor_linenums: true
+      line_spans: __span
+      pygments_lang_class: true
+  - pymdownx.inlinehilite
+  - pymdownx.snippets
+  - pymdownx.superfences
+  - pymdownx.tabbed:
+      alternate_style: true
+  - pymdownx.emoji:
+      emoji_index: !!python/name:material.extensions.emoji.twemoji
+      emoji_generator: !!python/name:material.extensions.emoji.to_svg
+  - admonition
+  - pymdownx.details
+  - pymdownx.tasklist:
+      custom_checkbox: true
+  - def_list
+  - tables
+  - attr_list
+  - md_in_html
+
+plugins:
+  - search
+  - tags
+
+nav:
+  - Home: index.md
+  - Actions:
+      - Overview: actions/index.md
+      - Standard Actions:
+          - ACL Setup: actions/acl-setup.md
+          - AppArmor Setup: actions/apparmor-setup.md
+          - ARP Protection: actions/arp-protection.md
+          - Auditd Setup: actions/auditd-setup.md
+          - Chkrootkit Setup: actions/chkrootkit-setup.md
+          - ClamAV Setup: actions/clamav-setup.md
+          - Disable Services: actions/disable-services.md
+          - Fail2Ban Setup: actions/fail2ban-setup.md
+          - IPTables Setup: actions/iptables-setup.md
+          - Kernel Hardening: actions/kernel-hardening.md
+          - Lynis Setup: actions/lynis-setup.md
+          - Media Autorun Protection: actions/media-autorun-protection.md
+          - NFTables Setup: actions/nftables-setup.md
+          - NTP Hardening: actions/ntp-hardening.md
+          - PF Setup: actions/pf-setup.md
+          - Reboot System: actions/reboot-system.md
+          - Redis Auth Patch: actions/redis-auth-patch.md
+          - Rkhunter Setup: actions/rkhunter-setup.md
+          - Routing Controls: actions/routing-controls.md
+          - Security Package Install: actions/security-package-install.md
+          - SMTP Hardening: actions/smtp-hardening.md
+          - SSH Hardening: actions/ssh-hardening.md
+          - Deploy SSH Keys: actions/deploy-ssh-keys.md
+          - Suricata Setup: actions/suricata-setup.md
+          - UAE Compliance Audit: actions/uae-compliance-audit.md
+          - Update and Upgrade System: actions/update-and-upgrade.md
+      - Composite Actions:
+          - Firewall Setup: actions/firewall-setup.md
+          - Full Security Setup: actions/full-security-setup.md
+          - Full Server Setup: actions/full-setup.md
+          - Malware Protection: actions/malware-protection.md
+          - Security Audit: actions/security-audit.md
+          - Security Hardening: actions/security-hardening.md
+  - Inventories:
+      - Overview: inventories/index.md
+      - Coolify Inventory: inventories/coolify.md
+      - Jinn Inventory: inventories/jinn.md
+  - Facts:
+      - Overview: facts/index.md
+      - Standard Facts:
+          - Hardware Information: facts/hardware.md
+          - System Information: facts/system-info.md
+      - Composite Facts:
+          - Full System Facts: facts/full-facts.md
+extra:
+  social:
+    - icon: fontawesome/brands/github
+      link: https://github.com/KalvadTech/infraninja
+    - icon: fontawesome/brands/python
+      link: https://pypi.org/project/infraninja/
+
+copyright: Copyright &copy; 2025 KalvadTech

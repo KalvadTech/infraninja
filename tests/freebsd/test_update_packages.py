@@ -11,13 +11,15 @@ def test_freebsd_system_update_success():
     Test system_update function for FreeBSD with successful execution.
     """
     # Mock the pyinfra modules and context
-    with patch("pyinfra.context.state", MagicMock(config=MagicMock())), patch(
-        "pyinfra.context.host", MagicMock()
-    ), patch("infraninja.security.freebsd.update_packages.host") as mock_host, patch(
-        "infraninja.security.freebsd.update_packages.pkg"
-    ) as mock_pkg, patch(
-        "infraninja.security.freebsd.update_packages.freebsd_update"
-    ) as mock_freebsd_update:
+    with (
+        patch("pyinfra.context.state", MagicMock(config=MagicMock())),
+        patch("pyinfra.context.host", MagicMock()),
+        patch("infraninja.security.freebsd.update_packages.host") as mock_host,
+        patch("infraninja.security.freebsd.update_packages.pkg") as mock_pkg,
+        patch(
+            "infraninja.security.freebsd.update_packages.freebsd_update"
+        ) as mock_freebsd_update,
+    ):
         # Configure host.get_fact to return FreeBSD distro info
         mock_host.get_fact.return_value = {
             "name": "FreeBSD",
@@ -52,13 +54,15 @@ def test_freebsd_system_update_no_distro_info():
     """
     Test system_update function when distro info is not available (should still work for FreeBSD).
     """
-    with patch("pyinfra.context.state", MagicMock(config=MagicMock())), patch(
-        "pyinfra.context.host", MagicMock()
-    ), patch("infraninja.security.freebsd.update_packages.host") as mock_host, patch(
-        "infraninja.security.freebsd.update_packages.pkg"
-    ) as mock_pkg, patch(
-        "infraninja.security.freebsd.update_packages.freebsd_update"
-    ) as mock_freebsd_update:
+    with (
+        patch("pyinfra.context.state", MagicMock(config=MagicMock())),
+        patch("pyinfra.context.host", MagicMock()),
+        patch("infraninja.security.freebsd.update_packages.host") as mock_host,
+        patch("infraninja.security.freebsd.update_packages.pkg") as mock_pkg,
+        patch(
+            "infraninja.security.freebsd.update_packages.freebsd_update"
+        ) as mock_freebsd_update,
+    ):
         # Configure host.get_fact to return None (no distro info)
         mock_host.get_fact.return_value = None
 
@@ -81,13 +85,15 @@ def test_freebsd_system_update_empty_distro_name():
     """
     Test system_update function when distro name is empty (should still work for FreeBSD).
     """
-    with patch("pyinfra.context.state", MagicMock(config=MagicMock())), patch(
-        "pyinfra.context.host", MagicMock()
-    ), patch("infraninja.security.freebsd.update_packages.host") as mock_host, patch(
-        "infraninja.security.freebsd.update_packages.pkg"
-    ) as mock_pkg, patch(
-        "infraninja.security.freebsd.update_packages.freebsd_update"
-    ) as mock_freebsd_update:
+    with (
+        patch("pyinfra.context.state", MagicMock(config=MagicMock())),
+        patch("pyinfra.context.host", MagicMock()),
+        patch("infraninja.security.freebsd.update_packages.host") as mock_host,
+        patch("infraninja.security.freebsd.update_packages.pkg") as mock_pkg,
+        patch(
+            "infraninja.security.freebsd.update_packages.freebsd_update"
+        ) as mock_freebsd_update,
+    ):
         # Configure host.get_fact to return empty name
         mock_host.get_fact.return_value = {
             "name": "",
@@ -113,9 +119,11 @@ def test_freebsd_system_update_unsupported_os():
     """
     Test system_update raises an error for non-FreeBSD systems.
     """
-    with patch("pyinfra.context.state", MagicMock(config=MagicMock())), patch(
-        "pyinfra.context.host", MagicMock()
-    ), patch("infraninja.security.freebsd.update_packages.host") as mock_host:
+    with (
+        patch("pyinfra.context.state", MagicMock(config=MagicMock())),
+        patch("pyinfra.context.host", MagicMock()),
+        patch("infraninja.security.freebsd.update_packages.host") as mock_host,
+    ):
         # Configure host.get_fact to return a non-FreeBSD distro
         mock_host.get_fact.return_value = {
             "name": "Ubuntu",
@@ -140,13 +148,15 @@ def test_freebsd_package_update_only():
     """
     Test package_update function (packages only, no base system update).
     """
-    with patch("pyinfra.context.state", MagicMock(config=MagicMock())), patch(
-        "pyinfra.context.host", MagicMock()
-    ), patch("infraninja.security.freebsd.update_packages.host") as mock_host, patch(
-        "infraninja.security.freebsd.update_packages.pkg"
-    ) as mock_pkg, patch(
-        "infraninja.security.freebsd.update_packages.freebsd_update"
-    ) as mock_freebsd_update:
+    with (
+        patch("pyinfra.context.state", MagicMock(config=MagicMock())),
+        patch("pyinfra.context.host", MagicMock()),
+        patch("infraninja.security.freebsd.update_packages.host") as mock_host,
+        patch("infraninja.security.freebsd.update_packages.pkg") as mock_pkg,
+        patch(
+            "infraninja.security.freebsd.update_packages.freebsd_update"
+        ) as mock_freebsd_update,
+    ):
         # Configure host.get_fact to return FreeBSD distro info
         mock_host.get_fact.return_value = {
             "name": "FreeBSD",
@@ -197,13 +207,15 @@ def test_freebsd_system_update_distro_detection(distro_info, should_pass):
     """
     Test system_update function with various distribution names.
     """
-    with patch("pyinfra.context.state", MagicMock(config=MagicMock())), patch(
-        "pyinfra.context.host", MagicMock()
-    ), patch("infraninja.security.freebsd.update_packages.host") as mock_host, patch(
-        "infraninja.security.freebsd.update_packages.pkg"
-    ) as mock_pkg, patch(
-        "infraninja.security.freebsd.update_packages.freebsd_update"
-    ) as mock_freebsd_update:
+    with (
+        patch("pyinfra.context.state", MagicMock(config=MagicMock())),
+        patch("pyinfra.context.host", MagicMock()),
+        patch("infraninja.security.freebsd.update_packages.host") as mock_host,
+        patch("infraninja.security.freebsd.update_packages.pkg") as mock_pkg,
+        patch(
+            "infraninja.security.freebsd.update_packages.freebsd_update"
+        ) as mock_freebsd_update,
+    ):
         # Configure host.get_fact to return the test distro info
         mock_host.get_fact.return_value = distro_info
 
@@ -243,13 +255,15 @@ def test_freebsd_update_operations_call_order():
 
         return mock_func
 
-    with patch("pyinfra.context.state", MagicMock(config=MagicMock())), patch(
-        "pyinfra.context.host", MagicMock()
-    ), patch("infraninja.security.freebsd.update_packages.host") as mock_host, patch(
-        "infraninja.security.freebsd.update_packages.pkg"
-    ) as mock_pkg, patch(
-        "infraninja.security.freebsd.update_packages.freebsd_update"
-    ) as mock_freebsd_update:
+    with (
+        patch("pyinfra.context.state", MagicMock(config=MagicMock())),
+        patch("pyinfra.context.host", MagicMock()),
+        patch("infraninja.security.freebsd.update_packages.host") as mock_host,
+        patch("infraninja.security.freebsd.update_packages.pkg") as mock_pkg,
+        patch(
+            "infraninja.security.freebsd.update_packages.freebsd_update"
+        ) as mock_freebsd_update,
+    ):
         # Configure host.get_fact to return FreeBSD
         mock_host.get_fact.return_value = {"name": "FreeBSD"}
 
@@ -284,13 +298,15 @@ def test_freebsd_package_update_no_base_system():
     """
     Test that package_update doesn't call freebsd-update operations.
     """
-    with patch("pyinfra.context.state", MagicMock(config=MagicMock())), patch(
-        "pyinfra.context.host", MagicMock()
-    ), patch("infraninja.security.freebsd.update_packages.host") as mock_host, patch(
-        "infraninja.security.freebsd.update_packages.pkg"
-    ) as mock_pkg, patch(
-        "infraninja.security.freebsd.update_packages.freebsd_update"
-    ) as mock_freebsd_update:
+    with (
+        patch("pyinfra.context.state", MagicMock(config=MagicMock())),
+        patch("pyinfra.context.host", MagicMock()),
+        patch("infraninja.security.freebsd.update_packages.host") as mock_host,
+        patch("infraninja.security.freebsd.update_packages.pkg") as mock_pkg,
+        patch(
+            "infraninja.security.freebsd.update_packages.freebsd_update"
+        ) as mock_freebsd_update,
+    ):
         # Configure host.get_fact to return FreeBSD distro info
         mock_host.get_fact.return_value = {
             "name": "FreeBSD",
@@ -324,9 +340,11 @@ def test_freebsd_system_update_with_linux_distro():
     """
     Test that system_update raises ValueError for Linux distributions.
     """
-    with patch("pyinfra.context.state", MagicMock(config=MagicMock())), patch(
-        "pyinfra.context.host", MagicMock()
-    ), patch("infraninja.security.freebsd.update_packages.host") as mock_host:
+    with (
+        patch("pyinfra.context.state", MagicMock(config=MagicMock())),
+        patch("pyinfra.context.host", MagicMock()),
+        patch("infraninja.security.freebsd.update_packages.host") as mock_host,
+    ):
         mock_host.get_fact.return_value = {"name": "Linux"}
 
         with patch(
@@ -344,9 +362,11 @@ def test_freebsd_system_update_with_ubuntu_distro():
     """
     Test that system_update raises ValueError for Ubuntu.
     """
-    with patch("pyinfra.context.state", MagicMock(config=MagicMock())), patch(
-        "pyinfra.context.host", MagicMock()
-    ), patch("infraninja.security.freebsd.update_packages.host") as mock_host:
+    with (
+        patch("pyinfra.context.state", MagicMock(config=MagicMock())),
+        patch("pyinfra.context.host", MagicMock()),
+        patch("infraninja.security.freebsd.update_packages.host") as mock_host,
+    ):
         mock_host.get_fact.return_value = {"name": "Ubuntu"}
 
         with patch(

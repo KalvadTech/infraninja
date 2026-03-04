@@ -38,7 +38,8 @@ def bsm_setup():
     distro = host.get_fact(LinuxDistribution)
     distro_name = str(distro.get("name", "")).lower() if distro else ""
     if distro_name != "freebsd":
-        raise ValueError("This deployment is designed for FreeBSD systems only")
+        msg = "This deployment is designed for FreeBSD systems only"
+        raise ValueError(msg)
 
     # Get template paths using importlib.resources
     template_dir = resource_files("infraninja.security.templates.freebsd")

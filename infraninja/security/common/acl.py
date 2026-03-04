@@ -29,10 +29,11 @@ def acl_setup():
 
     # FreeBSD implementation moved to dedicated module
     if "freebsd" in os_name:
-        raise NotImplementedError(
+        msg = (
             "FreeBSD ACL setup is not implemented in this module. "
             "Please use the dedicated FreeBSD ACL module instead."
         )
+        raise NotImplementedError(msg)
     # Check if setfacl is available on Linux systems
     if not server.shell(
         name="Check if setfacl exists",
@@ -71,7 +72,7 @@ def acl_setup():
             return
 
     # Define the ACL paths and rules
-    ACL_PATHS = {
+    ACL_PATHS = {  # noqa: N806
         "/etc/fail2ban": "u:root:rwx",
         "/var/log/lynis-report.dat": "u:root:r",
         "/etc/audit/audit.rules": "g:root:rwx",

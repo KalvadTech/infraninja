@@ -3,7 +3,7 @@ from pyinfra.operations import files
 
 
 @deploy("T3.6.3: Log privileged operations and unauthorized access attempts")
-def T3_6_3():
+def t3_6_3():  # noqa: N802
     # T3.6.3: Log privileged operations and unauthorized access attempts
     files.line(
         name="Log privileged operations and unauthorized access",

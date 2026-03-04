@@ -37,7 +37,8 @@ def rkhunter_setup():
     distro = host.get_fact(LinuxDistribution)
     distro_name = str(distro.get("name", "")).lower() if distro else ""
     if distro_name != "freebsd":
-        raise ValueError("This deployment is designed for FreeBSD systems only")
+        msg = "This deployment is designed for FreeBSD systems only"
+        raise ValueError(msg)
 
     # Get template paths using importlib.resources
     template_dir = resource_files("infraninja.security.templates.freebsd")
@@ -79,7 +80,7 @@ def rkhunter_setup():
     # Create secure rkhunter temporary directory
     files.directory(
         name="Create rkhunter temporary directory",
-        path="/var/tmp/rkhunter",
+        path="/var/tmp/rkhunter",  # noqa: S108
         present=True,
         mode="700",
         user="root",

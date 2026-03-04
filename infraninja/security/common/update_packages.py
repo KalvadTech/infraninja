@@ -75,7 +75,7 @@ def system_update():
         any(d in distro_name for d in ["arch", "manjaro", "endeavouros"])
         or "arch" in id_like
     ):
-        # TODO: check if theres an aur helper, use that instead, if not use pacman
+        # TODO: check if theres an aur helper, use that instead, if not use pacman  # noqa: FIX002
 
         pacman.update(name=f"Update {distro_name} package database")
         pacman.upgrade(name=f"Upgrade {distro_name} packages")
@@ -91,4 +91,5 @@ def system_update():
 
     # Unsupported OS
     else:
-        raise ValueError(f"Unsupported OS: {distro_name} (ID: {distro_id})")
+        msg = f"Unsupported OS: {distro_name} (ID: {distro_id})"
+        raise ValueError(msg)

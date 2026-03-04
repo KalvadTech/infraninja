@@ -1,6 +1,7 @@
-import pytest
-from unittest.mock import patch, MagicMock
 from pathlib import Path
+from unittest.mock import MagicMock, patch
+
+import pytest
 
 # Import the module to test
 from infraninja.utils.motd import motd
@@ -37,8 +38,9 @@ class TestMOTD:
         state_mock.config = MagicMock()
         host_mock = MagicMock()
 
-        with patch("pyinfra.context.state", state_mock), patch(
-            "pyinfra.context.host", host_mock
+        with (
+            patch("pyinfra.context.state", state_mock),
+            patch("pyinfra.context.host", host_mock),
         ):
             yield
 

@@ -1,8 +1,9 @@
 from importlib.resources import files as resource_files
-from pyinfra.context import host
-from pyinfra.operations import files
-from pyinfra.facts.server import Hostname, Command
+
 from pyinfra.api.deploy import deploy
+from pyinfra.context import host
+from pyinfra.facts.server import Command, Hostname
+from pyinfra.operations import files
 
 
 @deploy("Update MOTD")

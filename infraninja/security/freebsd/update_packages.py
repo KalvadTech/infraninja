@@ -37,9 +37,8 @@ def system_update():
         freebsd_update.update(name="Update FreeBSD base system")
 
     else:
-        raise ValueError(
-            f"This deployment is designed for FreeBSD systems only. Detected: {distro_name}"
-        )
+        msg = f"This deployment is designed for FreeBSD systems only. Detected: {distro_name}"
+        raise ValueError(msg)
 
 
 @deploy("FreeBSD Package Updates Only")
@@ -65,6 +64,5 @@ def package_update():
         # Remove orphaned packages
         pkg.autoremove(name="Remove orphaned packages")
     else:
-        raise ValueError(
-            f"This deployment is designed for FreeBSD systems only. Detected: {distro_name}"
-        )
+        msg = f"This deployment is designed for FreeBSD systems only. Detected: {distro_name}"
+        raise ValueError(msg)

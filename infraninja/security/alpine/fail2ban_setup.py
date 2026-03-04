@@ -1,8 +1,9 @@
 from importlib.resources import files as resource_files
-from pyinfra.api import deploy
-from pyinfra.operations import files, openrc
+
 from pyinfra import host
+from pyinfra.api import deploy
 from pyinfra.facts.files import Directory, File
+from pyinfra.operations import files, openrc
 
 
 @deploy("Fix and configure Fail2Ban on Alpine Linux")

@@ -19,17 +19,18 @@ class TestFreeBSDChkrootkitSetup(unittest.TestCase):
         """
         Test chkrootkit_setup function with successful execution on FreeBSD.
         """
-        with patch("pyinfra.context.state", MagicMock(config=MagicMock())), patch(
-            "pyinfra.context.host", MagicMock()
-        ), patch(
-            "infraninja.security.freebsd.chkrootkit_setup.host"
-        ) as mock_host, patch(
-            "infraninja.security.freebsd.chkrootkit_setup.files"
-        ) as mock_files, patch(
-            "infraninja.security.freebsd.chkrootkit_setup.crontab"
-        ) as mock_crontab, patch(
-            "infraninja.security.freebsd.chkrootkit_setup.service"
-        ) as mock_service:
+        with (
+            patch("pyinfra.context.state", MagicMock(config=MagicMock())),
+            patch("pyinfra.context.host", MagicMock()),
+            patch("infraninja.security.freebsd.chkrootkit_setup.host") as mock_host,
+            patch("infraninja.security.freebsd.chkrootkit_setup.files") as mock_files,
+            patch(
+                "infraninja.security.freebsd.chkrootkit_setup.crontab"
+            ) as mock_crontab,
+            patch(
+                "infraninja.security.freebsd.chkrootkit_setup.service"
+            ) as mock_service,
+        ):
             # Configure host.get_fact to return FreeBSD distro info
             mock_host.get_fact.return_value = {
                 "name": "FreeBSD",
@@ -127,9 +128,11 @@ class TestFreeBSDChkrootkitSetup(unittest.TestCase):
         """
         Test chkrootkit_setup function raises error on non-FreeBSD systems.
         """
-        with patch("pyinfra.context.state", MagicMock(config=MagicMock())), patch(
-            "pyinfra.context.host", MagicMock()
-        ), patch("infraninja.security.freebsd.chkrootkit_setup.host") as mock_host:
+        with (
+            patch("pyinfra.context.state", MagicMock(config=MagicMock())),
+            patch("pyinfra.context.host", MagicMock()),
+            patch("infraninja.security.freebsd.chkrootkit_setup.host") as mock_host,
+        ):
             # Configure host.get_fact to return a non-FreeBSD distro
             mock_host.get_fact.return_value = {
                 "name": "Ubuntu",

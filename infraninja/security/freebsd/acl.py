@@ -6,7 +6,7 @@ from pyinfra.operations import server
 
 
 @deploy("FreeBSD ACL Setup")
-def acl_setup():
+def acl_setup():  # noqa: C901, PLR0912
     """
     Set up Access Control Lists (ACL) for security-critical files and directories on FreeBSD.
 
@@ -34,7 +34,8 @@ def acl_setup():
     distro = host.get_fact(LinuxDistribution)
     distro_name = str(distro.get("name", "")).lower() if distro else ""
     if distro_name != "freebsd":
-        raise ValueError("This deployment is designed for FreeBSD systems only")
+        msg = "This deployment is designed for FreeBSD systems only"
+        raise ValueError(msg)
 
     # Check if setfacl is available on FreeBSD
     setfacl_check = server.shell(
@@ -85,7 +86,7 @@ def acl_setup():
 
     # Define FreeBSD-specific ACL paths and rules
     # FreeBSD uses different ACL syntax than Linux
-    ACL_PATHS = {
+    ACL_PATHS = {  # noqa: N806
         "/usr/local/etc/fail2ban": "user:root:rwx",
         "/var/log/security": "user:root:rwx",
         "/etc/audit": "user:root:rwx",

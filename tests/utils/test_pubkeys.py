@@ -1,7 +1,8 @@
 # filepath: /home/xoity/Desktop/work/infraninja/tests/utils/test_pubkeys.py
-import pytest
 import json
-from unittest.mock import patch, MagicMock, ANY
+from unittest.mock import ANY, MagicMock, patch
+
+import pytest
 import requests
 
 from infraninja.utils.pubkeys import SSHKeyManager, SSHKeyManagerError, add_ssh_keys
@@ -19,8 +20,9 @@ class TestSSHKeyManager:
     @pytest.fixture
     def mock_input(self):
         """Fixture to mock input and getpass."""
-        with patch("infraninja.utils.pubkeys.input", return_value="testuser"), patch(
-            "infraninja.utils.pubkeys.getpass.getpass", return_value="testpass"
+        with (
+            patch("infraninja.utils.pubkeys.input", return_value="testuser"),
+            patch("infraninja.utils.pubkeys.getpass.getpass", return_value="testpass"),
         ):
             yield
 
@@ -47,8 +49,9 @@ class TestSSHKeyManager:
     @pytest.fixture
     def mock_pyinfra_context(self):
         """Fixture to mock pyinfra context components."""
-        with patch("pyinfra.context.state", MagicMock(config=MagicMock())), patch(
-            "pyinfra.context.host", MagicMock()
+        with (
+            patch("pyinfra.context.state", MagicMock(config=MagicMock())),
+            patch("pyinfra.context.host", MagicMock()),
         ):
             yield
 
@@ -379,8 +382,9 @@ class TestSSHKeyManagerErrors:
     @pytest.fixture
     def mock_input(self):
         """Fixture to mock input and getpass."""
-        with patch("infraninja.utils.pubkeys.input", return_value="testuser"), patch(
-            "infraninja.utils.pubkeys.getpass.getpass", return_value="testpass"
+        with (
+            patch("infraninja.utils.pubkeys.input", return_value="testuser"),
+            patch("infraninja.utils.pubkeys.getpass.getpass", return_value="testpass"),
         ):
             yield
 
@@ -405,11 +409,17 @@ class TestSSHKeyManagerErrors:
         manager.api_url = None
 
         # Configure the exception classes for the SSHKeyManager
-        with patch(
-            "infraninja.utils.pubkeys.requests.exceptions.RequestException", Exception
-        ), patch(
-            "infraninja.utils.pubkeys.requests.exceptions.ConnectionError", Exception
-        ), patch("infraninja.utils.pubkeys.requests.exceptions.Timeout", Exception):
+        with (
+            patch(
+                "infraninja.utils.pubkeys.requests.exceptions.RequestException",
+                Exception,
+            ),
+            patch(
+                "infraninja.utils.pubkeys.requests.exceptions.ConnectionError",
+                Exception,
+            ),
+            patch("infraninja.utils.pubkeys.requests.exceptions.Timeout", Exception),
+        ):
             # Expect the correct error message
             with pytest.raises(
                 SSHKeyManagerError, match="Cannot login: No API URL configured"
@@ -450,13 +460,19 @@ class TestSSHKeyManagerErrors:
     def test_invalid_json_response(manager, mock_input):
         """Test handling invalid JSON in response."""
         # Setup for login first, with all necessary exception mocks
-        with patch("infraninja.utils.pubkeys.requests.post") as mock_post, patch(
-            "infraninja.utils.pubkeys.requests.request"
-        ) as mock_request, patch(
-            "infraninja.utils.pubkeys.requests.exceptions.RequestException", Exception
-        ), patch(
-            "infraninja.utils.pubkeys.requests.exceptions.ConnectionError", Exception
-        ), patch("infraninja.utils.pubkeys.requests.exceptions.Timeout", Exception):
+        with (
+            patch("infraninja.utils.pubkeys.requests.post") as mock_post,
+            patch("infraninja.utils.pubkeys.requests.request") as mock_request,
+            patch(
+                "infraninja.utils.pubkeys.requests.exceptions.RequestException",
+                Exception,
+            ),
+            patch(
+                "infraninja.utils.pubkeys.requests.exceptions.ConnectionError",
+                Exception,
+            ),
+            patch("infraninja.utils.pubkeys.requests.exceptions.Timeout", Exception),
+        ):
             # Mock login response
             login_response = MagicMock()
             login_response.status_code = 200

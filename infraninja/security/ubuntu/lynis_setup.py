@@ -1,6 +1,7 @@
 from importlib.resources import files as resource_files
+
 from pyinfra.api.deploy import deploy
-from pyinfra.operations import files, crontab
+from pyinfra.operations import crontab, files
 
 
 @deploy("Lynis Setup")

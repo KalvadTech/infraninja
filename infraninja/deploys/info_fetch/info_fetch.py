@@ -2,13 +2,6 @@ import json
 import logging
 from datetime import date, datetime
 
-from infraninja.deploys.info_fetch.custom_facts import (
-    CPUInfo,
-    DiskInfo,
-    MemInfo,
-    NetworkInfo,
-    OsRelease,
-)
 from pyinfra.api.deploy import deploy
 from pyinfra.context import host
 from pyinfra.facts.server import (
@@ -22,6 +15,14 @@ from pyinfra.facts.server import (
     Selinux,
     Sysctl,
     Users,
+)
+
+from infraninja.deploys.info_fetch.custom_facts import (
+    CPUInfo,
+    DiskInfo,
+    MemInfo,
+    NetworkInfo,
+    OsRelease,
 )
 
 logger = logging.getLogger("pyinfra")
@@ -67,7 +68,7 @@ def get_fact_safely(fact_type, **kwargs):
         fact_data = host.get_fact(fact_type, **kwargs)
         return serialize_fact_safely(fact_data)
     except Exception as e:
-        print(f"Failed to get fact {fact_type.__name__}: {str(e)}")
+        logger.warning("Failed to get fact %s: %s", fact_type.__name__, e)
         return None
 
 
@@ -128,18 +129,22 @@ def deploy_info_fetch():
                 else "Not Overloaded"
             )
         except (json.JSONDecodeError, IndexError) as e:
-            print(f"Failed to process CPU load: {str(e)}")
+            logger.warning("Failed to process CPU load: %s", e)
 
     # Process network usage
     network_received = network_transmitted = 0
     if collected_facts["network_usage"]:
         try:
             network_data = json.loads(collected_facts["network_usage"])
-            if isinstance(network_data, list) and len(network_data) >= 2:
+            min_network_fields = 2
+            if (
+                isinstance(network_data, list)
+                and len(network_data) >= min_network_fields
+            ):
                 network_received = float(network_data[0]) / 1024
                 network_transmitted = float(network_data[1]) / 1024
         except (json.JSONDecodeError, IndexError) as e:
-            print(f"Failed to process network usage: {str(e)}")
+            logger.warning("Failed to process network usage: %s", e)
 
     # Prepare facts for display
     display_facts = {

@@ -208,15 +208,11 @@ def comprehensive_security():
     auditd_setup(_sudo=True)
 ```
 
-#### 4. Infrastructure Monitoring
+#### 4. Custom MOTD
 
 ```python
-@deploy("Infrastructure Monitoring")
-def monitoring_setup():
-    # Deploy Netdata
-    from infraninja.netdata import deploy_netdata
-    deploy_netdata()
-    
+@deploy("Custom MOTD")
+def motd_setup():
     # Setup custom MOTD
     from infraninja.utils.motd import setup_motd
     setup_motd()
@@ -229,7 +225,6 @@ When running deployments, the system will:
 - **API Integration**: Authenticate with Jinn or Coolify APIs to fetch server configurations
 - **SSH Configuration**: Automatically generate and update SSH configurations for seamless access
 - **Security Hardening**: Deploy comprehensive security configurations based on the target OS
-- **Monitoring Setup**: Configure monitoring tools like Netdata for system oversight
 - **Firewall Configuration**: Set up and configure firewalls (iptables/nftables) with appropriate rules
 - **Malware Protection**: Install and configure antivirus and rootkit detection tools
 - **System Auditing**: Enable comprehensive system auditing and logging

@@ -1,6 +1,9 @@
 import json
+import logging
 
 from pyinfra.api.facts import FactBase
+
+logger = logging.getLogger("pyinfra")
 
 
 class OsRelease(FactBase):
@@ -33,7 +36,7 @@ class OsRelease(FactBase):
             if "version" in result:
                 result["version"] = result["version"]
         except Exception as e:
-            print(f"Failed to parse /etc/os-release: {e}")
+            logger.warning("Failed to parse /etc/os-release: %s", e)
         return result
 
 
@@ -47,13 +50,11 @@ class MemInfo(FactBase):
         valid_occurences = {"usage", "total"}
 
         if measurement not in valid_measurements:
-            raise ValueError(
-                f"Invalid measurement: {measurement}. Expected one of {valid_measurements}."
-            )
+            msg = f"Invalid measurement: {measurement}. Expected one of {valid_measurements}."
+            raise ValueError(msg)
         if occurence not in valid_occurences:
-            raise ValueError(
-                f"Invalid occurence: {occurence}. Expected one of {valid_occurences}."
-            )
+            msg = f"Invalid occurence: {occurence}. Expected one of {valid_occurences}."
+            raise ValueError(msg)
 
         if occurence == "usage":
             # Get the memory usage percentage or absolute
@@ -71,12 +72,13 @@ class MemInfo(FactBase):
             if measurement == "mb":
                 operation = "$2/1024"
             return f"awk '/MemTotal/ {{printf \"%.2f\\n\", {operation}}}' /proc/meminfo"
+        return None
 
     def process(self, output):
         try:
             return (output[0]).replace(",", ".")
         except Exception as e:
-            print(e)
+            logger.warning("MemInfo process error: %s", e)
             return output
 
 
@@ -90,16 +92,14 @@ class CPUInfo(FactBase):
         valid_occurences = {"usage", "total"}
 
         if measurement not in valid_measurements:
-            raise ValueError(
-                f"Invalid measurement: {measurement}. Expected one of {valid_measurements}."
-            )
+            msg = f"Invalid measurement: {measurement}. Expected one of {valid_measurements}."
+            raise ValueError(msg)
         if occurence not in valid_occurences:
-            raise ValueError(
-                f"Invalid occurence: {occurence}. Expected one of {valid_occurences}."
-            )
+            msg = f"Invalid occurence: {occurence}. Expected one of {valid_occurences}."
+            raise ValueError(msg)
 
         if occurence == "usage":
-            if measurement == "percent":
+            if measurement == "percent":  # noqa: SIM116
                 return 'awk -v RS="" \'{printf "%.2f\\n", ($2+$4)*100/($2+$4+$5)}\' /proc/stat'
             elif measurement == "load":
                 # Load averages (1, 5, 15 minutes)
@@ -115,12 +115,13 @@ class CPUInfo(FactBase):
                 return "cat /proc/cpuinfo | grep \"MHz\" | awk '{print $4}'"
             elif measurement == "cores":
                 return "nproc"
+        return None
 
     def process(self, output):
         try:
             return (output[0]).replace(",", ".").replace("|", ",")
         except Exception as e:
-            print(e)
+            logger.warning("CPUInfo process error: %s", e)
             return output
 
 
@@ -134,16 +135,14 @@ class DiskInfo(FactBase):
         valid_measurements = {"percent", "gb", "mb"}
 
         if occurence not in valid_occurences:
-            raise ValueError(
-                f"Invalid occurence: {occurence}. Expected one of {valid_occurences}."
-            )
+            msg = f"Invalid occurence: {occurence}. Expected one of {valid_occurences}."
+            raise ValueError(msg)
         if measurement not in valid_measurements:
-            raise ValueError(
-                f"Invalid measurement: {measurement}. Expected one of {valid_measurements}."
-            )
+            msg = f"Invalid measurement: {measurement}. Expected one of {valid_measurements}."
+            raise ValueError(msg)
 
         if occurence == "usage":
-            if measurement == "percent":
+            if measurement == "percent":  # noqa: SIM116
                 return "df --total --output=pcent | awk 'END{print $1}'"
             elif measurement == "gb":
                 return "df --total --block-size=1G | awk '/total/ {print $3\"GB\"}'"
@@ -155,12 +154,13 @@ class DiskInfo(FactBase):
                 return "df --total --block-size=1G | awk '/total/ {print $2\"GB\"}'"
             elif measurement == "mb":
                 return "df --total --block-size=1M | awk '/total/ {print $2\"MB\"}'"
+        return None
 
     def process(self, output):
         try:
             return (output[0]).replace(",", ".")
         except Exception as e:
-            print(e)
+            logger.warning("DiskInfo process error: %s", e)
             return output
 
 
@@ -184,7 +184,7 @@ class NetworkInfo(FactBase):
             command = "ls /sys/class/net/"
         elif occurence == "ip_info":
             command = "ip -j addr"
-        elif occurence == "stats":
+        else:
             command = "for iface in $(ls /sys/class/net/); do "
         return command
 
@@ -197,7 +197,7 @@ class NetworkInfo(FactBase):
             else:
                 return output
         except Exception as e:
-            print(e)
+            logger.warning("NetworkInfo process error: %s", e)
             return output
 
 
@@ -212,9 +212,8 @@ class PartitionsInfo(FactBase):
 
         valid_formats = {"simple", "json"}
         if format not in valid_formats:
-            raise ValueError(
-                f"Invalid format: {format}. Expected one of {valid_formats}."
-            )
+            msg = f"Invalid format: {format}. Expected one of {valid_formats}."
+            raise ValueError(msg)
 
         return "lsblk -J -o NAME,SIZE,MOUNTPOINTS,MAJ:MIN,RM,RO,FSUSE%"
 
@@ -273,5 +272,5 @@ class PartitionsInfo(FactBase):
             return "\n".join(result)
 
         except Exception as e:
-            print(f"Error processing partition info: {e}")
+            logger.warning("Error processing partition info: %s", e)
             return None

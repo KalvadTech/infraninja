@@ -52,7 +52,7 @@ def auditd_setup():
         enabled=True,
     )
 
-    # TODO: fedora doesnt allow you to do manual restart of auditd nor reload, possibly have to set a restart flag for reboot required
+    # TODO: fedora doesnt allow you to do manual restart of auditd nor reload, possibly have to set a restart flag for reboot required  # noqa: FIX002
 
     server.service(
         name="Restart auditd to apply new rules",

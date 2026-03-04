@@ -1,5 +1,6 @@
+from unittest.mock import MagicMock, patch
+
 import pytest
-from unittest.mock import patch, MagicMock
 
 from infraninja.security.common.disable_services import ServiceDisabler
 
@@ -111,11 +112,12 @@ def test_service_disabler_init_systems(test_case):
         return False
 
     # Setup mocks for all the functions we need
-    with patch("pyinfra.context.state", MagicMock(config=MagicMock())), patch(
-        "pyinfra.context.host", MagicMock()
-    ), patch("infraninja.security.common.disable_services.host") as mock_host, patch(
-        "infraninja.security.common.disable_services.server"
-    ) as mock_server:
+    with (
+        patch("pyinfra.context.state", MagicMock(config=MagicMock())),
+        patch("pyinfra.context.host", MagicMock()),
+        patch("infraninja.security.common.disable_services.host") as mock_host,
+        patch("infraninja.security.common.disable_services.server") as mock_server,
+    ):
         # Configure host.get_fact to return the distro info or which command status
         mock_host.get_fact.side_effect = lambda fact, **kwargs: (
             test_case["distro_info"]
@@ -168,11 +170,12 @@ def test_service_disabler_custom_services():
     custom_services = ["custom-service1", "custom-service2", "custom-service3"]
 
     # Setup mocks
-    with patch("pyinfra.context.state", MagicMock(config=MagicMock())), patch(
-        "pyinfra.context.host", MagicMock()
-    ), patch("infraninja.security.common.disable_services.host") as mock_host, patch(
-        "infraninja.security.common.disable_services.server"
-    ) as mock_server:
+    with (
+        patch("pyinfra.context.state", MagicMock(config=MagicMock())),
+        patch("pyinfra.context.host", MagicMock()),
+        patch("infraninja.security.common.disable_services.host") as mock_host,
+        patch("infraninja.security.common.disable_services.server") as mock_server,
+    ):
         # Configure host.get_fact to return systemd for init system
         mock_host.get_fact.side_effect = lambda fact, **kwargs: (
             {"name": "Ubuntu", "release_meta": {"ID": "ubuntu", "ID_LIKE": "debian"}}
