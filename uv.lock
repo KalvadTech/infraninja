@@ -405,6 +405,7 @@ dependencies = [
     { name = "zope-event" },
     { name = "zope-interface" },
 ]
+sdist = { url = "https://files.pythonhosted.org/packages/20/27/1062fa31333dc3428a1f5f33cd6598b0552165ba679ca3ba116de42c9e8e/gevent-26.4.0.tar.gz", hash = "sha256:288d03addfccf0d1c67268358b6759b04392bf3bc35d26f3d9a45c82899c292d", size = 6242440, upload-time = "2026-04-09T12:08:19.482Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/69/92/fd1f4016b92591fe7ccf44d01883a3337178a6e9ea4c04e1ddce7a2e3db1/gevent-26.4.0-cp310-cp310-manylinux_2_28_x86_64.whl", hash = "sha256:079dca3fe5e048714e93ab5ce7cbf2ec31709c860979feb117abbbf2b8ae6ad0", size = 2180478, upload-time = "2026-04-08T21:54:11.739Z" },
     { url = "https://files.pythonhosted.org/packages/fc/b9/ac8a6561b9efd141dfbb2d0ae1d2fd3255f9e9ccfeceb64a6917e2ef6625/gevent-26.4.0-cp310-cp310-musllinux_1_2_x86_64.whl", hash = "sha256:df208cd53c7382a4cc8470d39a92fc73b3cf2f0f3379d6c88bb556823a26ccb7", size = 2211145, upload-time = "2026-04-08T21:59:59.318Z" },
@@ -1045,11 +1046,11 @@ wheels = [
 
 [[package]]
 name = "urllib3"
-version = "2.6.3"
+version = "2.7.0"
 source = { registry = "https://pypi.org/simple" }
-sdist = { url = "https://files.pythonhosted.org/packages/c7/24/5f1b3bdffd70275f6661c76461e25f024d5a38a46f04aaca912426a2b1d3/urllib3-2.6.3.tar.gz", hash = "sha256:1b62b6884944a57dbe321509ab94fd4d3b307075e0c2eae991ac71ee15ad38ed", size = 435556, upload-time = "2026-01-07T16:24:43.925Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/53/0c/06f8b233b8fd13b9e5ee11424ef85419ba0d8ba0b3138bf360be2ff56953/urllib3-2.7.0.tar.gz", hash = "sha256:231e0ec3b63ceb14667c67be60f2f2c40a518cb38b03af60abc813da26505f4c", size = 433602, upload-time = "2026-05-07T16:13:18.596Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/39/08/aaaad47bc4e9dc8c725e68f9d04865dbcb2052843ff09c97b08904852d84/urllib3-2.6.3-py3-none-any.whl", hash = "sha256:bf272323e553dfb2e87d9bfd225ca7b0f467b919d7bbd355436d3fd37cb0acd4", size = 131584, upload-time = "2026-01-07T16:24:42.685Z" },
+    { url = "https://files.pythonhosted.org/packages/7f/3e/5db95bcf282c52709639744ca2a8b149baccf648e39c8cc87553df9eae0c/urllib3-2.7.0-py3-none-any.whl", hash = "sha256:9fb4c81ebbb1ce9531cce37674bbc6f1360472bc18ca9a553ede278ef7276897", size = 131087, upload-time = "2026-05-07T16:13:17.151Z" },
 ]
 
 [[package]]
