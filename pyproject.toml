@@ -1,5 +1,5 @@
 [build-system]
-requires = ["setuptools >= 80.9.0"]
+requires = ["setuptools >= 82.0.0"]
 build-backend = "setuptools.build_meta"
 
 [project]
@@ -19,9 +19,9 @@ classifiers = [
 ]
 license = { file = "LICENSE" }
 dependencies = [
-    "build==1.4.0",
-    "pyinfra==3.6.1",
-    "pytest==9.0.2",
+    "build==1.4.2",
+    "pyinfra==3.9.2",
+    "pytest==9.0.3",
     "requests",
 ]
 
@@ -79,8 +79,8 @@ exclude = [
 line-length = 88
 indent-width = 4
 
-# Assume Python 3.9
-target-version = "py39"
+# Assume Python 3.10+
+target-version = "py310"
 
 
 [tool.ruff.lint]
