@@ -21,7 +21,7 @@ license = { file = "LICENSE" }
 dependencies = [
     "build==1.5.0",
     "pyinfra==3.9.2",
-    "pytest==9.0.3",
+    "pytest==9.1.0",
     "requests",
 ]
 
