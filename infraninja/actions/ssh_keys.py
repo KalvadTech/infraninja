@@ -68,7 +68,7 @@ class SSHKeys(Action):
         "opensuse",
     ]
 
-    def execute(  # noqa: PLR0913
+    def execute(  # noqa: PLR0913, PLR0917
         self,
         user: str,
         urls: Optional[List[str]] = None,

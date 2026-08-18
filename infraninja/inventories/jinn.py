@@ -46,7 +46,7 @@ class Jinn(Inventory):
         "ar": "جلب الخوادم من واجهة برمجة تطبيقات جن",
     }
 
-    def __init__(  # noqa: PLR0913
+    def __init__(  # noqa: PLR0913, PLR0917
         self,
         ssh_key_path: Optional[Union[str, Path]] = None,
         api_url: str = "https://jinn-api.kalvad.cloud",
