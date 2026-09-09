@@ -76,10 +76,7 @@ Ninja-level deployments for infrastructure automation
     from infraninja import UpdateAndUpgrade
     from infraninja.inventories import Jinn
 
-    inventory = Jinn(
-        api_key="your-api-key",
-        groups=["production"]
-    )
+    inventory = Jinn(api_key="your-api-key", groups=["production"])
 
     action = UpdateAndUpgrade()
     action.execute()
