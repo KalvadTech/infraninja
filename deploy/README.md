@@ -96,7 +96,7 @@ To execute test deployments on the local VMs:
        api_key="your-access-key",
        ssh_key_path="~/.ssh/id_rsa",
        groups=["production", "staging"],  # Optional: filter by groups
-       tags=["web", "database"],          # Optional: filter by tags
+       tags=["web", "database"],  # Optional: filter by tags
    )
    hosts = jinn.get_servers()
    ```
@@ -151,11 +151,12 @@ from pyinfra.api import deploy
 from infraninja.security.common.ssh_hardening import ssh_hardening
 from infraninja.security.common.kernel_hardening import kernel_hardening
 
+
 @deploy("Basic Security Setup")
 def basic_security():
     # SSH hardening
     ssh_hardening()
-    
+
     # Kernel security hardening
     kernel_hardening()
 ```
@@ -167,21 +168,22 @@ from pyinfra import host
 from pyinfra.facts.server import LinuxName
 from pyinfra.api import deploy
 
+
 @deploy("OS-Specific Security Setup")
 def os_specific_security():
     os_name = host.get_fact(LinuxName)
-    
+
     if "ubuntu" in os_name.lower():
         from infraninja.security.ubuntu.fail2ban_setup import fail2ban_setup
         from infraninja.security.ubuntu.install_tools import install_security_tools
-        
+
         install_security_tools()
         fail2ban_setup()
-        
+
     elif "alpine" in os_name.lower():
         from infraninja.security.alpine.fail2ban_setup import fail2ban_setup_alpine
         from infraninja.security.alpine.install_tools import install_security_tools
-        
+
         install_security_tools()
         fail2ban_setup_alpine()
 ```
@@ -194,17 +196,20 @@ def comprehensive_security():
     # Common security measures
     ssh_hardening(_sudo=True)
     kernel_hardening(_sudo=True)
-    
+
     # Network security
     from infraninja.security.common.nftables_setup import nftables_setup
+
     nftables_setup(_sudo=True)
-    
+
     # Malware detection
     from infraninja.security.common.chkrootkit_setup import chkrootkit_setup
+
     chkrootkit_setup(_sudo=True)
-    
+
     # System auditing
     from infraninja.security.common.auditd_setup import auditd_setup
+
     auditd_setup(_sudo=True)
 ```
 
@@ -215,6 +220,7 @@ def comprehensive_security():
 def motd_setup():
     # Setup custom MOTD
     from infraninja.utils.motd import setup_motd
+
     setup_motd()
 ```
 

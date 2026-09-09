@@ -78,7 +78,7 @@ jinn = Jinn(
     api_url="https://jinn-api.kalvad.cloud",
     api_key="your-api-key",
     groups=["production", "web"],
-    tags=["nginx", "database"]
+    tags=["nginx", "database"],
 )
 servers = jinn.get_servers()
 
@@ -86,7 +86,7 @@ servers = jinn.get_servers()
 coolify = Coolify(
     api_url="https://coolify.example.com/api",
     api_key="your-api-key",
-    tags=["prod", "staging"]
+    tags=["prod", "staging"],
 )
 servers = coolify.get_servers()
 ```

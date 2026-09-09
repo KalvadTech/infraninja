@@ -93,11 +93,11 @@ print(metadata)
 # }
 
 # Get localized name
-print(action.get_name('en'))  # "SSH Hardening"
-print(action.get_name('ar'))  # Arabic translation
+print(action.get_name("en"))  # "SSH Hardening"
+print(action.get_name("ar"))  # Arabic translation
 
 # Get localized description
-print(action.get_description('fr'))  # French description
+print(action.get_description("fr"))  # French description
 ```
 
 ### Listing All Actions
@@ -133,6 +133,7 @@ To create a new action, inherit from the `Action` base class:
 from infraninja.actions.base import Action
 from pyinfra.api import deploy
 from pyinfra.operations import server
+
 
 class CustomAction(Action):
     slug = "custom-action"
@@ -223,18 +224,20 @@ if __name__ == "__main__":
 import pytest
 from infraninja.actions.ssh_hardening import SSHHardening
 
+
 def test_ssh_hardening_metadata():
     action = SSHHardening()
 
     assert action.slug == "ssh-hardening"
     assert action.category == "security"
     assert "security" in action.tags
-    assert action.get_name('en') == "SSH Hardening"
+    assert action.get_name("en") == "SSH Hardening"
 
     metadata = action.get_metadata()
-    assert 'slug' in metadata
-    assert 'name' in metadata
-    assert 'en' in metadata['name']
+    assert "slug" in metadata
+    assert "name" in metadata
+    assert "en" in metadata["name"]
+
 
 def test_ssh_hardening_validation():
     # Action should validate metadata on initialization
